@@ -1,0 +1,28 @@
+# Feature extraction module configuration
+
+line_features:
+  enabled: true
+  compute_height: true
+  compute_deviation: true
+  compute_drift: true
+
+word_features:
+  enabled: true
+  compute_width: true
+  compute_inter_word_spacing: true
+
+slant_features:
+  enabled: true
+  method: "hough_transform" # or "projection"
+  angle_range: [-45, 45]
+
+spacing_features:
+  enabled: true
+
+stroke_features:
+  enabled: true
+  compute_density: true
+  compute_width: true
+
+baseline_features:
+  enabled: true

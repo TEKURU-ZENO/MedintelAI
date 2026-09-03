@@ -1,0 +1,27 @@
+# Preprocessing module configuration for Medical Documents
+
+grayscale:
+  enabled: true
+
+contrast:
+  enabled: true
+  clip_limit: 2.0
+  tile_grid_size: [8, 8]
+
+denoise:
+  enabled: true
+  method: "bilateral" # "bilateral" or "median"
+
+thresholding:
+  method: "adaptive" # "adaptive" or "otsu"
+  block_size: 35
+  c: 10
+
+deskew:
+  enabled: true
+  max_angle: 15.0
+
+normalize:
+  target_height: 1000
+  maintain_aspect_ratio: true
+

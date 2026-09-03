@@ -1,0 +1,36 @@
+# Python compiler artifacts & caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# Environment secrets (keeps credentials off Git)
+.env
+.env.*
+
+# Node dependencies and build outputs
+frontend/node_modules/
+frontend/dist/
+frontend/.eslintcache
+
+# Local application data stores & uploads
+app/cache/
+thumbnails/
+uploads/
+outputs/
+.gemini/
+*.log
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Thumbs.db
+
+# Large dataset directories
+datasets/cvl-database-1-1/
+datasets/archive/

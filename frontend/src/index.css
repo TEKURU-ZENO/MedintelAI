@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Theme custom properties & tokens ──────────────────────────────────────── */
+:root {
+  --color-background: #F0F2F5;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F9FAFB;
+  --color-textPrimary: #111827;
+  --color-textSecondary: #4B5563;
+  --color-textTertiary: #9CA3AF;
+  --color-border: #E5E7EB;
+  
+  --color-indigo: #4F46E5;
+  --color-indigoLight: #EEF2FF;
+  --color-indigoHover: #4338CA;
+  
+  --color-coral: #FDA4AF;
+  --color-sage: #86EFAC;
+  --color-lavender: #D8B4FE;
+  --color-sunflower: #FDE047;
+  --color-skyBlue: #7DD3FC;
+
+  /* Semantic coaching & alert colors */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-insight: #3B82F6;
+  --color-celebration: #EC4899;
+
+  --color-guidance-good: #10B981;
+  --color-guidance-mid: #F59E0B;
+  --color-guidance-bad: #EF4444;
+
+  /* Canvas specific color balancing */
+  --canvas-ink: #1E293B;
+  --canvas-guide: rgba(99, 102, 241, 0.25);
+  --canvas-surface: #FFFFFF;
+  --canvas-glow: rgba(99, 102, 241, 0.1);
+}
+
+.dark {
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-surface-hover: #334155;
+  --color-textPrimary: #F8FAFC;
+  --color-textSecondary: #CBD5E1;
+  --color-textTertiary: #64748B;
+  --color-border: #334155;
+  
+  --color-indigo: #818CF8;
+  --color-indigoLight: #1E1B4B;
+  --color-indigoHover: #6366F1;
+  
+  --color-coral: #FCA5A5;
+  --color-sage: #4ADE80;
+  --color-lavender: #C084FC;
+  --color-sunflower: #FACC15;
+  --color-skyBlue: #38BDF8;
+
+  /* Dark mode semantic coaching & alert colors */
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-danger: #F87171;
+  --color-insight: #60A5FA;
+  --color-celebration: #F472B6;
+
+  --color-guidance-good: #34D399;
+  --color-guidance-mid: #FBBF24;
+  --color-guidance-bad: #F87171;
+
+  /* Dark mode canvas specific color balancing */
+  --canvas-ink: #E2E8F0;
+  --canvas-guide: rgba(129, 140, 248, 0.35);
+  --canvas-surface: #0B0F19;
+  --canvas-glow: rgba(129, 140, 248, 0.15);
+}
+
+/* ── Tailwind v4: CSS-first theme configuration ────────────────────────────── */
+@theme {
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-textPrimary: var(--color-textPrimary);
+  --color-textSecondary: var(--color-textSecondary);
+  --color-textTertiary: var(--color-textTertiary);
+  --color-border: var(--color-border);
+  
+  --color-indigo: var(--color-indigo);
+  --color-indigoLight: var(--color-indigoLight);
+  --color-indigoHover: var(--color-indigoHover);
+  
+  --color-coral: var(--color-coral);
+  --color-sage: var(--color-sage);
+  --color-lavender: var(--color-lavender);
+  --color-sunflower: var(--color-sunflower);
+  --color-skyBlue: var(--color-skyBlue);
+
+  /* Semantic classes */
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+  --color-insight: var(--color-insight);
+  --color-celebration: var(--color-celebration);
+  --color-guidanceGood: var(--color-guidance-good);
+  --color-guidanceMid: var(--color-guidance-mid);
+  --color-guidanceBad: var(--color-guidance-bad);
+
+  /* Canvas styles */
+  --color-canvasInk: var(--canvas-ink);
+  --color-canvasGuide: var(--canvas-guide);
+  --color-canvasSurface: var(--canvas-surface);
+  --color-canvasGlow: var(--canvas-glow);
+
+  /* Custom Fonts */
+  --font-family-sans: "Inter", system-ui, sans-serif;
+  --font-family-display: "Outfit", "Nunito", system-ui, sans-serif;
+
+  /* Custom Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08);
+  --shadow-glow-sage: 0 0 20px rgba(134, 239, 172, 0.4);
+  --shadow-glow-indigo: 0 0 20px rgba(99, 102, 241, 0.3);
+
+  /* Custom Transitions */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-250: 250ms;
+  --duration-400: 400ms;
+}
+
+/* ── Google Fonts ──────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap");
+
+/* ── Base layer overrides ──────────────────────────────────────────────────── */
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-textPrimary);
+    font-family: var(--font-family-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 300ms ease, color 300ms ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-display);
+    letter-spacing: -0.025em;
+  }
+}
+
+/* ── Accessibility: Reduced Motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: initial !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}
+
+/* ── Utility overrides ─────────────────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

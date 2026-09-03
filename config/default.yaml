@@ -1,0 +1,20 @@
+# Main pipeline configuration file
+
+# Paths are relative to the project root
+pipeline:
+  preprocessing_config: "config/preprocessing.yaml"
+  features_config: "config/features.yaml"
+
+  directories:
+    json_output: "outputs/json"
+    visualization_output: "outputs/visualizations"
+    debug_output: "outputs/debug"
+
+  datasets:
+    iam_path: "datasets/archive/iam_words/words"
+    cvl_path: "datasets/cvl-database-1-1/cvl-database-1-1"
+
+  execution:
+    batch_size: 32
+    save_visualizations: false
+    log_level: "INFO"

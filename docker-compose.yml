@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: medintel_ocr_backend
+    environment:
+      - ENVIRONMENT=production
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ocr_outputs:/app/outputs
+    restart: always
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    container_name: medintel_ocr_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  ocr_outputs:
+
