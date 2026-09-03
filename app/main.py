@@ -4,6 +4,7 @@ from app.core.config import settings
 from app.core.logging import logger
 
 import os
+import tempfile
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
@@ -21,8 +22,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-os.makedirs("outputs/temp", exist_ok=True)
-app.mount("/temp", StaticFiles(directory="outputs/temp"), name="temp")
+# Mount temporary directory safely for read-only serverless environments
+temp_dir = os.path.join(tempfile.gettempdir(), "medintel_temp")
+try:
+    os.makedirs(temp_dir, exist_ok=True)
+    app.mount("/temp", StaticFiles(directory=temp_dir), name="temp")
+except Exception as e:
+    logger.warning(f"Could not mount static temp directory: {e}")
 
 @app.get("/health", tags=["System"])
 async def health_check():
@@ -35,4 +41,5 @@ from app.api.auth import router as auth_router
 
 app.include_router(ocr_router, prefix="/ocr", tags=["MedIntel OCR Engine"])
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+
 

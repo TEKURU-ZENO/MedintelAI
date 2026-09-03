@@ -1,5 +1,6 @@
 import os
 import json
+import tempfile
 from typing import Dict, Any
 
 from app.ai.utils.logger import get_logger
@@ -17,7 +18,7 @@ class PipelineController:
         self.config = config or {}
         self.preprocess_config = self.config.get("preprocessing", {})
         self.ocr_engine = MedIntelOCREngine()
-        self.output_dir = "outputs/json"
+        self.output_dir = os.path.join(tempfile.gettempdir(), "medintel_json")
         
     def process_image(self, image_path: str, output_path: str = None) -> Dict[str, Any]:
         """
@@ -49,13 +50,17 @@ class PipelineController:
             ocr_result = self.ocr_engine.process_document(clean_image, doc_name=image_id)
             
             # 3. Save Structured JSON Output
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(ocr_result, f, indent=2)
+            try:
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    json.dump(ocr_result, f, indent=2)
+                logger.info(f"Saved OCR JSON to {output_path}")
+            except Exception as io_err:
+                logger.warning(f"Could not save OCR JSON file to disk ({io_err}), returning result in-memory.")
                 
-            logger.info(f"Successfully processed OCR and saved JSON to {output_path}")
             return ocr_result
         except Exception as e:
             logger.error(f"OCR Pipeline failed for {image_path}: {e}")
             return None
+
 

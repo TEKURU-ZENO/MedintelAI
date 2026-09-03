@@ -1,6 +1,7 @@
 import os
 import json
 import cv2
+import tempfile
 import numpy as np
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
@@ -12,7 +13,8 @@ from app.core.logging import logger
 router = APIRouter()
 controller = PipelineController()
 
-CORRECTIONS_FILE = 'outputs/corrections.json'
+TEMP_BASE = os.path.join(tempfile.gettempdir(), 'medintel_temp')
+CORRECTIONS_FILE = os.path.join(TEMP_BASE, 'corrections.json')
 
 class CorrectionRequest(BaseModel):
     document: str
@@ -34,8 +36,8 @@ async def extract_ocr(file: UploadFile = File(...)):
         if image is None:
             raise HTTPException(status_code=400, detail='Failed to decode document image.')
             
-        os.makedirs('outputs/temp', exist_ok=True)
-        temp_path = os.path.join('outputs/temp', file.filename)
+        os.makedirs(TEMP_BASE, exist_ok=True)
+        temp_path = os.path.join(TEMP_BASE, file.filename)
         cv2.imwrite(temp_path, image)
         
         ocr_result = controller.process_image(temp_path)
@@ -50,7 +52,7 @@ async def extract_ocr(file: UploadFile = File(...)):
 @router.post('/correct', summary='Submit human clinician OCR correction')
 async def submit_correction(req: CorrectionRequest):
     try:
-        os.makedirs('outputs', exist_ok=True)
+        os.makedirs(TEMP_BASE, exist_ok=True)
         corrections = []
         if os.path.exists(CORRECTIONS_FILE):
             try:
@@ -69,8 +71,11 @@ async def submit_correction(req: CorrectionRequest):
         }
         corrections.append(new_entry)
         
-        with open(CORRECTIONS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(corrections, f, indent=2)
+        try:
+            with open(CORRECTIONS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(corrections, f, indent=2)
+        except Exception as err:
+            logger.warning(f"Could not save correction file to disk: {err}")
             
         return {'status': 'success', 'message': 'Correction recorded successfully.', 'entry': new_entry}
     except Exception as e:
@@ -79,7 +84,7 @@ async def submit_correction(req: CorrectionRequest):
 
 @router.get('/benchmark', summary='Retrieve MedIntel OCR benchmark performance report')
 async def get_benchmark_report():
-    benchmark_file = 'outputs/benchmark_results.json'
+    benchmark_file = os.path.join(TEMP_BASE, 'benchmark_results.json')
     if os.path.exists(benchmark_file):
         try:
             with open(benchmark_file, 'r', encoding='utf-8') as f:
@@ -98,3 +103,4 @@ async def get_benchmark_report():
             'scanned_low_quality': {'cer': '9.8%', 'wer': '16.5%', 'avg_time_sec': 0.92}
         }
     }
+
