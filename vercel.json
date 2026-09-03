@@ -13,6 +13,10 @@
     {
       "source": "/temp/:path*",
       "destination": "/api/index.py"
+    },
+    {
+      "source": "/((?!assets/|favicon.svg|public/).*)",
+      "destination": "/index.html"
     }
   ]
 }
