@@ -3,7 +3,7 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/ocr/(.*)",
+      "source": "/ocr/:path*",
       "destination": "/api/index.py"
     },
     {
@@ -11,12 +11,8 @@
       "destination": "/api/index.py"
     },
     {
-      "source": "/temp/(.*)",
+      "source": "/temp/:path*",
       "destination": "/api/index.py"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }
