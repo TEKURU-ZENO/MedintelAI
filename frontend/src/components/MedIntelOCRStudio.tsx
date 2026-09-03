@@ -89,9 +89,9 @@ export default function MedIntelOCRStudio() {
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
   const [benchmarkMetrics, setBenchmarkMetrics] = useState<any>({
     printed_documents: { cer: '2.1%', wer: '4.3%', avg_time_sec: 0.131 },
-    handwritten_documents: { cer: '8.5%', wer: '14.2%', avg_time_sec': 0.08 },
-    mixed_documents: { cer: '5.4%', wer: '9.1%', avg_time_sec': 0.1 },
-    scanned_low_quality: { cer: '9.8%', wer: '16.5%', avg_time_sec': 0.075 }
+    handwritten_documents: { cer: '8.5%', wer: '14.2%', avg_time_sec: 0.08 },
+    mixed_documents: { cer: '5.4%', wer: '9.1%', avg_time_sec: 0.1 },
+    scanned_low_quality: { cer: '9.8%', wer: '16.5%', avg_time_sec: 0.075 }
   });
 
   useEffect(() => {

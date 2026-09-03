@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap");
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -130,9 +131,6 @@
   --duration-250: 250ms;
   --duration-400: 400ms;
 }
-
-/* ── Google Fonts ──────────────────────────────────────────────────────────── */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap");
 
 /* ── Base layer overrides ──────────────────────────────────────────────────── */
 @layer base {
