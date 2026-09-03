@@ -37,9 +37,13 @@ async def health_check():
     return {"status": "ok", "system": "MedIntel AI OCR Engine", "version": "1.0.0"}
 
 from app.api.ocr import router as ocr_router
-from app.api.auth import router as auth_router
-
 app.include_router(ocr_router, prefix="/ocr", tags=["MedIntel OCR Engine"])
-app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+
+try:
+    from app.api.auth import router as auth_router
+    app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+except Exception as e:
+    logger.warning(f"Auth router not mounted: {e}")
+
 
 
