@@ -1,10 +1,10 @@
-# MedIntel AI ? Medical Document OCR Engine & Verification System
+# MedIntel AI - Medical Document OCR Engine & Verification System
 
 MedIntel AI is a production-grade medical document OCR engine combining OpenCV document image preprocessing, PaddleOCR layout & printed text extraction, TrOCR handwriting recognition, confidence status classification, and an interactive dual-pane clinician verification UI.
 
 ---
 
-## ?? Key Features
+##  Key Features
 
 * **Medical Document Preprocessing**: CLAHE contrast enhancement, Bilateral denoising, Otsu/Adaptive binarization, and Deskewing for hospital scans, prescriptions, and lab reports.
 * **Hybrid OCR Architecture**:
@@ -32,7 +32,7 @@ MedIntel AI is a production-grade medical document OCR engine combining OpenCV d
 
 ---
 
-## ?? Quick Start (Docker Deployment)
+##  Quick Start (Docker Deployment)
 
 ```bash
 # Clone the repository
@@ -50,7 +50,7 @@ Access endpoints:
 
 ---
 
-## ?? Benchmark Evaluation
+##  Benchmark Evaluation
 
 Run accuracy evaluation on test medical dataset:
 
