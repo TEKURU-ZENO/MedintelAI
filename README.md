@@ -23,7 +23,7 @@ MedIntel AI is a production-grade medical document OCR engine combining OpenCV d
 
 ---
 
-## ??? Technology Stack
+##  Technology Stack
 
 * **Backend**: Python 3.10+, FastAPI, Uvicorn, OpenCV, NumPy, PyYAML, Pillow.
 * **OCR Engines**: PaddleOCR, TrOCR (`transformers`).
