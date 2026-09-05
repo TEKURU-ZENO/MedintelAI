@@ -1,0 +1,6 @@
+COMMUNITY CLINIC - HEALTH CHECKUP FORM
+Hospital Header: St. Luke Health Center
+Patient Name: Rajesh Gupta
+Doctor Observation: Throat congestion noted, mild lymphadenopathy
+Blood Pressure: 130/84 mmHg  Pulse: 82 bpm
+Advised: Warm saline gargles, rest for 3 days

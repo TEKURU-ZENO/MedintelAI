@@ -1,0 +1,6 @@
+PATIENT ADMISSION RECORD
+Hospital ID: 2026-MED-1049  Ward: 3 Bed: 12
+Full Name: Sunita Joshi  Gender: Female  DOB: 14/08/1984
+Emergency Contact: Deepak Joshi (Husband) 9876543210
+Admitting Department: Orthopaedics
+Primary Complaint: Right knee osteoarthritis

@@ -1,0 +1,7 @@
+CITY CARE HOSPITAL - PRESCRIPTION
+Patient: Rahul Kumar  Age: 42  Date: 05/09/2026
+Rx:
+1. Tab Amoxicillin 500mg - 1-0-1 x 5 days
+2. Tab Paracetamol 650mg - 1-0-1 SOS
+3. Syp Cough Relief 10ml - 0-0-1 at night
+Dr. S. Mehta, MD (Physician)

@@ -1,0 +1,7 @@
+METRO DIAGNOSTICS - CLINICAL BIOCHEMISTRY
+Patient: Priya Sharma  Ref: Dr. Verma
+TEST               RESULT    UNITS     NORMAL RANGE
+Hemoglobin (Hb)    13.8      g/dL      12.0 - 15.5
+Fasting Blood Sugar 98        mg/dL     70 - 100
+Serum Creatinine   0.9       mg/dL     0.6 - 1.2
+Total Cholesterol  175       mg/dL     < 200

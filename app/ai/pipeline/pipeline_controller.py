@@ -1,10 +1,11 @@
 import os
 import json
 import tempfile
-from typing import Dict, Any
+from typing import Dict, Any, List, Union
+import numpy as np
 
 from app.ai.utils.logger import get_logger
-from app.ai.utils.image_io import load_image
+from app.ai.utils.pdf_handler import load_document_pages
 from app.ai.preprocessing.preprocessing_pipeline import run_preprocessing_pipeline
 from app.ai.ocr.ocr_engine import MedIntelOCREngine
 
@@ -12,55 +13,112 @@ logger = get_logger(__name__)
 
 class PipelineController:
     """
-    Coordinates MedIntel Medical Document OCR processing for single and batch images.
+    General-Purpose Medical Document Pipeline Controller.
+    Accepts arbitrary documents (Image files, image bytes, or multi-page PDFs),
+    runs OpenCV preprocessing, hybrid OCR extraction, reading-order reconstruction,
+    and structured JSON + .txt export.
     """
     def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
         self.preprocess_config = self.config.get("preprocessing", {})
         self.ocr_engine = MedIntelOCREngine()
         self.output_dir = os.path.join(tempfile.gettempdir(), "medintel_json")
-        
-    def process_image(self, image_path: str, output_path: str = None) -> Dict[str, Any]:
+        self.txt_output_dir = os.path.join(tempfile.gettempdir(), "medintel_txt")
+
+    def process_document(
+        self,
+        document_input: Union[str, bytes, np.ndarray],
+        doc_name: str = "document",
+        output_json_path: str = None,
+        output_txt_path: str = None
+    ) -> Dict[str, Any]:
         """
-        Runs document preprocessing and OCR extraction on a given image.
-        
-        Args:
-            image_path (str): Path to input image file.
-            output_path (str): Path to save structured output JSON.
-            
-        Returns:
-            Dict[str, Any]: Structured MedIntel OCR JSON output.
+        Processes arbitrary document (Image or PDF):
+        - Ingests all pages.
+        - Preprocesses each page with CLAHE, Bilateral Denoising, Deskewing, Binarization.
+        - Extracts text blocks, routes regions, and rebuilds reading order.
+        - Assembles multi-page results into JSON and formatted .txt.
         """
-        logger.info(f"Processing document image: {image_path}")
-        image_id = os.path.basename(image_path)
+        logger.info(f"Ingesting document: {doc_name}")
+        pages = load_document_pages(document_input, filename=doc_name)
         
-        if output_path is None:
-            output_path = os.path.join(self.output_dir, f"{os.path.splitext(image_id)[0]}.json")
+        if not pages:
+            logger.error(f"No valid image pages loaded for {doc_name}")
+            return {
+                'status': 'error',
+                'message': 'Failed to decode or render document.',
+                'document': doc_name,
+                'pages': 0,
+                'total_blocks': 0,
+                'overall_confidence': 0.0,
+                'blocks': [],
+                'raw_text': ''
+            }
+
+        all_blocks = []
+        page_texts = []
+        confidences = []
+
+        for idx, page_img in enumerate(pages):
+            page_num = idx + 1
+            # 1. OpenCV Preprocessing
+            clean_page = run_preprocessing_pipeline(page_img, self.preprocess_config)
             
-        image = load_image(image_path, grayscale=False)
-        if image is None:
-            logger.error(f"Failed to load image from {image_path}")
-            return None
+            # 2. General-Purpose OCR Engine Execution
+            page_result = self.ocr_engine.process_document(clean_page, doc_name=doc_name, page_num=page_num)
             
-        try:
-            # 1. OpenCV Medical Document Preprocessing
-            clean_image = run_preprocessing_pipeline(image, self.preprocess_config)
-            
-            # 2. Hybrid OCR Extraction
-            ocr_result = self.ocr_engine.process_document(clean_image, doc_name=image_id)
-            
-            # 3. Save Structured JSON Output
-            try:
-                os.makedirs(os.path.dirname(output_path), exist_ok=True)
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    json.dump(ocr_result, f, indent=2)
-                logger.info(f"Saved OCR JSON to {output_path}")
-            except Exception as io_err:
-                logger.warning(f"Could not save OCR JSON file to disk ({io_err}), returning result in-memory.")
+            # Tag blocks with page number
+            for b in page_result.get('blocks', []):
+                b['page'] = page_num
+                all_blocks.append(b)
+                confidences.append(b['confidence'])
                 
-            return ocr_result
+            p_text = page_result.get('raw_text', '').strip()
+            if p_text:
+                if len(pages) > 1:
+                    page_texts.append(f"--- Page {page_num} ---\n{p_text}")
+                else:
+                    page_texts.append(p_text)
+
+        overall_conf = float(np.mean(confidences)) if confidences else 0.0
+        combined_raw_text = "\n\n".join(page_texts)
+
+        final_result = {
+            'status': 'success',
+            'document': doc_name,
+            'pages': len(pages),
+            'total_blocks': len(all_blocks),
+            'overall_confidence': round(overall_conf, 4),
+            'blocks': all_blocks,
+            'raw_text': combined_raw_text
+        }
+
+        # 3. Export JSON and .txt files safely
+        base_name = os.path.splitext(doc_name)[0]
+        if output_json_path is None:
+            output_json_path = os.path.join(self.output_dir, f"{base_name}.json")
+        if output_txt_path is None:
+            output_txt_path = os.path.join(self.txt_output_dir, f"{base_name}.txt")
+
+        try:
+            os.makedirs(os.path.dirname(output_json_path), exist_ok=True)
+            with open(output_json_path, 'w', encoding='utf-8') as f:
+                json.dump(final_result, f, indent=2)
+            logger.info(f"Saved OCR JSON to {output_json_path}")
         except Exception as e:
-            logger.error(f"OCR Pipeline failed for {image_path}: {e}")
-            return None
+            logger.warning(f"Could not persist JSON file ({e}), continuing in-memory.")
 
+        try:
+            os.makedirs(os.path.dirname(output_txt_path), exist_ok=True)
+            with open(output_txt_path, 'w', encoding='utf-8') as f:
+                f.write(combined_raw_text)
+            logger.info(f"Saved plain text .txt to {output_txt_path}")
+        except Exception as e:
+            logger.warning(f"Could not persist .txt file ({e}), continuing in-memory.")
 
+        return final_result
+
+    def process_image(self, image_path: str, output_path: str = None) -> Dict[str, Any]:
+        """Backward-compatible alias for process_document."""
+        doc_name = os.path.basename(image_path) if isinstance(image_path, str) else "document"
+        return self.process_document(image_path, doc_name=doc_name, output_json_path=output_path)

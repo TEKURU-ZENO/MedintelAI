@@ -1,20 +1,19 @@
 import os
 import sys
-import json
 import time
-import numpy as np
+import json
+from pathlib import Path
 from typing import Dict, Any, List
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.ai.pipeline.pipeline_controller import PipelineController
-from app.ai.utils.logger import get_logger
 
-logger = get_logger("benchmark_ocr")
 
-def levenshtein_dist(s1, s2):
+def compute_levenshtein(s1: str, s2: str) -> int:
+    """Computes character Levenshtein edit distance."""
     if len(s1) < len(s2):
-        return levenshtein_dist(s2, s1)
+        return compute_levenshtein(s2, s1)
     if len(s2) == 0:
         return len(s1)
     previous_row = range(len(s2) + 1)
@@ -29,106 +28,124 @@ def levenshtein_dist(s1, s2):
     return previous_row[-1]
 
 def calculate_cer(reference: str, hypothesis: str) -> float:
-    if not reference:
-        return 0.0 if not hypothesis else 1.0
-    dist = levenshtein_dist(reference, hypothesis)
-    return float(dist) / float(len(reference))
+    ref = reference.strip()
+    hyp = hypothesis.strip()
+    if not ref:
+        return 0.0 if not hyp else 1.0
+    dist = compute_levenshtein(ref, hyp)
+    return min(1.0, dist / len(ref))
 
 def calculate_wer(reference: str, hypothesis: str) -> float:
     ref_words = reference.strip().split()
     hyp_words = hypothesis.strip().split()
     if not ref_words:
         return 0.0 if not hyp_words else 1.0
-    dist = levenshtein_dist(ref_words, hyp_words)
-    return float(dist) / float(len(ref_words))
+    # Word-level edit distance
+    n, m = len(ref_words), len(hyp_words)
+    dp = [[0] * (m + 1) for _ in range(n + 1)]
+    for i in range(n + 1):
+        dp[i][0] = i
+    for j in range(m + 1):
+        dp[0][j] = j
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            cost = 0 if ref_words[i - 1].lower() == hyp_words[j - 1].lower() else 1
+            dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+    return min(1.0, dp[n][m] / len(ref_words))
 
 def run_benchmark():
-    logger.info("Starting MedIntel OCR Evaluation & Benchmark Suite...")
+    datasets_dir = Path("datasets")
     controller = PipelineController()
     
-    test_cases = [
-        {
-            "category": "Printed",
-            "doc_name": "printed_lab_report_01.jpg",
-            "ground_truth": "Patient Name: Rahul Kumar Age: 42 BP: 130/80 Pulse: 78 bpm",
-        },
-        {
-            "category": "Handwritten",
-            "doc_name": "handwritten_note_01.jpg",
-            "ground_truth": "Diagnosis: Acute Pharyngitis Medication: Amoxicillin 500mg Dosage: 1 tablet 8 hourly",
-        },
-        {
-            "category": "Mixed",
-            "doc_name": "discharge_summary_01.jpg",
-            "ground_truth": "Patient Name: Rahul Kumar Diagnosis: Acute Pharyngitis Follow-up: 5 days",
-        },
-        {
-            "category": "Low-quality/scanned",
-            "doc_name": "scanned_prescription_01.jpg",
-            "ground_truth": "Medication: Amoxicillin 500mg Dosage: 1 tablet 8 hourly Follow-up: 5 days",
-        }
-    ]
-    
-    os.makedirs("outputs/temp", exist_ok=True)
-    import cv2
-    for item in test_cases:
-        path = os.path.join("outputs/temp", item["doc_name"])
-        if not os.path.exists(path):
-            img = np.ones((600, 800, 3), dtype=np.uint8) * 245
-            cv2.putText(img, item["category"] + " Document Sample", (50, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (20, 20, 20), 2)
-            cv2.putText(img, item["ground_truth"][:40], (50, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (40, 40, 40), 2)
-            cv2.imwrite(path, img)
-        item["file_path"] = path
+    category_dirs = [d for d in datasets_dir.iterdir() if d.is_dir() and not d.name.startswith(('.', '__'))]
+    if not category_dirs:
+        print("No dataset categories found under datasets/")
+        return
 
-    results_by_cat = {}
-    for item in test_cases:
-        cat = item["category"]
-        start_time = time.time()
-        res = controller.process_image(item["file_path"])
-        proc_time = time.time() - start_time
+    print("==========================================================================")
+    print("      MEDINTEL AI ? GENERAL MEDICAL DOCUMENT OCR BENCHMARK REPORT         ")
+    print("==========================================================================")
+    print(f"{'Category':<24} | {'CER':<8} | {'WER':<8} | {'Avg Latency':<12} | {'Pages'}")
+    print("-" * 74)
+
+    metrics_by_category = {}
+    all_cer, all_wer, all_times = [], [], []
+
+    for cat_dir in sorted(category_dirs, key=lambda d: d.name):
+        cat_name = cat_dir.name
+        img_files = list(cat_dir.glob("*.png")) + list(cat_dir.glob("*.jpg")) + list(cat_dir.glob("*.pdf"))
         
-        extracted_text = " ".join([b["text"] for b in res.get("blocks", [])]) if res else ""
-        cer = calculate_cer(item["ground_truth"], extracted_text)
-        wer = calculate_wer(item["ground_truth"], extracted_text)
-        
-        if cat not in results_by_cat:
-            results_by_cat[cat] = {"cers": [], "wers": [], "times": []}
+        if not img_files:
+            continue
             
-        results_by_cat[cat]["cers"].append(cer)
-        results_by_cat[cat]["wers"].append(wer)
-        results_by_cat[cat]["times"].append(proc_time)
-        
-    summary = {}
-    for cat, data in results_by_cat.items():
-        avg_cer = float(np.mean(data["cers"])) * 100
-        avg_wer = float(np.mean(data["wers"])) * 100
-        avg_time = float(np.mean(data["times"]))
-        summary[cat] = {
-            "cer": f"{avg_cer:.1f}%",
-            "wer": f"{avg_wer:.1f}%",
-            "avg_time_sec": round(avg_time, 3)
-        }
-        
-    report = {
+        cers, wers, times = [], [], []
+        total_pages = 0
+
+        for doc_path in img_files:
+            gt_path = doc_path.with_suffix(".txt")
+            if not gt_path.exists():
+                continue
+                
+            gt_text = gt_path.read_text(encoding="utf-8")
+            
+            start_t = time.time()
+            result = controller.process_document(str(doc_path), doc_name=doc_path.name)
+            elapsed = time.time() - start_t
+            
+            pred_text = result.get("raw_text", "")
+            pages_count = result.get("pages", 1)
+            total_pages += pages_count
+            
+            cer = calculate_cer(gt_text, pred_text)
+            wer = calculate_wer(gt_text, pred_text)
+            
+            cers.append(cer)
+            wers.append(wer)
+            times.append(elapsed)
+
+        if cers:
+            avg_cer = sum(cers) / len(cers)
+            avg_wer = sum(wers) / len(wers)
+            avg_time = sum(times) / len(times)
+            
+            all_cer.extend(cers)
+            all_wer.extend(wers)
+            all_times.extend(times)
+            
+            metrics_by_category[cat_name] = {
+                "cer": f"{avg_cer * 100:.1f}%",
+                "wer": f"{avg_wer * 100:.1f}%",
+                "avg_time_sec": round(avg_time, 3),
+                "samples_evaluated": len(cers)
+            }
+            
+            display_name = cat_name.replace("_", " ").title()
+            print(f"{display_name:<24} | {avg_cer * 100:>6.1f}% | {avg_wer * 100:>6.1f}% | {avg_time:>9.3f}s   | {total_pages}")
+
+    print("==========================================================================")
+    if all_cer:
+        overall_cer = sum(all_cer) / len(all_cer)
+        overall_wer = sum(all_wer) / len(all_wer)
+        overall_time = sum(all_times) / len(all_times)
+        print(f"{'OVERALL PLATFORM':<24} | {overall_cer * 100:>6.1f}% | {overall_wer * 100:>6.1f}% | {overall_time:>9.3f}s   | {len(all_cer)} docs")
+        print("==========================================================================")
+
+    output_data = {
         "status": "success",
-        "system": "MedIntel OCR Engine Benchmark",
+        "system": "MedIntel General Medical Document OCR Engine",
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "metrics": summary
+        "overall": {
+            "cer": f"{sum(all_cer)/max(1, len(all_cer)) * 100:.1f}%",
+            "wer": f"{sum(all_wer)/max(1, len(all_wer)) * 100:.1f}%",
+            "avg_time_sec": round(sum(all_times)/max(1, len(all_times)), 3)
+        },
+        "metrics": metrics_by_category
     }
-    
+
     os.makedirs("outputs", exist_ok=True)
     with open("outputs/benchmark_results.json", "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2)
-        
-    print("=====================================================")
-    print("          MEDINTEL OCR BENCHMARK REPORT              ")
-    print("=====================================================")
-    print("Category                  WER        CER        Avg Time")
-    print("-----------------------------------------------------")
-    for cat, metrics in summary.items():
-        print(f"{cat:<25} {metrics['wer']:<10} {metrics['cer']:<10} {metrics['avg_time_sec']}s")
-    print("=====================================================")
-    print("Saved benchmark results to outputs/benchmark_results.json")
+        json.dump(output_data, f, indent=2)
+    print("Saved benchmark report to outputs/benchmark_results.json")
 
 if __name__ == "__main__":
     run_benchmark()
