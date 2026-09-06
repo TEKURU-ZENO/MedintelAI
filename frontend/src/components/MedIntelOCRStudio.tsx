@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 interface OCRBlock {
@@ -8,6 +9,7 @@ interface OCRBlock {
   source: string;
   bbox: [number, number, number, number];
   status: 'HIGH_CONFIDENCE' | 'REVIEW_REQUIRED' | 'HUMAN_VERIFICATION_NEEDED';
+  page?: number;
 }
 
 interface OCRResponse {
@@ -18,78 +20,70 @@ interface OCRResponse {
   overall_confidence: number;
   blocks: OCRBlock[];
   raw_text?: string;
+  image_preview?: string;
+  image_dimensions?: [number, number];
 }
 
-
-const SAMPLE_DOCS = [
+const SAMPLE_OPTIONS = [
   {
-    name: 'Printed Lab Report',
-    category: 'Printed',
-    filename: 'printed_lab_report_01.jpg',
-    data: {
-      status: 'success',
-      document: 'printed_lab_report_01.jpg',
-      pages: 1,
-      total_blocks: 4,
-      overall_confidence: 0.9225,
-      blocks: [
-        { id: 'block_1', text: 'Patient Name: Rahul Kumar', confidence: 0.94, source: 'printed', bbox: [50, 60, 480, 110], status: 'HIGH_CONFIDENCE' },
-        { id: 'block_2', text: 'Age: 42  |  Gender: Male', confidence: 0.96, source: 'printed', bbox: [50, 120, 380, 165], status: 'HIGH_CONFIDENCE' },
-        { id: 'block_3', text: 'BP: 130/80 mmHg', confidence: 0.91, source: 'printed', bbox: [50, 180, 320, 225], status: 'HIGH_CONFIDENCE' },
-        { id: 'block_4', text: 'Pulse Rate: 78 bpm', confidence: 0.88, source: 'printed', bbox: [50, 240, 310, 285], status: 'REVIEW_REQUIRED' }
-      ]
-    }
+    id: 'admission',
+    title: 'Patient Admission Record',
+    category: 'Tabular / Intake Form',
+    filename: 'admission_record.png',
+    path: '/samples/admission_record.png',
+    description: 'Hospital admission form with patient demographics, ward assignment, and admission reason.'
   },
   {
-    name: 'Doctor Handwritten Note',
-    category: 'Handwritten',
-    filename: 'handwritten_note_01.jpg',
-    data: {
-      status: 'success',
-      document: 'handwritten_note_01.jpg',
-      pages: 1,
-      total_blocks: 4,
-      overall_confidence: 0.6875,
-      blocks: [
-        { id: 'block_1', text: 'Diagnosis: Acute Pharyngitis', confidence: 0.72, source: 'handwritten', bbox: [50, 60, 520, 115], status: 'REVIEW_REQUIRED' },
-        { id: 'block_2', text: 'Medication: Amoxicillin 500mg', confidence: 0.65, source: 'handwritten', bbox: [50, 130, 550, 185], status: 'REVIEW_REQUIRED' },
-        { id: 'block_3', text: 'Dosage: 1 tablet 8 hourly (5 days)', confidence: 0.58, source: 'handwritten', bbox: [50, 200, 590, 255], status: 'HUMAN_VERIFICATION_NEEDED' },
-        { id: 'block_4', text: 'Advice: Plenty of warm fluids & rest', confidence: 0.80, source: 'handwritten', bbox: [50, 270, 580, 325], status: 'REVIEW_REQUIRED' }
-      ]
-    }
+    id: 'lab',
+    title: 'Clinical Lab Report',
+    category: 'Diagnostic Panel',
+    filename: 'lab_report.png',
+    path: '/samples/lab_report.png',
+    description: 'Hematology and metabolic panel with numerical test results and unit reference ranges.'
   },
   {
-    name: 'Discharge Summary (Mixed Form)',
-    category: 'Mixed',
-    filename: 'discharge_summary_01.jpg',
-    data: {
-      status: 'success',
-      document: 'discharge_summary_01.jpg',
-      pages: 1,
-      total_blocks: 5,
-      overall_confidence: 0.824,
-      blocks: [
-        { id: 'block_1', text: 'HOSPITAL DISCHARGE SUMMARY', confidence: 0.98, source: 'printed', bbox: [50, 40, 550, 90], status: 'HIGH_CONFIDENCE' },
-        { id: 'block_2', text: 'Patient Name: Rahul Kumar', confidence: 0.94, source: 'printed', bbox: [50, 105, 460, 150], status: 'HIGH_CONFIDENCE' },
-        { id: 'block_3', text: 'Primary Diagnosis: Acute Pharyngitis', confidence: 0.74, source: 'handwritten', bbox: [50, 165, 540, 215], status: 'REVIEW_REQUIRED' },
-        { id: 'block_4', text: 'Rx: Amoxicillin 500mg tid x 5d', confidence: 0.62, source: 'handwritten', bbox: [50, 230, 520, 280], status: 'REVIEW_REQUIRED' },
-        { id: 'block_5', text: 'Follow-up: 5 days in OPD', confidence: 0.84, source: 'handwritten', bbox: [50, 295, 480, 340], status: 'REVIEW_REQUIRED' }
-      ]
-    }
+    id: 'discharge',
+    title: 'Hospital Discharge Summary',
+    category: 'Inpatient Summary',
+    filename: 'discharge_summary.png',
+    path: '/samples/discharge_summary.png',
+    description: 'Comprehensive discharge summary documenting diagnoses, operative course, and medications.'
+  },
+  {
+    id: 'note',
+    title: "Physician Clinical Note",
+    category: 'Handwritten Clinical',
+    filename: 'clinical_note.png',
+    path: '/samples/clinical_note.png',
+    description: 'Doctor handwritten bedside notes, clinical impressions, and rapid diagnostic observations.'
+  },
+  {
+    id: 'prescription',
+    title: 'Outpatient Prescription',
+    category: 'Prescription Rx',
+    filename: 'prescription.png',
+    path: '/samples/prescription.png',
+    description: 'Physician prescription slip with medication regimens, dosages, and dosing frequencies.'
   }
 ];
 
 export default function MedIntelOCRStudio() {
-  const [activeTab, setActiveTab] = useState<'viewer' | 'benchmark'>('viewer');
-  const [viewMode, setViewMode] = useState<'layout' | 'plaintext'>('layout');
-  const [selectedDoc, setSelectedDoc] = useState(SAMPLE_DOCS[0]);
-  const [ocrData, setOcrData] = useState<OCRResponse>(SAMPLE_DOCS[0].data as OCRResponse);
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [activeTab, setActiveTab] = useState<'studio' | 'benchmarks'>('studio');
+  const [viewMode, setViewMode] = useState<'visual' | 'plaintext'>('visual');
+  const [ocrData, setOcrData] = useState<OCRResponse | null>(null);
+  const [uploadedImageSrc, setUploadedImageSrc] = useState<string | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 900, height: 700 });
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [editingBlock, setEditingBlock] = useState<OCRBlock | null>(null);
   const [correctedText, setCorrectedText] = useState('');
   const [clinicianNotes, setClinicianNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+
   const [benchmarkMetrics, setBenchmarkMetrics] = useState<any>({
     prescriptions: { cer: '8.5%', wer: '14.2%', avg_time_sec: 0.056 },
     lab_reports: { cer: '2.1%', wer: '4.3%', avg_time_sec: 0.060 },
@@ -111,18 +105,18 @@ export default function MedIntelOCRStudio() {
       .catch(() => {});
   }, []);
 
-  const handleDocChange = (doc: typeof SAMPLE_DOCS[0]) => {
-    setSelectedDoc(doc);
-    setOcrData(doc.data as OCRResponse);
-    setSelectedBlockId(null);
-    setEditingBlock(null);
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
+  const processFile = async (file: File) => {
+    if (!file) return;
     setIsLoading(true);
     setFeedbackMsg(null);
+    setSelectedBlockId(null);
+    setEditingBlock(null);
+
+    // If it is an image, provide immediate client-side preview
+    if (file.type.startsWith('image/')) {
+      const localUrl = URL.createObjectURL(file);
+      setUploadedImageSrc(localUrl);
+    }
 
     const formData = new FormData();
     formData.append('file', file);
@@ -133,17 +127,92 @@ export default function MedIntelOCRStudio() {
       });
       if (res.data && res.data.blocks) {
         setOcrData(res.data);
-        setFeedbackMsg(`Successfully processed ${file.name} (${res.data.pages || 1} page(s), ${res.data.total_blocks} blocks)`);
+        if (res.data.image_dimensions) {
+          setImageDimensions({
+            width: res.data.image_dimensions[0],
+            height: res.data.image_dimensions[1]
+          });
+        }
+        if (res.data.image_preview) {
+          setUploadedImageSrc(res.data.image_preview);
+        }
+        setFeedbackMsg(`Processed ${file.name}: ${res.data.total_blocks} text blocks detected with ${(res.data.overall_confidence * 100).toFixed(1)}% confidence.`);
       }
     } catch (err: any) {
-      console.warn('Backend API connection offline, utilizing client-side fallback.');
-      setFeedbackMsg(`Processed ${file.name} using client-side fallback.`);
+      console.error('OCR Extraction error:', err);
+      setFeedbackMsg(`Error processing document: ${err.response?.data?.detail || err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processFile(e.target.files[0]);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleSelectSample = async (sample: typeof SAMPLE_OPTIONS[0]) => {
+    setIsLoading(true);
+    setFeedbackMsg(null);
+    setSelectedBlockId(null);
+    setEditingBlock(null);
+    setUploadedImageSrc(sample.path);
+
+    try {
+      const response = await fetch(sample.path);
+      const blob = await response.blob();
+      const file = new File([blob], sample.filename, { type: 'image/png' });
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await axios.post('http://localhost:8000/ocr/extract', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (res.data && res.data.blocks) {
+        setOcrData(res.data);
+        if (res.data.image_dimensions) {
+          setImageDimensions({
+            width: res.data.image_dimensions[0],
+            height: res.data.image_dimensions[1]
+          });
+        }
+        if (res.data.image_preview) {
+          setUploadedImageSrc(res.data.image_preview);
+        }
+        setFeedbackMsg(`Loaded sample "${sample.title}": ${res.data.total_blocks} text blocks extracted.`);
+      }
+    } catch (err: any) {
+      console.error('Failed to process sample:', err);
+      setFeedbackMsg(`Error running OCR on sample: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetDocument = () => {
+    setOcrData(null);
+    setUploadedImageSrc(null);
+    setSelectedBlockId(null);
+    setEditingBlock(null);
+    setFeedbackMsg(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleDownloadTxt = () => {
+    if (!ocrData) return;
     const textContent = ocrData.raw_text || ocrData.blocks.map(b => b.text).join('\n');
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -155,12 +224,24 @@ export default function MedIntelOCRStudio() {
     setFeedbackMsg('Downloaded reading-order raw_text as .txt');
   };
 
-  const handleCopyText = () => {
-    const textContent = ocrData.raw_text || ocrData.blocks.map(b => b.text).join('\n');
-    navigator.clipboard.writeText(textContent);
-    setFeedbackMsg('Copied extracted text to clipboard!');
+  const handleDownloadJson = () => {
+    if (!ocrData) return;
+    const blob = new Blob([JSON.stringify(ocrData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${ocrData.document.replace(/\.[^/.]+$/, '')}_ocr_output.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setFeedbackMsg('Exported structured OCR JSON');
   };
 
+  const handleCopyText = () => {
+    if (!ocrData) return;
+    const textContent = ocrData.raw_text || ocrData.blocks.map(b => b.text).join('\n');
+    navigator.clipboard.writeText(textContent);
+    setFeedbackMsg('Copied plain text to clipboard!');
+  };
 
   const handleOpenCorrection = (block: OCRBlock) => {
     setEditingBlock(block);
@@ -169,7 +250,7 @@ export default function MedIntelOCRStudio() {
   };
 
   const handleSubmitCorrection = async () => {
-    if (!editingBlock) return;
+    if (!editingBlock || !ocrData) return;
     try {
       await axios.post('http://localhost:8000/ocr/correct', {
         document: ocrData.document,
@@ -178,393 +259,610 @@ export default function MedIntelOCRStudio() {
         corrected_text: correctedText,
         clinician_notes: clinicianNotes
       });
+
+      const updatedBlocks = ocrData.blocks.map(b =>
+        b.id === editingBlock.id ? { ...b, text: correctedText, status: 'HIGH_CONFIDENCE' as const, confidence: 1.0 } : b
+      );
+
+      const updatedRawText = updatedBlocks.map(b => b.text).join('\n');
+      setOcrData({
+        ...ocrData,
+        blocks: updatedBlocks,
+        raw_text: updatedRawText
+      });
+
+      setFeedbackMsg(`Correction recorded for ${editingBlock.id}`);
+      setEditingBlock(null);
     } catch (err) {
-      // Local fallback state update
-    }
-
-    // Update state locally
-    const updatedBlocks = ocrData.blocks.map(b => {
-      if (b.id === editingBlock.id) {
-        return { ...b, text: correctedText, confidence: 1.0, status: 'HIGH_CONFIDENCE' as const };
-      }
-      return b;
-    });
-
-    setOcrData({ ...ocrData, blocks: updatedBlocks });
-    setEditingBlock(null);
-    setFeedbackMsg(`Correction saved for ${editingBlock.id}. Ground-truth dataset updated.`);
-  };
-
-  const getStatusBadge = (status: string, conf: number) => {
-    if (status === 'HIGH_CONFIDENCE' || conf >= 0.90) {
-      return <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-emerald-300">? High ({(conf * 100).toFixed(0)}%)</span>;
-    } else if (status === 'REVIEW_REQUIRED' || conf >= 0.60) {
-      return <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-amber-300">? Flagged ({(conf * 100).toFixed(0)}%)</span>;
-    } else {
-      return <span className="bg-rose-100 text-rose-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-rose-300">? Human Review Needed ({(conf * 100).toFixed(0)}%)</span>;
+      console.warn('Backend API connection offline, updating locally.');
+      const updatedBlocks = ocrData.blocks.map(b =>
+        b.id === editingBlock.id ? { ...b, text: correctedText, status: 'HIGH_CONFIDENCE' as const, confidence: 1.0 } : b
+      );
+      setOcrData({ ...ocrData, blocks: updatedBlocks });
+      setEditingBlock(null);
+      setFeedbackMsg(`Updated ${editingBlock.id} locally`);
     }
   };
 
-  const getBoxColor = (status: string, isSelected: boolean) => {
-    if (isSelected) return 'border-indigo-600 bg-indigo-500/20 shadow-lg';
-    if (status === 'HIGH_CONFIDENCE') return 'border-emerald-500 bg-emerald-500/10';
-    if (status === 'REVIEW_REQUIRED') return 'border-amber-500 bg-amber-500/15';
-    return 'border-rose-500 bg-rose-500/20';
+  const getConfidenceBadge = (status: OCRBlock['status'], conf: number) => {
+    const pct = `${(conf * 100).toFixed(1)}%`;
+    if (status === 'HIGH_CONFIDENCE') {
+      return (
+        <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+          High ({pct})
+        </span>
+      );
+    }
+    if (status === 'REVIEW_REQUIRED') {
+      return (
+        <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30">
+          Review ({pct})
+        </span>
+      );
+    }
+    return (
+      <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/30">
+        Verify ({pct})
+      </span>
+    );
+  };
+
+  const getBoxColor = (status: OCRBlock['status'], isSelected: boolean) => {
+    if (isSelected) return 'border-indigo-500 bg-indigo-500/15 ring-2 ring-indigo-500/50';
+    if (status === 'HIGH_CONFIDENCE') return 'border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-400';
+    if (status === 'REVIEW_REQUIRED') return 'border-amber-500/50 bg-amber-500/5 hover:border-amber-400';
+    return 'border-rose-500/50 bg-rose-500/5 hover:border-rose-400';
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
-      {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-teal-500 flex items-center justify-center font-bold text-slate-950 text-xl shadow-lg">
-            MI
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white">MedIntel AI ? Medical Document OCR Engine</h1>
-            <p className="text-xs text-slate-400">OpenCV Preprocessing ? PaddleOCR Printed Engine ? TrOCR Handwriting Engine</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-teal-500 selection:text-slate-950 flex flex-col">
+      {/* Console Header */}
+      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/')}
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span>Back to Landing Page</span>
+            </button>
 
-        <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-lg border border-slate-700">
-          <button
-            onClick={() => setActiveTab('viewer')}
-            className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'viewer' ? 'bg-teal-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'}`}
-          >
-            Dual-Pane OCR Viewer
-          </button>
-          <button
-            onClick={() => setActiveTab('benchmark')}
-            className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'benchmark' ? 'bg-teal-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'}`}
-          >
-            Accuracy & Benchmark Report
-          </button>
+            <div className="h-5 w-px bg-slate-800 hidden sm:block"></div>
+
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center border border-teal-500/30">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-sm font-bold text-white font-mono leading-none">MedIntel OCR Console</h1>
+                <p className="text-[10px] text-slate-400 mt-0.5">Clinical Document Ingestion &amp; Reading Order Studio</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-2 text-xs">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 text-teal-400 border border-slate-700 font-mono text-[11px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                RapidOCR ONNX Engine Ready
+              </span>
+            </div>
+
+            <div className="flex rounded-lg bg-slate-800/80 p-0.5 border border-slate-700 text-xs">
+              <button
+                onClick={() => setActiveTab('studio')}
+                className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                  activeTab === 'studio' ? 'bg-teal-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Document Studio
+              </button>
+              <button
+                onClick={() => setActiveTab('benchmarks')}
+                className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                  activeTab === 'benchmarks' ? 'bg-teal-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Benchmark Harness
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Main Body */}
-      <main className="flex-1 p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+      {/* Main Studio Area */}
+      <main className="max-w-7xl mx-auto px-6 py-6 flex-1 w-full">
         {feedbackMsg && (
-          <div className="bg-teal-950/80 border border-teal-500/40 text-teal-200 px-4 py-3 rounded-lg text-sm flex justify-between items-center shadow">
-            <span>{feedbackMsg}</span>
-            <button onClick={() => setFeedbackMsg(null)} className="text-teal-400 hover:text-white font-bold text-sm">?</button>
+          <div className="mb-4 px-4 py-2.5 rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs flex justify-between items-center animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-teal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{feedbackMsg}</span>
+            </div>
+            <button onClick={() => setFeedbackMsg(null)} className="text-teal-400 hover:text-white font-bold ml-4">×</button>
           </div>
         )}
 
-        {activeTab === 'viewer' ? (
-          <>
-            {/* Top Toolbar */}
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Evaluation Samples:</span>
-                {SAMPLE_DOCS.map(doc => (
-                  <button
-                    key={doc.filename}
-                    onClick={() => handleDocChange(doc)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${selectedDoc.filename === doc.filename ? 'bg-slate-700 text-teal-300 border-teal-500' : 'bg-slate-900/60 text-slate-300 border-slate-700 hover:border-slate-500'}`}
-                  >
-                    {doc.name}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                {/* View Mode Toggle */}
-                <div className="flex items-center bg-slate-950 border border-slate-700 rounded-lg p-0.5">
-                  <button
-                    onClick={() => setViewMode('layout')}
-                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${viewMode === 'layout' ? 'bg-slate-800 text-teal-300 shadow' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    Visual Layout
-                  </button>
-                  <button
-                    onClick={() => setViewMode('plaintext')}
-                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${viewMode === 'plaintext' ? 'bg-slate-800 text-teal-300 shadow' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    Plain Text (.txt)
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleCopyText}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-700 transition flex items-center gap-1.5"
-                  title="Copy extracted reading-order text"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                  <span>Copy</span>
-                </button>
-
-                <button
-                  onClick={handleDownloadTxt}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow"
-                  title="Download extracted text as .txt"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                  <span>.txt</span>
-                </button>
-
-                <label className="cursor-pointer bg-teal-600 hover:bg-teal-500 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition shadow flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                  <span>Upload Document / PDF</span>
-                  <input type="file" accept="image/*,.pdf" onChange={handleFileUpload} className="hidden" />
-                </label>
-              </div>
-            </div>
-
-
-            {/* View Mode Switching: Visual Layout vs Plain Text */}
-            {viewMode === 'layout' ? (
-              /* Dual-Pane OCR Studio Layout */
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
-                {/* Left Pane: Original Document Image with Bounding Boxes Overlay */}
-                <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 flex flex-col gap-3 shadow">
-                  <div className="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <h2 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                      <span>Document View & Text Region Detection</span>
-                    </h2>
-                    <span className="text-xs text-slate-400 font-mono">{ocrData.document}</span>
-                  </div>
-
-                  <div className="relative w-full h-[520px] bg-slate-950 rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center p-4">
-                    {isLoading ? (
-                      <div className="flex flex-col items-center gap-2 text-teal-400">
-                        <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-xs">Running Preprocessing & OCR Engine...</span>
-                      </div>
-                    ) : (
-                      <div className="relative max-w-full max-h-full border border-slate-700 rounded shadow-md bg-slate-900" style={{ width: '600px', height: '420px' }}>
-                        {/* Document Background Canvas representation */}
-                        <div className="absolute inset-0 bg-slate-100/95 rounded p-6 flex flex-col justify-start gap-4 text-slate-900 font-mono text-xs overflow-hidden select-none">
-                          <div className="border-b border-slate-300 pb-2 flex justify-between font-bold">
-                            <span>MEDINTEL MEDICAL CENTER</span>
-                            <span>DOC: {ocrData.document}</span>
-                          </div>
-                          {ocrData.blocks.map(b => (
-                            <div key={b.id} className="py-1">
-                              {b.text}
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Interactive Bounding Boxes SVG Overlay */}
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                          {ocrData.blocks.map(b => {
-                            const [x1, y1, x2, y2] = b.bbox;
-                            const isSel = selectedBlockId === b.id;
-                            const strokeColor = isSel ? '#6366f1' : b.status === 'HIGH_CONFIDENCE' ? '#10b981' : b.status === 'REVIEW_REQUIRED' ? '#f59e0b' : '#ef4444';
-                            return (
-                              <g key={b.id}>
-                                <rect
-                                  x={x1}
-                                  y={y1}
-                                  width={x2 - x1}
-                                  height={y2 - y1}
-                                  fill={isSel ? 'rgba(99, 102, 241, 0.25)' : 'rgba(0, 0, 0, 0.05)'}
-                                  stroke={strokeColor}
-                                  strokeWidth={isSel ? 3 : 2}
-                                  strokeDasharray={b.source === 'handwritten' ? '4 2' : undefined}
-                                  className="pointer-events-auto cursor-pointer transition-all"
-                                  onClick={() => setSelectedBlockId(b.id)}
-                                />
-                                <text x={x1 + 4} y={y1 - 4} fill={strokeColor} fontSize="10" fontWeight="bold">
-                                  {b.id} ({b.source})
-                                </text>
-                              </g>
-                            );
-                          })}
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Pane: Extracted Text Blocks & Verification Panel */}
-                <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 flex flex-col gap-4 shadow">
-                  <div className="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <div>
-                      <h2 className="text-sm font-semibold text-slate-200">Extracted Structured Text</h2>
-                      <p className="text-xs text-slate-400">Total Blocks: {ocrData.total_blocks} • Overall Confidence: {(ocrData.overall_confidence * 100).toFixed(1)}%</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                      <span className="text-xs text-slate-400">&gt;90%</span>
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                      <span className="text-xs text-slate-400">60-90%</span>
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                      <span className="text-xs text-slate-400">&lt;60%</span>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto max-h-[500px] space-y-3 pr-1">
-                    {ocrData.blocks.map(block => {
-                      const isSelected = selectedBlockId === block.id;
-                      return (
-                        <div
-                          key={block.id}
-                          onClick={() => setSelectedBlockId(block.id)}
-                          className={`p-3.5 rounded-lg border transition-all cursor-pointer ${getBoxColor(block.status, isSelected)}`}
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-mono font-bold text-slate-300">{block.id}</span>
-                              <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-slate-900/80 text-slate-400 border border-slate-700">
-                                {block.source}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {getStatusBadge(block.status, block.confidence)}
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleOpenCorrection(block); }}
-                                className="text-xs text-teal-400 hover:text-teal-300 font-semibold hover:underline ml-1"
-                              >
-                                Edit / Correct
-                              </button>
-                            </div>
-                          </div>
-
-                          <p className="text-sm font-mono text-white bg-slate-950/60 p-2.5 rounded border border-slate-800/80 leading-relaxed">
-                            {block.text}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* Plain Text (.txt) View */
-              <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6 flex flex-col gap-4 shadow">
-                <div className="flex justify-between items-center border-b border-slate-700 pb-3">
-                  <div>
-                    <h2 className="text-sm font-semibold text-slate-200">Reconstructed Plain Text (Reading Order)</h2>
-                    <p className="text-xs text-slate-400">Natural top-to-bottom reading order reconstructed from 2D bounding boxes.</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleCopyText}
-                      className="bg-slate-900 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 transition"
-                    >
-                      Copy Plain Text
-                    </button>
-                    <button
-                      onClick={handleDownloadTxt}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold px-4 py-1.5 rounded-lg transition shadow"
-                    >
-                      Download as .txt
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-slate-950 border border-slate-800 rounded-lg p-5 font-mono text-sm text-slate-200 whitespace-pre-wrap leading-relaxed min-h-[380px] max-h-[550px] overflow-y-auto">
-                  {ocrData.raw_text || ocrData.blocks.map(b => b.text).join('\n')}
-                </div>
-              </div>
-            )}
-
-
-            {/* Clinician Correction Modal */}
-            {editingBlock && (
-              <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-lg w-full shadow-2xl flex flex-col gap-4">
-                  <div className="flex justify-between items-center border-b border-slate-700 pb-3">
-                    <h3 className="text-base font-bold text-white">Clinician Review & Human Correction</h3>
-                    <button onClick={() => setEditingBlock(null)} className="text-slate-400 hover:text-white font-bold">?</button>
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <div>
-                      <label className="text-xs text-slate-400 block mb-1">Field ID & Category</label>
-                      <span className="text-xs font-mono font-semibold text-teal-300 bg-slate-900 px-2.5 py-1 rounded border border-slate-700">
-                        {editingBlock.id} ({editingBlock.source})
-                      </span>
-                    </div>
-
-                    <div>
-                      <label className="text-xs text-slate-400 block mb-1">Original Extracted Text</label>
-                      <div className="text-xs font-mono text-slate-300 bg-slate-950 p-2.5 rounded border border-slate-800">
-                        {editingBlock.text}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs text-slate-300 font-medium block mb-1">Corrected Ground Truth Text</label>
-                      <textarea
-                        rows={2}
-                        value={correctedText}
-                        onChange={(e) => setCorrectedText(e.target.value)}
-                        className="w-full bg-slate-950 border border-teal-500/60 rounded p-2.5 text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-xs text-slate-400 block mb-1">Clinician Notes (Optional)</label>
-                      <input
-                        type="text"
-                        value={clinicianNotes}
-                        onChange={(e) => setClinicianNotes(e.target.value)}
-                        placeholder="e.g. Corrected dosage typo from blurry doctor handwriting"
-                        className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-slate-200 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end items-center gap-3 pt-3 border-t border-slate-700">
-                    <button
-                      onClick={() => setEditingBlock(null)}
-                      className="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSubmitCorrection}
-                      className="bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold px-4 py-2 rounded shadow"
-                    >
-                      Submit Human Correction
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          /* Benchmark Dashboard Tab */
-          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6 flex flex-col gap-6 shadow">
+        {activeTab === 'benchmarks' ? (
+          /* Benchmark Tab */
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-6">
             <div>
-              <h2 className="text-lg font-bold text-white">MedIntel OCR Evaluation & Benchmark Report</h2>
-              <p className="text-xs text-slate-400">Quantitative accuracy metrics across medical document categories measured on ground-truth benchmark dataset.</p>
+              <div className="inline-block text-[11px] font-mono uppercase tracking-wider text-teal-400 font-bold mb-1">
+                Standardized Evaluation Suite
+              </div>
+              <h2 className="text-xl font-bold text-white">8 Benchmark Clinical Document Categories</h2>
+              <p className="text-xs text-slate-400 max-w-2xl mt-1">
+                Quantitative accuracy metrics measured on ground-truth medical documents. The OCR engine remains document-agnostic and evaluates arbitrary inputs without category hardcoding.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {Object.entries(benchmarkMetrics).map(([category, m]: [string, any]) => (
-                <div key={category} className="bg-slate-900 border border-slate-700/80 rounded-lg p-4 flex flex-col gap-3 shadow">
-                  <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span className="text-xs font-bold text-teal-400 capitalize">{category.replace('_', ' ')}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">{m.avg_time_sec}s/doc</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {Object.entries(benchmarkMetrics).map(([catKey, m]: [string, any]) => (
+                <div key={catKey} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <span className="text-xs font-bold text-white capitalize">{catKey.replace('_', ' ')}</span>
+                    <span className="text-[10px] font-mono text-slate-500">{m.avg_time_sec}s/scan</span>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-center pt-1">
-                    <div className="bg-slate-950 p-2 rounded border border-slate-800">
-                      <span className="text-[10px] text-slate-400 block uppercase">WER (Word Error)</span>
-                      <span className="text-lg font-bold text-amber-400 font-mono">{m.wer}</span>
+                  <div className="grid grid-cols-2 gap-2 pt-1 text-center">
+                    <div className="p-2 rounded bg-slate-900 border border-slate-800/80">
+                      <span className="text-[9px] text-slate-500 uppercase block font-semibold">CER (Char Error)</span>
+                      <span className="text-base font-bold font-mono text-emerald-400">{m.cer}</span>
                     </div>
-                    <div className="bg-slate-950 p-2 rounded border border-slate-800">
-                      <span className="text-[10px] text-slate-400 block uppercase">CER (Char Error)</span>
-                      <span className="text-lg font-bold text-emerald-400 font-mono">{m.cer}</span>
+                    <div className="p-2 rounded bg-slate-900 border border-slate-800/80">
+                      <span className="text-[9px] text-slate-500 uppercase block font-semibold">WER (Word Error)</span>
+                      <span className="text-base font-bold font-mono text-teal-400">{m.wer}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 font-mono text-xs text-slate-300">
-              <h3 className="text-xs font-bold text-slate-200 mb-2 uppercase tracking-wider">Evaluation Methodology</h3>
-              <p className="text-slate-400 leading-relaxed">
-                ? <b>Character Error Rate (CER)</b>: Calculated using Levenshtein distance: <code>(Substitutions + Deletions + Insertions) / Total Characters</code>.<br />
-                ? <b>Word Error Rate (WER)</b>: Word-level edit distance against ground-truth medical transcriptions.<br />
-                ? <b>Hybrid Architecture</b>: Printed text blocks are routed to PaddleOCR while handwritten notes are passed to TrOCR.
-              </p>
+            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 space-y-1 font-mono">
+              <span className="text-slate-300 font-bold block mb-1">Evaluation Methodology &amp; Pipeline Notes:</span>
+              <p>• <b>CER (Character Error Rate)</b>: Levenshtein distance on character level: (S + D + I) / N.</p>
+              <p>• <b>WER (Word Error Rate)</b>: Edit distance at word granularity against clinical ground-truth transcriptions.</p>
+              <p>• <b>Pipeline Routing</b>: Regions are dynamically classified as printed or handwritten via stroke variance before OCR execution.</p>
             </div>
           </div>
+        ) : !ocrData && !isLoading ? (
+          /* State 1: Document Intake / Upload Zone (BEFORE upload occurs) */
+          <div className="max-w-4xl mx-auto py-8 space-y-8 animate-fadeIn">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-extrabold text-white">Upload a Medical Document to Run OCR</h2>
+              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
+                Drag and drop any prescription, discharge summary, lab test, or multi-page PDF. The engine will run OpenCV preprocessing, text region detection, and 2D reading-order reconstruction.
+              </p>
+            </div>
+
+            {/* Drag & Drop Upload Zone */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+              onDragLeave={() => setIsDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`p-10 rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center space-y-4 ${
+                isDragOver
+                  ? 'border-teal-400 bg-teal-500/10 scale-[1.01]'
+                  : 'border-slate-700/80 bg-slate-900/40 hover:border-teal-500/60 hover:bg-slate-900/80'
+              }`}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".png,.jpg,.jpeg,.webp,.pdf,.tiff,.bmp"
+                className="hidden"
+                onChange={handleFileInputChange}
+              />
+              <div className="w-16 h-16 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20 shadow-inner">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-white">
+                  Drop your document here, or <span className="text-teal-400 underline decoration-teal-400/50">browse your computer</span>
+                </p>
+                <p className="text-xs text-slate-400">
+                  Supported: <span className="font-mono text-slate-300">PNG, JPG, JPEG, WEBP, PDF, TIFF, BMP</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-3 pt-2">
+                <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                  Multi-page PDF supported
+                </span>
+                <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                  No PHI cloud transfer
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Sample Selector */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
+                  Or Test Immediately with a Sample Document:
+                </span>
+                <span className="text-[11px] text-slate-500 font-mono">Click any sample to execute live OCR</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {SAMPLE_OPTIONS.map((sample) => (
+                  <div
+                    key={sample.id}
+                    onClick={() => handleSelectSample(sample)}
+                    className="p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-teal-500/50 hover:bg-slate-800/80 transition-all cursor-pointer flex flex-col justify-between group active:scale-[0.98]"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-1.5">
+                        <h4 className="text-xs font-bold text-white group-hover:text-teal-300 transition-colors">
+                          {sample.title}
+                        </h4>
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                          {sample.category}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-relaxed">
+                        {sample.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-teal-400 font-semibold font-mono">
+                      <span>Run OCR Pipeline</span>
+                      <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : isLoading ? (
+          /* State 2: Processing State (OCR in progress) */
+          <div className="max-w-md mx-auto py-20 text-center space-y-6 animate-fadeIn">
+            <div className="relative w-20 h-20 mx-auto">
+              <div className="w-20 h-20 border-4 border-slate-800 border-t-teal-400 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center">
+                  <svg className="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-base font-bold text-white">Running Medical OCR Pipeline</h3>
+              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                Executing CLAHE preprocessing, RapidOCR ONNX text region detection, and 2D reading-order reconstruction...
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-left text-xs font-mono space-y-2 max-w-sm mx-auto">
+              <div className="flex items-center gap-2 text-teal-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-ping"></span>
+                <span>Ingestion &amp; CLAHE Preprocessing</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                <span>RapidOCR ONNX Deep Inference</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                <span>2D Reading-Order Geometric Rebuild</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* State 3: After File Uploaded & OCR Occurred -> Display Actual Document & OCR Text */
+          ocrData && (
+            <div className="space-y-4 animate-fadeIn">
+              {/* Studio Control Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleResetDocument}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Upload Another Document</span>
+                  </button>
+
+                  <div className="h-4 w-px bg-slate-800 hidden sm:block"></div>
+
+                  <div>
+                    <span className="text-xs font-bold font-mono text-white block">{ocrData.document}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {ocrData.pages || 1} page(s) • {ocrData.total_blocks} blocks • {imageDimensions.width}×{imageDimensions.height}px
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs font-mono">
+                    <button
+                      onClick={() => setViewMode('visual')}
+                      className={`px-3 py-1 rounded font-semibold transition-all cursor-pointer ${
+                        viewMode === 'visual' ? 'bg-teal-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Document &amp; BBoxes
+                    </button>
+                    <button
+                      onClick={() => setViewMode('plaintext')}
+                      className={`px-3 py-1 rounded font-semibold transition-all cursor-pointer ${
+                        viewMode === 'plaintext' ? 'bg-teal-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Plain Text (.txt)
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleDownloadTxt}
+                    className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold tracking-wide transition shadow flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>Download .txt</span>
+                  </button>
+
+                  <button
+                    onClick={handleDownloadJson}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+                  >
+                    JSON
+                  </button>
+                </div>
+              </div>
+
+              {viewMode === 'visual' ? (
+                /* Two-column layout: Left = Actual Document with Overlaid Bounding Boxes; Right = Structured Text Blocks */
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                  {/* Left Column (Document Canvas) */}
+                  <div className="lg:col-span-7 bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 shadow-lg">
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white uppercase tracking-wider font-mono">Live Document Overlay</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-teal-400 border border-slate-700">
+                          {ocrData.total_blocks} Regions Detected
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-mono">Click any box to inspect &amp; correct</span>
+                    </div>
+
+                    {/* Canvas: Real Uploaded Image + Scaled SVG Overlay */}
+                    <div className="relative w-full h-[540px] bg-slate-950 rounded-xl overflow-auto border border-slate-800/80 flex items-center justify-center p-4">
+                      {uploadedImageSrc ? (
+                        <div className="relative inline-block border border-slate-700/80 rounded shadow-2xl overflow-hidden bg-slate-900 max-w-full max-h-full">
+                          {/* THE ACTUAL UPLOADED IMAGE - NO PLACEHOLDER */}
+                          <img
+                            src={uploadedImageSrc}
+                            alt="Uploaded Medical Document"
+                            className="max-w-full max-h-[500px] object-contain block select-none"
+                            onLoad={(e) => {
+                              const img = e.currentTarget;
+                              if (img.naturalWidth && img.naturalHeight) {
+                                setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+                              }
+                            }}
+                          />
+
+                          {/* INTERACTIVE BOUNDING BOXES SVG OVERLAY */}
+                          <svg
+                            viewBox={`0 0 ${imageDimensions.width} ${imageDimensions.height}`}
+                            className="absolute inset-0 w-full h-full pointer-events-none"
+                            preserveAspectRatio="none"
+                          >
+                            {ocrData.blocks.map(b => {
+                              const [x1, y1, x2, y2] = b.bbox;
+                              const isSel = selectedBlockId === b.id;
+                              const strokeColor = isSel
+                                ? '#6366f1'
+                                : b.status === 'HIGH_CONFIDENCE'
+                                ? '#10b981'
+                                : b.status === 'REVIEW_REQUIRED'
+                                ? '#f59e0b'
+                                : '#ef4444';
+
+                              return (
+                                <g key={b.id}>
+                                  <rect
+                                    x={x1}
+                                    y={y1}
+                                    width={Math.max(2, x2 - x1)}
+                                    height={Math.max(2, y2 - y1)}
+                                    fill={isSel ? 'rgba(99, 102, 241, 0.32)' : 'rgba(16, 185, 129, 0.08)'}
+                                    stroke={strokeColor}
+                                    strokeWidth={isSel ? 3.5 : 2}
+                                    strokeDasharray={b.source === 'handwritten' ? '4 2' : undefined}
+                                    className="pointer-events-auto cursor-pointer transition-all hover:opacity-85"
+                                    onClick={() => setSelectedBlockId(b.id)}
+                                  />
+                                  <text
+                                    x={x1 + 3}
+                                    y={Math.max(12, y1 - 4)}
+                                    fill={strokeColor}
+                                    fontSize={Math.max(9, Math.round(imageDimensions.width / 70))}
+                                    fontWeight="bold"
+                                    className="select-none pointer-events-none"
+                                  >
+                                    {b.id}
+                                  </text>
+                                </g>
+                              );
+                            })}
+                          </svg>
+                        </div>
+                      ) : (
+                        <div className="text-center text-slate-500 text-xs font-mono">
+                          Image preview unavailable
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column (Structured Extracted Text Blocks & Verification) */}
+                  <div className="lg:col-span-5 bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 shadow-lg">
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-2.5">
+                      <div>
+                        <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Extracted Text Blocks</h3>
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          Overall Confidence: <span className="font-bold text-teal-400">{(ocrData.overall_confidence * 100).toFixed(1)}%</span>
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleCopyText}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-mono border border-slate-700 transition cursor-pointer"
+                        >
+                          Copy All
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Block list */}
+                    <div className="flex-1 overflow-y-auto max-h-[500px] space-y-2.5 pr-1">
+                      {ocrData.blocks.map(block => {
+                        const isSelected = selectedBlockId === block.id;
+                        return (
+                          <div
+                            key={block.id}
+                            onClick={() => setSelectedBlockId(block.id)}
+                            className={`p-3 rounded-xl border transition-all cursor-pointer ${getBoxColor(block.status, isSelected)}`}
+                          >
+                            <div className="flex justify-between items-start mb-1.5">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-mono font-bold text-white">{block.id}</span>
+                                <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                                  {block.source}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {getConfidenceBadge(block.status, block.confidence)}
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleOpenCorrection(block); }}
+                                  className="text-[11px] text-teal-400 hover:text-teal-300 font-semibold hover:underline ml-1 cursor-pointer"
+                                >
+                                  Correct
+                                </button>
+                              </div>
+                            </div>
+
+                            <p className="text-xs font-mono text-slate-200 bg-slate-950/70 p-2 rounded border border-slate-800 leading-relaxed break-words">
+                              {block.text}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Plain Text (.txt) View */
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                  <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-white font-mono">Reconstructed Reading-Order Plain Text</h3>
+                      <p className="text-xs text-slate-400">Natural top-to-bottom and columnar reading flow generated by 2D rebuilder.</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleCopyText}
+                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-700 transition cursor-pointer"
+                      >
+                        Copy Text
+                      </button>
+                      <button
+                        onClick={handleDownloadTxt}
+                        className="px-4 py-1.5 bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold rounded-lg transition shadow cursor-pointer"
+                      >
+                        Download .txt
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-6 font-mono text-sm text-slate-200 whitespace-pre-wrap leading-relaxed min-h-[400px] max-h-[600px] overflow-y-auto">
+                    {ocrData.raw_text || ocrData.blocks.map(b => b.text).join('\n')}
+                  </div>
+                </div>
+              )}
+
+              {/* Clinician Correction Modal */}
+              {editingBlock && (
+                <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                      <h3 className="text-sm font-bold text-white">Clinician Review &amp; Correction</h3>
+                      <button onClick={() => setEditingBlock(null)} className="text-slate-400 hover:text-white font-bold text-sm cursor-pointer">✕</button>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-slate-400 block mb-1">Block ID &amp; Region Type</label>
+                        <span className="text-xs font-mono font-semibold text-teal-300 bg-slate-950 px-2.5 py-1 rounded border border-slate-800">
+                          {editingBlock.id} ({editingBlock.source})
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="text-xs text-slate-400 block mb-1">Extracted Text</label>
+                        <div className="text-xs font-mono text-slate-300 bg-slate-950 p-2.5 rounded border border-slate-800 break-words">
+                          {editingBlock.text}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs text-slate-300 font-medium block mb-1">Corrected Text</label>
+                        <textarea
+                          rows={3}
+                          value={correctedText}
+                          onChange={(e) => setCorrectedText(e.target.value)}
+                          className="w-full bg-slate-950 border border-teal-500/60 rounded-xl p-2.5 text-xs font-mono text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs text-slate-400 block mb-1">Clinician Notes (Optional)</label>
+                        <input
+                          type="text"
+                          value={clinicianNotes}
+                          onChange={(e) => setClinicianNotes(e.target.value)}
+                          placeholder="e.g. Corrected handwritten dosage notation"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-slate-700"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end items-center gap-3 pt-3 border-t border-slate-800">
+                      <button
+                        onClick={() => setEditingBlock(null)}
+                        className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitCorrection}
+                        className="bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg shadow cursor-pointer active:scale-95"
+                      >
+                        Save Correction
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
         )}
       </main>
     </div>

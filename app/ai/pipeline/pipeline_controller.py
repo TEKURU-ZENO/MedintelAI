@@ -83,10 +83,26 @@ class PipelineController:
         overall_conf = float(np.mean(confidences)) if confidences else 0.0
         combined_raw_text = "\n\n".join(page_texts)
 
+        # Generate image preview (base64) of the first page for frontend visualization
+        image_preview = None
+        image_dimensions = [800, 600]
+        if pages and len(pages) > 0:
+            try:
+                import cv2
+                import base64
+                h_p, w_p = pages[0].shape[:2]
+                image_dimensions = [w_p, h_p]
+                _, buf = cv2.imencode('.jpg', pages[0])
+                image_preview = f"data:image/jpeg;base64,{base64.b64encode(buf).decode('utf-8')}"
+            except Exception as e:
+                logger.warning(f"Failed to generate image preview base64: {e}")
+
         final_result = {
             'status': 'success',
             'document': doc_name,
             'pages': len(pages),
+            'image_preview': image_preview,
+            'image_dimensions': image_dimensions,
             'total_blocks': len(all_blocks),
             'overall_confidence': round(overall_conf, 4),
             'blocks': all_blocks,

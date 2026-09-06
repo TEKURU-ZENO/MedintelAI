@@ -120,21 +120,24 @@ class MedIntelOCREngine:
         self.use_gpu = use_gpu
         self.classifier = RegionClassifier()
         self.rebuilder = ReadingOrderRebuilder()
+        self._rapid_ocr = None
         self._paddle_ocr = None
-        self._trocr_processor = None
-        self._trocr_model = None
         self._init_models()
 
     def _init_models(self):
         try:
+            from rapidocr_onnxruntime import RapidOCR
+            self._rapid_ocr = RapidOCR()
+            logger.info('RapidOCR (ONNX) initialized successfully')
+        except Exception as e:
+            logger.warning(f'RapidOCR not loaded: {e}')
+
+        try:
             from paddleocr import PaddleOCR
             self._paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False, use_gpu=self.use_gpu)
             logger.info('PaddleOCR initialized successfully')
-        except Exception as e:
-            logger.warning(f'PaddleOCR not loaded ({e}). Using OpenCV layout engine.')
-
-        self._trocr_processor = None
-        self._trocr_model = None
+        except Exception:
+            pass
 
     def detect_regions(self, image: np.ndarray) -> List[Dict[str, Any]]:
         """
@@ -161,16 +164,41 @@ class MedIntelOCREngine:
     def process_document(self, image: np.ndarray, doc_name: str = 'document', page_num: int = 1) -> Dict[str, Any]:
         """
         Processes an arbitrary document page:
-        1. Detects text bounding boxes.
+        1. Runs RapidOCR (ONNX) or PaddleOCR for live text detection and recognition.
         2. Classifies each region (printed vs handwritten).
-        3. Routes to PaddleOCR / TrOCR.
-        4. Rebuilds 2D reading order.
-        5. Returns structured blocks + reconstructed plain text (raw_text).
+        3. Rebuilds 2D reading order.
+        4. Returns structured blocks + reconstructed plain text (raw_text).
         """
         h_img, w_img = image.shape[:2]
         raw_blocks = []
 
-        if self._paddle_ocr is not None:
+        # 1. Primary: RapidOCR ONNX Engine (Real local inference on live uploaded pixels)
+        if self._rapid_ocr is not None:
+            try:
+                ocr_results, elapse = self._rapid_ocr(image)
+                if ocr_results:
+                    for idx, item in enumerate(ocr_results):
+                        box, text, score = item[0], item[1], float(item[2])
+                        xs = [int(p[0]) for p in box]
+                        ys = [int(p[1]) for p in box]
+                        xmin, xmax = max(0, min(xs)), min(w_img, max(xs))
+                        ymin, ymax = max(0, min(ys)), min(h_img, max(ys))
+                        crop = image[ymin:ymax, xmin:xmax]
+                        region_type = self.classifier.classify(crop)
+                        status = self._get_status(score)
+                        raw_blocks.append({
+                            'id': f'block_{idx + 1}',
+                            'text': text,
+                            'confidence': round(score, 4),
+                            'source': region_type,
+                            'bbox': [xmin, ymin, xmax, ymax],
+                            'status': status
+                        })
+            except Exception as e:
+                logger.error(f'RapidOCR execution failed: {e}')
+
+        # 2. Secondary: PaddleOCR if available
+        if not raw_blocks and self._paddle_ocr is not None:
             try:
                 results = self._paddle_ocr.ocr(image, cls=True)
                 if results and len(results) > 0 and results[0] is not None:
@@ -195,21 +223,20 @@ class MedIntelOCREngine:
             except Exception as e:
                 logger.error(f'PaddleOCR execution failed: {e}')
 
+        # 3. Geometric Contour Detection Fallback
         if not raw_blocks:
             detected_regions = self.detect_regions(image)
             for idx, r in enumerate(detected_regions):
                 xmin, ymin, xmax, ymax = r['bbox']
                 crop = r['crop']
                 region_type = self.classifier.classify(crop)
-                extracted_text, conf = self._fallback_ocr_text(crop, idx)
-                status = self._get_status(conf)
                 raw_blocks.append({
                     'id': f'block_{idx + 1}',
-                    'text': extracted_text,
-                    'confidence': round(conf, 4),
+                    'text': f'[Detected Text Region {idx + 1}]',
+                    'confidence': 0.70,
                     'source': region_type,
                     'bbox': [xmin, ymin, xmax, ymax],
-                    'status': status
+                    'status': 'REVIEW_REQUIRED'
                 })
 
         # Reconstruct reading order and produce coherent plain text (raw_text)
@@ -221,6 +248,7 @@ class MedIntelOCREngine:
             'document': doc_name,
             'page': page_num,
             'pages': 1,
+            'image_dimensions': [w_img, h_img],
             'total_blocks': len(sorted_blocks),
             'overall_confidence': round(overall_conf, 4),
             'blocks': sorted_blocks,
@@ -234,16 +262,3 @@ class MedIntelOCREngine:
             return 'REVIEW_REQUIRED'
         else:
             return 'HUMAN_VERIFICATION_NEEDED'
-
-    def _fallback_ocr_text(self, crop: np.ndarray, idx: int) -> Tuple[str, float]:
-        sample_texts = [
-            ('Patient Name: Rahul Kumar', 0.94),
-            ('Age: 42', 0.96),
-            ('BP: 130/80', 0.91),
-            ('Pulse: 78 bpm', 0.88),
-            ('Diagnosis: Acute Pharyngitis', 0.72),
-            ('Medication: Amoxicillin 500mg', 0.65),
-            ('Dosage: 1 tablet 8 hourly', 0.58),
-            ('Follow-up: 5 days', 0.82)
-        ]
-        return sample_texts[idx % len(sample_texts)]
