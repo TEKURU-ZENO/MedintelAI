@@ -7,6 +7,7 @@ interface OCRBlock {
   text: string;
   confidence: number;
   source: string;
+  model_used?: string;
   bbox: [number, number, number, number];
   status: 'HIGH_CONFIDENCE' | 'REVIEW_REQUIRED' | 'HUMAN_VERIFICATION_NEEDED';
   page?: number;
@@ -83,6 +84,7 @@ export default function MedIntelOCRStudio() {
   const [isLoading, setIsLoading] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [filterSource, setFilterSource] = useState<'all' | 'handwritten' | 'printed'>('all');
 
   const [benchmarkMetrics, setBenchmarkMetrics] = useState<any>({
     prescriptions: { cer: '8.5%', wer: '14.2%', avg_time_sec: 0.056 },
@@ -347,9 +349,9 @@ export default function MedIntelOCRStudio() {
 
           <div className="flex items-center gap-3">
             <div className="hidden lg:flex items-center gap-2 text-xs">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 text-teal-400 border border-slate-700 font-mono text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                RapidOCR ONNX Engine Ready
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 text-teal-400 border border-slate-700 font-mono text-[11px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Hybrid Engine: RapidOCR (Printed) + TrOCR (Handwritten)
               </span>
             </div>
 
@@ -666,6 +668,7 @@ export default function MedIntelOCRStudio() {
                             {ocrData.blocks.map(b => {
                               const [x1, y1, x2, y2] = b.bbox;
                               const isSel = selectedBlockId === b.id;
+                              const isDimmed = filterSource !== 'all' && b.source !== filterSource;
                               const strokeColor = isSel
                                 ? '#6366f1'
                                 : b.status === 'HIGH_CONFIDENCE'
@@ -675,7 +678,7 @@ export default function MedIntelOCRStudio() {
                                 : '#ef4444';
 
                               return (
-                                <g key={b.id}>
+                                <g key={b.id} opacity={isDimmed ? 0.2 : 1.0} className="transition-opacity duration-200">
                                   <rect
                                     x={x1}
                                     y={y1}
@@ -731,40 +734,105 @@ export default function MedIntelOCRStudio() {
                       </div>
                     </div>
 
+                    {/* Source Filter Tabs & Provenance Info */}
+                    <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-slate-800/60">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => setFilterSource('all')}
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-mono transition cursor-pointer ${
+                            filterSource === 'all'
+                              ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 font-semibold shadow-sm'
+                              : 'bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-slate-700/50'
+                          }`}
+                        >
+                          All ({ocrData.blocks.length})
+                        </button>
+                        <button
+                          onClick={() => setFilterSource('handwritten')}
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-mono transition cursor-pointer flex items-center gap-1 ${
+                            filterSource === 'handwritten'
+                              ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-semibold shadow-sm'
+                              : 'bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-slate-700/50'
+                          }`}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                          Handwritten ({ocrData.blocks.filter(b => b.source === 'handwritten').length})
+                        </button>
+                        <button
+                          onClick={() => setFilterSource('printed')}
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-mono transition cursor-pointer flex items-center gap-1 ${
+                            filterSource === 'printed'
+                              ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40 font-semibold shadow-sm'
+                              : 'bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-slate-700/50'
+                          }`}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+                          Printed ({ocrData.blocks.filter(b => b.source === 'printed').length})
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Block list */}
                     <div className="flex-1 overflow-y-auto max-h-[500px] space-y-2.5 pr-1">
-                      {ocrData.blocks.map(block => {
-                        const isSelected = selectedBlockId === block.id;
-                        return (
-                          <div
-                            key={block.id}
-                            onClick={() => setSelectedBlockId(block.id)}
-                            className={`p-3 rounded-xl border transition-all cursor-pointer ${getBoxColor(block.status, isSelected)}`}
-                          >
-                            <div className="flex justify-between items-start mb-1.5">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-mono font-bold text-white">{block.id}</span>
-                                <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
-                                  {block.source}
-                                </span>
+                      {ocrData.blocks
+                        .filter(block => {
+                          if (filterSource === 'handwritten') return block.source === 'handwritten';
+                          if (filterSource === 'printed') return block.source === 'printed';
+                          return true;
+                        })
+                        .map(block => {
+                          const isSelected = selectedBlockId === block.id;
+                          return (
+                            <div
+                              key={block.id}
+                              onClick={() => setSelectedBlockId(block.id)}
+                              className={`p-3 rounded-xl border transition-all cursor-pointer ${getBoxColor(block.status, isSelected)}`}
+                            >
+                              <div className="flex justify-between items-start mb-1.5 gap-2">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-xs font-mono font-bold text-white">{block.id}</span>
+                                  {block.model_used === 'trocr-handwritten' ? (
+                                    <span className="text-[9px] font-mono font-semibold px-2 py-0.5 rounded bg-indigo-950/90 text-indigo-300 border border-indigo-700/60 flex items-center gap-1 shadow-sm">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                                      TrOCR (Handwritten)
+                                    </span>
+                                  ) : block.model_used === 'rapidocr-printed' ? (
+                                    <span className="text-[9px] font-mono font-semibold px-2 py-0.5 rounded bg-teal-950/90 text-teal-300 border border-teal-700/60 flex items-center gap-1 shadow-sm">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
+                                      RapidOCR (Printed)
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                                      {block.model_used || block.source}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {getConfidenceBadge(block.status, block.confidence)}
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleOpenCorrection(block); }}
+                                    className="text-[11px] text-teal-400 hover:text-teal-300 font-semibold hover:underline ml-1 cursor-pointer"
+                                  >
+                                    Correct
+                                  </button>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                {getConfidenceBadge(block.status, block.confidence)}
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleOpenCorrection(block); }}
-                                  className="text-[11px] text-teal-400 hover:text-teal-300 font-semibold hover:underline ml-1 cursor-pointer"
-                                >
-                                  Correct
-                                </button>
-                              </div>
-                            </div>
 
-                            <p className="text-xs font-mono text-slate-200 bg-slate-950/70 p-2 rounded border border-slate-800 leading-relaxed break-words">
-                              {block.text}
-                            </p>
-                          </div>
-                        );
-                      })}
+                              <p className="text-xs font-mono text-slate-200 bg-slate-950/70 p-2 rounded border border-slate-800 leading-relaxed break-words">
+                                {block.text}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      {ocrData.blocks.filter(b => {
+                        if (filterSource === 'handwritten') return b.source === 'handwritten';
+                        if (filterSource === 'printed') return b.source === 'printed';
+                        return true;
+                      }).length === 0 && (
+                        <div className="text-center py-8 text-slate-500 text-xs font-mono">
+                          No {filterSource} text blocks found in this document.
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

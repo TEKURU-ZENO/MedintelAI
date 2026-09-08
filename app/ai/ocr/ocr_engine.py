@@ -3,29 +3,45 @@ import cv2
 import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
 from app.ai.utils.logger import get_logger
+from app.ai.ocr.medical_postprocessor import MedicalVocabularyPostProcessor
 
 logger = get_logger(__name__)
 
 class RegionClassifier:
     """
     Modular classifier for determining if a cropped text region is 'printed' or 'handwritten'.
-    Designed as a modular hypothesis evaluator so it can be swapped with a deep learning
-    classifier (e.g., MobileNet/ResNet feature extractor) without altering engine flow.
+    Analyzes connected component variance, stroke morphology, and recognition confidence.
     """
-    def __init__(self, stroke_std_threshold: float = 45.0, edge_density_threshold: float = 0.08):
-        self.stroke_std_threshold = stroke_std_threshold
-        self.edge_density_threshold = edge_density_threshold
+    def __init__(self, variance_threshold: float = 0.38, score_threshold: float = 0.90):
+        self.variance_threshold = variance_threshold
+        self.score_threshold = score_threshold
 
-    def classify(self, crop: np.ndarray) -> str:
+    def classify(self, crop: np.ndarray, base_score: float = 1.0) -> str:
         if crop is None or crop.size == 0:
             return 'printed'
-        gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY) if len(crop.shape) == 3 else crop
-        edges = cv2.Canny(gray, 50, 150)
-        edge_density = np.sum(edges > 0) / float(gray.size)
-        std_dev = float(np.std(gray))
         
-        # Hypothesis: Handwritten text exhibits higher local intensity variation and organic stroke irregularity
-        if std_dev > self.stroke_std_threshold or (edge_density > self.edge_density_threshold and std_dev > 35.0):
+        gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY) if len(crop.shape) == 3 else crop
+        h, w = gray.shape[:2]
+        if h < 10 or w < 15:
+            return 'printed'
+
+        # 1. Binarize crop to find stroke components
+        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            return 'printed'
+
+        # 2. Analyze component heights
+        heights = []
+        for c in contours:
+            cx, cy, cw, ch = cv2.boundingRect(c)
+            if ch > h * 0.25 and cw > 3:
+                heights.append(ch)
+
+        h_std = float(np.std(heights)) / (float(np.mean(heights)) + 1e-5) if len(heights) >= 3 else 0.0
+
+        # High component height variance or low base printed score signals organic handwriting
+        if h_std > self.variance_threshold or base_score < self.score_threshold:
             return 'handwritten'
         return 'printed'
 
@@ -40,19 +56,9 @@ class ReadingOrderRebuilder:
         self.vertical_overlap_ratio = vertical_overlap_ratio
 
     def rebuild_order(self, blocks: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], str]:
-        """
-        Sorts blocks in reading order and formats raw_text.
-        
-        Args:
-            blocks: List of OCR text blocks with 'bbox': [xmin, ymin, xmax, ymax]
-            
-        Returns:
-            Tuple of (sorted_blocks, raw_text)
-        """
         if not blocks:
             return [], ""
 
-        # Calculate height and center y for each block
         processed = []
         for b in blocks:
             xmin, ymin, xmax, ymax = b['bbox']
@@ -60,20 +66,16 @@ class ReadingOrderRebuilder:
             cy = (ymin + ymax) / 2.0
             processed.append({**b, '_h': h, '_cy': cy, '_ymin': ymin, '_xmin': xmin, '_ymax': ymax, '_xmax': xmax})
 
-        # Sort primarily by ymin to begin clustering
         processed.sort(key=lambda item: item['_ymin'])
 
-        # Line clustering via vertical overlap
         lines = []
         for block in processed:
             placed = False
             for line in lines:
-                # Compare with the average height and vertical bounds of the line
                 line_ymin = min(b['_ymin'] for b in line)
                 line_ymax = max(b['_ymax'] for b in line)
                 line_h = max(1, line_ymax - line_ymin)
                 
-                # Check vertical overlap
                 overlap = max(0, min(block['_ymax'], line_ymax) - max(block['_ymin'], line_ymin))
                 min_h = min(block['_h'], line_h)
                 
@@ -84,12 +86,10 @@ class ReadingOrderRebuilder:
             if not placed:
                 lines.append([block])
 
-        # Sort each line left-to-right, and sort lines top-to-bottom
         lines.sort(key=lambda line: min(b['_ymin'] for b in line))
         for line in lines:
             line.sort(key=lambda b: b['_xmin'])
 
-        # Flatten sorted blocks and reconstruct plain text
         sorted_blocks = []
         text_lines = []
         idx = 1
@@ -111,20 +111,25 @@ class ReadingOrderRebuilder:
 
 class MedIntelOCREngine:
     """
-    General-Purpose, Document-Agnostic Medical OCR Engine.
-    Accepts arbitrary document images/pages without hardcoded category logic.
-    Performs text region detection, modular region classification, hybrid model routing,
-    reading-order reconstruction, and structured plain-text formatting.
+    True Hybrid Medical OCR Engine:
+    - RapidOCR (ONNX) for detection & printed text recognition
+    - TrOCR (VisionEncoderDecoder) for handwritten clinical text recognition
+    - MedicalVocabularyPostProcessor for medicine & dosage normalization
+    - ReadingOrderRebuilder for 2D layout reading-order recovery
     """
     def __init__(self, use_gpu: bool = False):
         self.use_gpu = use_gpu
         self.classifier = RegionClassifier()
         self.rebuilder = ReadingOrderRebuilder()
+        self.postprocessor = MedicalVocabularyPostProcessor()
         self._rapid_ocr = None
+        self._trocr_processor = None
+        self._trocr_model = None
         self._paddle_ocr = None
         self._init_models()
 
     def _init_models(self):
+        # 1. RapidOCR for printed text and fast text line detection
         try:
             from rapidocr_onnxruntime import RapidOCR
             self._rapid_ocr = RapidOCR()
@@ -132,6 +137,26 @@ class MedIntelOCREngine:
         except Exception as e:
             logger.warning(f'RapidOCR not loaded: {e}')
 
+        # 2. TrOCR for handwritten clinical text
+        try:
+            from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+            model_id = "microsoft/trocr-small-handwritten"
+            finetuned_path = os.path.join(os.path.dirname(__file__), "..", "models", "trocr_medical_finetuned")
+            
+            if os.path.exists(finetuned_path):
+                logger.info(f"Loading fine-tuned medical TrOCR model from {finetuned_path}")
+                self._trocr_processor = TrOCRProcessor.from_pretrained(finetuned_path)
+                self._trocr_model = VisionEncoderDecoderModel.from_pretrained(finetuned_path)
+            else:
+                logger.info(f"Loading base TrOCR handwriting model: {model_id}")
+                self._trocr_processor = TrOCRProcessor.from_pretrained(model_id)
+                self._trocr_model = VisionEncoderDecoderModel.from_pretrained(model_id)
+            self._trocr_model.eval()
+            logger.info("TrOCR model initialized successfully for handwriting recognition")
+        except Exception as e:
+            logger.warning(f"TrOCR not loaded: {e}")
+
+        # 3. PaddleOCR optional secondary
         try:
             from paddleocr import PaddleOCR
             self._paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False, use_gpu=self.use_gpu)
@@ -139,10 +164,58 @@ class MedIntelOCREngine:
         except Exception:
             pass
 
+    def _trocr_recognize(self, crop: np.ndarray) -> Tuple[str, float]:
+        """
+        Runs TrOCR on a cropped handwritten line image.
+        Returns recognized string and model confidence score.
+        """
+        if self._trocr_processor is None or self._trocr_model is None or crop is None or crop.size == 0:
+            return "", 0.0
+        try:
+            import torch
+            import torch.nn.functional as F
+            from PIL import Image
+
+            # Ensure proper RGB channels
+            if len(crop.shape) == 2:
+                rgb = cv2.cvtColor(crop, cv2.COLOR_GRAY2RGB)
+            elif len(crop.shape) == 3 and crop.shape[2] == 3:
+                rgb = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+            else:
+                rgb = crop
+
+            # Ensure minimum height for ViT patch embedding
+            h, w = rgb.shape[:2]
+            if h < 24:
+                scale = 24.0 / float(h)
+                rgb = cv2.resize(rgb, (int(w * scale), 24), interpolation=cv2.INTER_CUBIC)
+
+            pil_img = Image.fromarray(rgb)
+            pixel_values = self._trocr_processor(pil_img, return_tensors='pt').pixel_values
+
+            with torch.no_grad():
+                generated_outputs = self._trocr_model.generate(
+                    pixel_values,
+                    max_new_tokens=32,
+                    return_dict_in_generate=True,
+                    output_scores=True
+                )
+
+            token_ids = generated_outputs.sequences
+            raw_text = self._trocr_processor.batch_decode(token_ids, skip_special_tokens=True)[0].strip()
+
+            if hasattr(generated_outputs, 'scores') and generated_outputs.scores:
+                probs = [float(F.softmax(score, dim=-1).max().item()) for score in generated_outputs.scores]
+                conf = float(np.mean(probs)) if probs else 0.85
+            else:
+                conf = 0.88
+
+            return raw_text, round(conf, 4)
+        except Exception as e:
+            logger.error(f"TrOCR recognition error: {e}")
+            return "", 0.0
+
     def detect_regions(self, image: np.ndarray) -> List[Dict[str, Any]]:
-        """
-        Document-agnostic text region and contour detection using gradient morphology.
-        """
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(image.shape) == 3 else image.copy()
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 5))
         grad = cv2.morphologyEx(gray, cv2.MORPH_GRADIENT, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
@@ -163,80 +236,89 @@ class MedIntelOCREngine:
 
     def process_document(self, image: np.ndarray, doc_name: str = 'document', page_num: int = 1) -> Dict[str, Any]:
         """
-        Processes an arbitrary document page:
-        1. Runs RapidOCR (ONNX) or PaddleOCR for live text detection and recognition.
-        2. Classifies each region (printed vs handwritten).
-        3. Rebuilds 2D reading order.
-        4. Returns structured blocks + reconstructed plain text (raw_text).
+        True Hybrid Processing Pipeline:
+        1. Detects text bounding boxes.
+        2. Classifies each crop as printed or handwritten.
+        3. Routes:
+           - Printed regions -> RapidOCR
+           - Handwritten regions -> TrOCR (VisionEncoderDecoder)
+        4. Applies medical lexicon normalization.
+        5. Rebuilds 2D reading order.
         """
         h_img, w_img = image.shape[:2]
         raw_blocks = []
 
-        # 1. Primary: RapidOCR ONNX Engine (Real local inference on live uploaded pixels)
+        # 1. Primary: RapidOCR Detection & Hybrid Recognition Routing
         if self._rapid_ocr is not None:
             try:
                 ocr_results, elapse = self._rapid_ocr(image)
                 if ocr_results:
                     for idx, item in enumerate(ocr_results):
-                        box, text, score = item[0], item[1], float(item[2])
+                        box, rapid_text, rapid_score = item[0], item[1], float(item[2])
                         xs = [int(p[0]) for p in box]
                         ys = [int(p[1]) for p in box]
                         xmin, xmax = max(0, min(xs)), min(w_img, max(xs))
                         ymin, ymax = max(0, min(ys)), min(h_img, max(ys))
                         crop = image[ymin:ymax, xmin:xmax]
-                        region_type = self.classifier.classify(crop)
-                        status = self._get_status(score)
+                        region_type = self.classifier.classify(crop, base_score=rapid_score)
+
+                        if region_type == 'handwritten' and self._trocr_model is not None:
+                            # ROUTE TO TrOCR FOR HANDWRITING
+                            trocr_text, trocr_conf = self._trocr_recognize(crop)
+                            if trocr_text:
+                                final_text = self.postprocessor.clean_text(trocr_text)
+                                model_used = 'trocr-handwritten'
+                                final_conf = trocr_conf
+                            else:
+                                final_text = self.postprocessor.clean_text(rapid_text)
+                                model_used = 'rapidocr-fallback'
+                                final_conf = rapid_score
+                        else:
+                            # ROUTE TO RapidOCR FOR PRINTED TEXT
+                            final_text = self.postprocessor.clean_text(rapid_text)
+                            model_used = 'rapidocr-printed'
+                            final_conf = rapid_score
+
+                        status = self._get_status(final_conf)
                         raw_blocks.append({
                             'id': f'block_{idx + 1}',
-                            'text': text,
-                            'confidence': round(score, 4),
+                            'text': final_text,
+                            'confidence': round(final_conf, 4),
                             'source': region_type,
+                            'model_used': model_used,
                             'bbox': [xmin, ymin, xmax, ymax],
                             'status': status
                         })
             except Exception as e:
                 logger.error(f'RapidOCR execution failed: {e}')
 
-        # 2. Secondary: PaddleOCR if available
-        if not raw_blocks and self._paddle_ocr is not None:
-            try:
-                results = self._paddle_ocr.ocr(image, cls=True)
-                if results and len(results) > 0 and results[0] is not None:
-                    for idx, line in enumerate(results[0]):
-                        box = line[0]
-                        text, conf = line[1][0], float(line[1][1])
-                        xs = [int(p[0]) for p in box]
-                        ys = [int(p[1]) for p in box]
-                        xmin, xmax = max(0, min(xs)), min(w_img, max(xs))
-                        ymin, ymax = max(0, min(ys)), min(h_img, max(ys))
-                        crop = image[ymin:ymax, xmin:xmax]
-                        region_type = self.classifier.classify(crop)
-                        status = self._get_status(conf)
-                        raw_blocks.append({
-                            'id': f'block_{idx + 1}',
-                            'text': text,
-                            'confidence': round(conf, 4),
-                            'source': region_type,
-                            'bbox': [xmin, ymin, xmax, ymax],
-                            'status': status
-                        })
-            except Exception as e:
-                logger.error(f'PaddleOCR execution failed: {e}')
-
-        # 3. Geometric Contour Detection Fallback
+        # 2. Secondary: Contour Detection Fallback
         if not raw_blocks:
             detected_regions = self.detect_regions(image)
             for idx, r in enumerate(detected_regions):
                 xmin, ymin, xmax, ymax = r['bbox']
                 crop = r['crop']
                 region_type = self.classifier.classify(crop)
+                
+                if self._trocr_model is not None:
+                    trocr_text, trocr_conf = self._trocr_recognize(crop)
+                    final_text = self.postprocessor.clean_text(trocr_text) if trocr_text else f'[Text Region {idx + 1}]'
+                    model_used = 'trocr-handwritten'
+                    conf = trocr_conf if trocr_text else 0.70
+                else:
+                    final_text = f'[Text Region {idx + 1}]'
+                    model_used = 'opencv-contour'
+                    conf = 0.70
+
+                status = self._get_status(conf)
                 raw_blocks.append({
                     'id': f'block_{idx + 1}',
-                    'text': f'[Detected Text Region {idx + 1}]',
-                    'confidence': 0.70,
+                    'text': final_text,
+                    'confidence': round(conf, 4),
                     'source': region_type,
+                    'model_used': model_used,
                     'bbox': [xmin, ymin, xmax, ymax],
-                    'status': 'REVIEW_REQUIRED'
+                    'status': status
                 })
 
         # Reconstruct reading order and produce coherent plain text (raw_text)
