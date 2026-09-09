@@ -30,6 +30,11 @@ interface OCRResponse {
   image_dimensions?: [number, number];
 }
 
+const API_BASE_URL =
+  typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+    ? `http://${window.location.hostname}:8000`
+    : 'http://localhost:8000';
+
 const SAMPLE_OPTIONS = [
   {
     id: 'admission',
@@ -92,6 +97,7 @@ export default function MedIntelOCRStudio() {
   const [isSummarizeOpen, setIsSummarizeOpen] = useState(false);
 
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const imageContainerRef = useRef<HTMLDivElement | null>(null);
   const currentFileRef = useRef<File | null>(null);
 
   const [ocrData, setOcrData] = useState<OCRResponse | null>(null);
@@ -118,7 +124,7 @@ export default function MedIntelOCRStudio() {
   });
 
   useEffect(() => {
-    axios.get('http://localhost:8000/ocr/benchmark')
+    axios.get(`${API_BASE_URL}/ocr/benchmark`)
       .then(res => {
         if (res.data && res.data.metrics) {
           setBenchmarkMetrics(res.data.metrics);
@@ -138,7 +144,7 @@ export default function MedIntelOCRStudio() {
     setIsSelectingRegion(false);
 
     // If it is an image, provide immediate client-side preview
-    if (file.type.startsWith('image/')) {
+    if (file.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp|tiff?)$/i.test(file.name)) {
       const localUrl = URL.createObjectURL(file);
       setUploadedImageSrc(localUrl);
     }
@@ -147,7 +153,7 @@ export default function MedIntelOCRStudio() {
     formData.append('file', file);
 
     try {
-      const res = await axios.post('http://localhost:8000/ocr/extract', formData, {
+      const res = await axios.post(`${API_BASE_URL}/ocr/extract`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (res.data && res.data.blocks) {
@@ -203,7 +209,7 @@ export default function MedIntelOCRStudio() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await axios.post('http://localhost:8000/ocr/extract', formData, {
+      const res = await axios.post(`${API_BASE_URL}/ocr/extract`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -332,7 +338,7 @@ export default function MedIntelOCRStudio() {
     formData.append('ymax', Math.round(y2).toString());
 
     try {
-      const res = await axios.post('http://localhost:8000/ocr/extract-region', formData, {
+      const res = await axios.post(`${API_BASE_URL}/ocr/extract-region`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -377,7 +383,6 @@ export default function MedIntelOCRStudio() {
     link.download = `${ocrData.document.replace(/\.[^/.]+$/, '')}_raw_text.txt`;
     link.click();
     URL.revokeObjectURL(url);
-    setFeedbackMsg('Downloaded reading-order raw_text as .txt');
   };
 
   const handleDownloadJson = () => {
@@ -389,14 +394,14 @@ export default function MedIntelOCRStudio() {
     link.download = `${ocrData.document.replace(/\.[^/.]+$/, '')}_ocr_output.json`;
     link.click();
     URL.revokeObjectURL(url);
-    setFeedbackMsg('Exported structured OCR JSON');
   };
 
   const handleCopyText = () => {
     if (!ocrData) return;
     const textContent = ocrData.raw_text || ocrData.blocks.map(b => b.text).join('\n');
     navigator.clipboard.writeText(textContent);
-    setFeedbackMsg('Copied plain text to clipboard!');
+    setFeedbackMsg('Copied all extracted text to clipboard.');
+    setTimeout(() => setFeedbackMsg(null), 3000);
   };
 
   const handleOpenCorrection = (block: OCRBlock) => {
@@ -408,7 +413,7 @@ export default function MedIntelOCRStudio() {
   const handleSubmitCorrection = async () => {
     if (!editingBlock || !ocrData) return;
     try {
-      await axios.post('http://localhost:8000/ocr/correct', {
+      await axios.post(`${API_BASE_URL}/ocr/correct`, {
         document: ocrData.document,
         block_id: editingBlock.id,
         original_text: editingBlock.text,
@@ -933,10 +938,18 @@ export default function MedIntelOCRStudio() {
                             <div className="absolute inset-0 pointer-events-none">
                               {ocrData.blocks.map((b) => {
                                 const [x1, y1, x2, y2] = b.bbox;
-                                const leftPct = (x1 / imageDimensions.width) * 100;
-                                const topPct = (y1 / imageDimensions.height) * 100;
-                                const widthPct = ((x2 - x1) / imageDimensions.width) * 100;
-                                const heightPct = ((y2 - y1) / imageDimensions.height) * 100;
+                                const leftPct = b.normalized_bbox
+                                  ? b.normalized_bbox[0] * 100
+                                  : (x1 / (imageDimensions.width || 1)) * 100;
+                                const topPct = b.normalized_bbox
+                                  ? b.normalized_bbox[1] * 100
+                                  : (y1 / (imageDimensions.height || 1)) * 100;
+                                const widthPct = b.normalized_bbox
+                                  ? (b.normalized_bbox[2] - b.normalized_bbox[0]) * 100
+                                  : ((x2 - x1) / (imageDimensions.width || 1)) * 100;
+                                const heightPct = b.normalized_bbox
+                                  ? (b.normalized_bbox[3] - b.normalized_bbox[1]) * 100
+                                  : ((y2 - y1) / (imageDimensions.height || 1)) * 100;
                                 const isSel = selectedBlockId === b.id;
                                 const isCopied = copiedBlockId === b.id;
                                 const isDimmed = filterSource !== 'all' && b.source !== filterSource;
