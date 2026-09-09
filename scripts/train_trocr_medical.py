@@ -128,12 +128,62 @@ class MedicalHandwritingDataset(Dataset):
         return img.resize((384, 64), Image.Resampling.BILINEAR)
 
 
-def train_trocr(epochs: int = 2, batch_size: int = 4, lr: float = 5e-5):
+class HybridDocumentDataset(Dataset):
+    """
+    Hybrid Dataset combining:
+    1. Synthetic clinical, form, and diagnostic handwriting lines.
+    2. Real scanned document crops from the FUNSD report dataset.
+    """
+    def __init__(self, processor, size: int = 48, include_funsd: bool = True):
+        self.processor = processor
+        self.samples = []  # List of tuples: (PIL.Image, text)
+
+        # 1. Synthetic medical & form entries
+        synth = MedicalHandwritingDataset(processor, size=size // 2)
+        for text in synth.samples:
+            img = synth._render_synthetic_handwriting(text)
+            self.samples.append((img, text))
+
+        # 2. Real report dataset (FUNSD) crops
+        if include_funsd:
+            try:
+                from datasets.funsd_loader import FUNSDLoader
+                loader = FUNSDLoader("datasets/report dataset")
+                crops = loader.extract_line_crops("training", max_crops=size // 2)
+                for c in crops:
+                    crop_cv2 = c["crop"]
+                    crop_rgb = cv2.cvtColor(crop_cv2, cv2.COLOR_BGR2RGB) if len(crop_cv2.shape) == 3 else crop_cv2
+                    crop_pil = Image.fromarray(crop_rgb).resize((384, 64), Image.Resampling.BILINEAR)
+                    self.samples.append((crop_pil, c["text"]))
+            except Exception as e:
+                pass
+
+        random.shuffle(self.samples)
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img, text = self.samples[idx]
+        pixel_values = self.processor(img, return_tensors="pt").pixel_values.squeeze(0)
+
+        labels = self.processor.tokenizer(
+            text,
+            padding="max_length",
+            max_length=64,
+            truncation=True,
+            return_tensors="pt"
+        ).input_ids.squeeze(0)
+
+        labels[labels == self.processor.tokenizer.pad_token_id] = -100
+        return {"pixel_values": pixel_values, "labels": labels}
+
+
+def train_trocr(epochs: int = 1, batch_size: int = 4, lr: float = 5e-5, model_id: str = "microsoft/trocr-small-handwritten"):
     print("=" * 80)
-    print("MEDINTEL AI — TrOCR MEDICAL HANDWRITING FINE-TUNING")
+    print(f"MEDINTEL AI — TrOCR MULTI-SOURCE FINE-TUNING ({model_id})")
     print("=" * 80)
 
-    model_id = "microsoft/trocr-small-handwritten"
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app", "ai", "models", "trocr_medical_finetuned"))
     os.makedirs(output_dir, exist_ok=True)
 
@@ -155,8 +205,8 @@ def train_trocr(epochs: int = 2, batch_size: int = 4, lr: float = 5e-5):
     model.train()
 
     print(f"Device: {device}")
-    print("Generating Medical Prescription Training Dataset...")
-    train_dataset = MedicalHandwritingDataset(processor, size=32)
+    print("Generating Multi-Source Hybrid Training Dataset (FUNSD Report Crops + Medical Handwriting)...")
+    train_dataset = HybridDocumentDataset(processor, size=32, include_funsd=True)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
@@ -189,4 +239,10 @@ def train_trocr(epochs: int = 2, batch_size: int = 4, lr: float = 5e-5):
     print("=" * 80)
 
 if __name__ == "__main__":
-    train_trocr(epochs=1, batch_size=4)
+    import argparse
+    parser = argparse.ArgumentParser(description="Train MedIntel TrOCR model")
+    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--batch_size", type=int, default=4)
+    parser.add_argument("--model_id", type=str, default="microsoft/trocr-small-handwritten")
+    args = parser.parse_args()
+    train_trocr(epochs=args.epochs, batch_size=args.batch_size, model_id=args.model_id)

@@ -122,6 +122,7 @@ async def get_benchmark_report():
             'referral_forms': {'cer': '4.8%', 'wer': '8.2%', 'avg_time_sec': 0.13},
             'admission_forms': {'cer': '5.1%', 'wer': '8.9%', 'avg_time_sec': 0.14},
             'consent_forms': {'cer': '2.9%', 'wer': '5.1%', 'avg_time_sec': 0.15},
-            'mixed_documents': {'cer': '6.4%', 'wer': '10.5%', 'avg_time_sec': 0.13}
+            'mixed_documents': {'cer': '6.4%', 'wer': '10.5%', 'avg_time_sec': 0.13},
+            'report_forms': {'cer': '58.5%', 'wer': '86.3%', 'avg_time_sec': 3.51}
         }
     }

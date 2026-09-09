@@ -398,7 +398,7 @@ export default function MedIntelOCRStudio() {
               <div className="inline-block text-[11px] font-mono uppercase tracking-wider text-teal-400 font-bold mb-1">
                 Standardized Evaluation Suite
               </div>
-              <h2 className="text-xl font-bold text-white">8 Benchmark Clinical Document Categories</h2>
+              <h2 className="text-xl font-bold text-white">{Object.keys(benchmarkMetrics).length} Benchmark Document Categories</h2>
               <p className="text-xs text-slate-400 max-w-2xl mt-1">
                 Quantitative accuracy metrics measured on ground-truth medical documents. The OCR engine remains document-agnostic and evaluates arbitrary inputs without category hardcoding.
               </p>

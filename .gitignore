@@ -34,6 +34,8 @@ Thumbs.db
 # Large dataset directories & model weights
 datasets/cvl-database-1-1/
 datasets/archive/
+datasets/report dataset/
+datasets/__MACOSX/
 app/ai/models/
 *.safetensors
 *.bin

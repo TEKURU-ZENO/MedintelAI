@@ -156,7 +156,7 @@ class MedIntelOCREngine:
         # 2. TrOCR for handwritten clinical text
         try:
             from transformers import TrOCRProcessor, VisionEncoderDecoderModel
-            model_id = "microsoft/trocr-small-handwritten"
+            model_id = os.getenv("TROCR_MODEL_NAME", "microsoft/trocr-base-handwritten")
             finetuned_path = os.path.join(os.path.dirname(__file__), "..", "models", "trocr_medical_finetuned")
             
             if os.path.exists(finetuned_path):
@@ -164,9 +164,15 @@ class MedIntelOCREngine:
                 self._trocr_processor = TrOCRProcessor.from_pretrained(finetuned_path)
                 self._trocr_model = VisionEncoderDecoderModel.from_pretrained(finetuned_path)
             else:
-                logger.info(f"Loading base TrOCR handwriting model: {model_id}")
-                self._trocr_processor = TrOCRProcessor.from_pretrained(model_id)
-                self._trocr_model = VisionEncoderDecoderModel.from_pretrained(model_id)
+                try:
+                    logger.info(f"Loading base TrOCR model: {model_id}")
+                    self._trocr_processor = TrOCRProcessor.from_pretrained(model_id)
+                    self._trocr_model = VisionEncoderDecoderModel.from_pretrained(model_id)
+                except Exception as ex:
+                    fallback_id = "microsoft/trocr-small-handwritten"
+                    logger.warning(f"Could not load {model_id} ({ex}), falling back to {fallback_id}")
+                    self._trocr_processor = TrOCRProcessor.from_pretrained(fallback_id)
+                    self._trocr_model = VisionEncoderDecoderModel.from_pretrained(fallback_id)
             self._trocr_model.eval()
             logger.info("TrOCR model initialized successfully for handwriting recognition")
         except Exception as e:
