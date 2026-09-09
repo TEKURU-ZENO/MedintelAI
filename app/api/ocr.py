@@ -2,7 +2,7 @@ import os
 import json
 import tempfile
 from typing import Dict, Any, Optional
-from fastapi import APIRouter, UploadFile, File, HTTPException, Response
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Response
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
@@ -42,6 +42,28 @@ async def extract_ocr(file: UploadFile = File(...)):
         raise
     except Exception as e:
         logger.error(f'Error extracting OCR for {file.filename}: {e}')
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post('/extract-region', response_model=Dict[str, Any], summary='Extract OCR from a selected sub-region / marquee crop')
+async def extract_region_ocr(
+    file: UploadFile = File(...),
+    xmin: int = Form(...),
+    ymin: int = Form(...),
+    xmax: int = Form(...),
+    ymax: int = Form(...)
+):
+    try:
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(status_code=400, detail='Uploaded document is empty.')
+
+        region_bbox = [xmin, ymin, xmax, ymax]
+        result = controller.process_region(contents, region_bbox=region_bbox, doc_name=file.filename)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f'Error extracting region OCR: {e}')
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post('/export/txt', summary='Extract and download document plain text (.txt)')

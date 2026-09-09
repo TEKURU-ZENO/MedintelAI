@@ -138,3 +138,25 @@ class PipelineController:
         """Backward-compatible alias for process_document."""
         doc_name = os.path.basename(image_path) if isinstance(image_path, str) else "document"
         return self.process_document(image_path, doc_name=doc_name, output_json_path=output_path)
+
+    def process_region(
+        self,
+        document_input: Union[str, bytes, np.ndarray],
+        region_bbox: List[int],
+        doc_name: str = "snippet"
+    ) -> Dict[str, Any]:
+        """
+        Processes a focused sub-region / snippet from the document.
+        """
+        pages = load_document_pages(document_input, filename=doc_name)
+        if not pages:
+            return {
+                'status': 'error',
+                'message': 'Failed to decode document for region processing.',
+                'blocks': [],
+                'raw_text': ''
+            }
+        page_img = pages[0]
+        clean_page = run_preprocessing_pipeline(page_img, self.preprocess_config)
+        return self.ocr_engine.process_region(clean_page, region_bbox, doc_name=doc_name)
+

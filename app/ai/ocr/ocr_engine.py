@@ -109,11 +109,13 @@ class ReadingOrderRebuilder:
         sorted_blocks = []
         text_lines = []
         idx = 1
-        for line in lines:
+        for line_num, line in enumerate(lines, 1):
             line_texts = []
             for b in line:
                 clean_b = {k: v for k, v in b.items() if not k.startswith('_')}
                 clean_b['id'] = f"block_{idx}"
+                clean_b['reading_order'] = idx
+                clean_b['line_number'] = line_num
                 sorted_blocks.append(clean_b)
                 idx += 1
                 if b.get('text'):
@@ -359,6 +361,14 @@ class MedIntelOCREngine:
                             final_conf = rapid_score
 
                         status = self._get_status(final_conf)
+                        bw = max(1, xmax - xmin)
+                        bh = max(1, ymax - ymin)
+                        norm_bbox = [
+                            round(float(xmin) / max(1, w_img), 5),
+                            round(float(ymin) / max(1, h_img), 5),
+                            round(float(xmax) / max(1, w_img), 5),
+                            round(float(ymax) / max(1, h_img), 5)
+                        ]
                         raw_blocks.append({
                             'id': f'block_{idx + 1}',
                             'text': final_text,
@@ -366,6 +376,9 @@ class MedIntelOCREngine:
                             'source': region_type,
                             'model_used': model_used,
                             'bbox': [xmin, ymin, xmax, ymax],
+                            'normalized_bbox': norm_bbox,
+                            'width': bw,
+                            'height': bh,
                             'status': status
                         })
             except Exception as e:
@@ -396,6 +409,14 @@ class MedIntelOCREngine:
                     conf = 0.70
 
                 status = self._get_status(conf)
+                bw = max(1, xmax - xmin)
+                bh = max(1, ymax - ymin)
+                norm_bbox = [
+                    round(float(xmin) / max(1, w_img), 5),
+                    round(float(ymin) / max(1, h_img), 5),
+                    round(float(xmax) / max(1, w_img), 5),
+                    round(float(ymax) / max(1, h_img), 5)
+                ]
                 raw_blocks.append({
                     'id': f'block_{idx + 1}',
                     'text': final_text,
@@ -403,6 +424,9 @@ class MedIntelOCREngine:
                     'source': region_type,
                     'model_used': model_used,
                     'bbox': [xmin, ymin, xmax, ymax],
+                    'normalized_bbox': norm_bbox,
+                    'width': bw,
+                    'height': bh,
                     'status': status
                 })
 
@@ -421,6 +445,54 @@ class MedIntelOCREngine:
             'blocks': sorted_blocks,
             'raw_text': raw_text
         }
+
+    def process_region(self, image: np.ndarray, region_bbox: List[int], doc_name: str = 'snippet') -> Dict[str, Any]:
+        """
+        Processes a focused sub-region / marquee snippet within a larger document.
+        Crops image[ymin:ymax, xmin:xmax], executes the hybrid pipeline,
+        and translates all detected bounding boxes back to the global coordinates of the original image.
+        """
+        h_img, w_img = image.shape[:2]
+        rx1, ry1, rx2, ry2 = region_bbox
+        rx1, rx2 = max(0, min(rx1, rx2)), min(w_img, max(rx1, rx2))
+        ry1, ry2 = max(0, min(ry1, ry2)), min(h_img, max(ry1, ry2))
+
+        if (rx2 - rx1) < 10 or (ry2 - ry1) < 8:
+            return {
+                'status': 'error',
+                'message': 'Selected region too small for text recognition',
+                'document': doc_name,
+                'pages': 1,
+                'image_dimensions': [w_img, h_img],
+                'total_blocks': 0,
+                'overall_confidence': 0.0,
+                'blocks': [],
+                'raw_text': ''
+            }
+
+        snippet_crop = image[ry1:ry2, rx1:rx2]
+        res = self.process_document(snippet_crop, doc_name=doc_name)
+
+        # Offset blocks back to original document coordinate space
+        for b in res.get('blocks', []):
+            local_x1, local_y1, local_x2, local_y2 = b['bbox']
+            gx1 = rx1 + local_x1
+            gy1 = ry1 + local_y1
+            gx2 = rx1 + local_x2
+            gy2 = ry1 + local_y2
+            b['bbox'] = [gx1, gy1, gx2, gy2]
+            b['normalized_bbox'] = [
+                round(float(gx1) / max(1, w_img), 5),
+                round(float(gy1) / max(1, h_img), 5),
+                round(float(gx2) / max(1, w_img), 5),
+                round(float(gy2) / max(1, h_img), 5)
+            ]
+            b['width'] = gx2 - gx1
+            b['height'] = gy2 - gy1
+
+        res['region_bbox'] = [rx1, ry1, rx2, ry2]
+        res['image_dimensions'] = [w_img, h_img]
+        return res
 
     def _get_status(self, conf: float) -> str:
         if conf >= 0.90:
