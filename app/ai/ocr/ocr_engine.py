@@ -1,4 +1,5 @@
 import os
+import re
 import cv2
 import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
@@ -10,13 +11,12 @@ logger = get_logger(__name__)
 class RegionClassifier:
     """
     Modular classifier for determining if a cropped text region is 'printed' or 'handwritten'.
-    Analyzes connected component variance, stroke morphology, and recognition confidence.
+    Document-agnostic: Analyzes connected component variance, baseline drift, and recognition confidence.
     """
-    def __init__(self, variance_threshold: float = 0.38, score_threshold: float = 0.90):
+    def __init__(self, variance_threshold: float = 0.40):
         self.variance_threshold = variance_threshold
-        self.score_threshold = score_threshold
 
-    def classify(self, crop: np.ndarray, base_score: float = 1.0) -> str:
+    def classify(self, crop: np.ndarray, base_score: float = 1.0, rapid_text: str = "") -> str:
         if crop is None or crop.size == 0:
             return 'printed'
         
@@ -31,19 +31,35 @@ class RegionClassifier:
         if not contours:
             return 'printed'
 
-        # 2. Analyze component heights
+        # 2. Analyze component heights and vertical baseline positions
         heights = []
+        bottoms = []
         for c in contours:
             cx, cy, cw, ch = cv2.boundingRect(c)
             if ch > h * 0.25 and cw > 3:
                 heights.append(ch)
+                bottoms.append(cy + ch)
 
-        h_std = float(np.std(heights)) / (float(np.mean(heights)) + 1e-5) if len(heights) >= 3 else 0.0
+        if len(heights) < 3:
+            h_std = 0.0
+            b_std = 0.0
+        else:
+            h_std = float(np.std(heights)) / (float(np.mean(heights)) + 1e-5)
+            b_std = float(np.std(bottoms)) / float(h)
 
-        # High component height variance or low base printed score signals organic handwriting
-        if h_std > self.variance_threshold or base_score < self.score_threshold:
-            return 'handwritten'
-        return 'printed'
+        # Document-agnostic classification:
+        # - Printed typography: low baseline drift (b_std < 0.12), uniform heights (h_std < 0.35)
+        # - Organic handwriting: wandering baselines (b_std > 0.12), height variance (h_std > 0.38)
+        # - Strong RapidOCR printed score (> 0.70) reliably rules out handwriting unless baseline drift is extreme
+        is_handwritten = False
+        if base_score < 0.60 and (h_std > 0.28 or b_std > 0.09):
+            is_handwritten = True
+        elif base_score < 0.75 and (h_std > 0.38 or b_std > 0.14):
+            is_handwritten = True
+        elif h_std > 0.48 and b_std > 0.18:
+            is_handwritten = True
+
+        return 'handwritten' if is_handwritten else 'printed'
 
 
 class ReadingOrderRebuilder:
@@ -164,9 +180,52 @@ class MedIntelOCREngine:
         except Exception:
             pass
 
+    @staticmethod
+    def _is_hallucination(text: str, crop_w: int = 0) -> bool:
+        """
+        Document-agnostic detector for autoregressive language model hallucinations:
+        - Wikipedia / internet boilerplate strings
+        - Alphabet sequence loops (e.g., 'a b c d e f g h')
+        - Cyclical repeating n-grams
+        - Character count disproportionate to bounding box width
+        """
+        if not text:
+            return False
+        lower = text.lower().strip()
+
+        # 1. Blacklisted corpus boilerplate
+        blacklist = [
+            "what links here", "related changes", "upload file", "special pages",
+            "permanent link", "page information", "cite this page", "wikidata item",
+            "wikipedia", "wikimedia", "in the united states in the united states",
+            "of the united states of the united", "the first time of the first time",
+            "management anniversary", "cosmopolitanism formal holidays"
+        ]
+        for phrase in blacklist:
+            if phrase in lower:
+                return True
+
+        # 2. Alphabet sequence loops (e.g. 'a b c d e f g h')
+        if re.search(r'(?:[a-z]\s+){4,}[a-z]', lower):
+            return True
+
+        # 3. Repeating 2-gram to 4-gram phrase loops
+        words = lower.split()
+        if len(words) >= 6:
+            for n in range(2, 5):
+                for i in range(len(words) - 2 * n + 1):
+                    if words[i:i+n] == words[i+n:i+2*n]:
+                        return True
+
+        # 4. Extreme length disparity (e.g. 50px box generating 100 characters)
+        if crop_w > 0 and len(text) > (crop_w / 4.5) + 12:
+            return True
+
+        return False
+
     def _trocr_recognize(self, crop: np.ndarray) -> Tuple[str, float]:
         """
-        Runs TrOCR on a cropped handwritten line image.
+        Runs TrOCR on a cropped handwritten line image with anti-hallucination guardrails.
         Returns recognized string and model confidence score.
         """
         if self._trocr_processor is None or self._trocr_model is None or crop is None or crop.size == 0:
@@ -193,10 +252,16 @@ class MedIntelOCREngine:
             pil_img = Image.fromarray(rgb)
             pixel_values = self._trocr_processor(pil_img, return_tensors='pt').pixel_values
 
+            # Width-proportional max token constraint prevents runaway generation
+            max_tokens = min(32, max(8, int(w / 7)))
+
             with torch.no_grad():
                 generated_outputs = self._trocr_model.generate(
                     pixel_values,
-                    max_new_tokens=32,
+                    max_new_tokens=max_tokens,
+                    repetition_penalty=2.0,
+                    no_repeat_ngram_size=3,
+                    early_stopping=True,
                     return_dict_in_generate=True,
                     output_scores=True
                 )
@@ -260,22 +325,30 @@ class MedIntelOCREngine:
                         xmin, xmax = max(0, min(xs)), min(w_img, max(xs))
                         ymin, ymax = max(0, min(ys)), min(h_img, max(ys))
                         crop = image[ymin:ymax, xmin:xmax]
-                        region_type = self.classifier.classify(crop, base_score=rapid_score)
+                        crop_w = xmax - xmin
+                        
+                        rapid_text_clean = rapid_text.replace('\u53e3', '[ ]').replace('\u25a1', '[ ]')
+                        region_type = self.classifier.classify(crop, base_score=rapid_score, rapid_text=rapid_text_clean)
 
                         if region_type == 'handwritten' and self._trocr_model is not None:
                             # ROUTE TO TrOCR FOR HANDWRITING
                             trocr_text, trocr_conf = self._trocr_recognize(crop)
-                            if trocr_text:
+                            
+                            # Anti-hallucination validation
+                            if trocr_text and not self._is_hallucination(trocr_text, crop_w=crop_w):
                                 final_text = self.postprocessor.clean_text(trocr_text)
                                 model_used = 'trocr-handwritten'
                                 final_conf = trocr_conf
                             else:
-                                final_text = self.postprocessor.clean_text(rapid_text)
-                                model_used = 'rapidocr-fallback'
+                                if trocr_text:
+                                    logger.warning(f"Discarded hallucinated TrOCR generation: {repr(trocr_text)}. Falling back to RapidOCR.")
+                                final_text = self.postprocessor.clean_text(rapid_text_clean)
+                                model_used = 'rapidocr-fallback' if trocr_text else 'rapidocr-printed'
                                 final_conf = rapid_score
+                                region_type = 'printed'
                         else:
                             # ROUTE TO RapidOCR FOR PRINTED TEXT
-                            final_text = self.postprocessor.clean_text(rapid_text)
+                            final_text = self.postprocessor.clean_text(rapid_text_clean)
                             model_used = 'rapidocr-printed'
                             final_conf = rapid_score
 
@@ -298,13 +371,19 @@ class MedIntelOCREngine:
             for idx, r in enumerate(detected_regions):
                 xmin, ymin, xmax, ymax = r['bbox']
                 crop = r['crop']
+                crop_w = xmax - xmin
                 region_type = self.classifier.classify(crop)
                 
                 if self._trocr_model is not None:
                     trocr_text, trocr_conf = self._trocr_recognize(crop)
-                    final_text = self.postprocessor.clean_text(trocr_text) if trocr_text else f'[Text Region {idx + 1}]'
-                    model_used = 'trocr-handwritten'
-                    conf = trocr_conf if trocr_text else 0.70
+                    if trocr_text and not self._is_hallucination(trocr_text, crop_w=crop_w):
+                        final_text = self.postprocessor.clean_text(trocr_text)
+                        model_used = 'trocr-handwritten'
+                        conf = trocr_conf
+                    else:
+                        final_text = f'[Text Region {idx + 1}]'
+                        model_used = 'opencv-contour'
+                        conf = 0.70
                 else:
                     final_text = f'[Text Region {idx + 1}]'
                     model_used = 'opencv-contour'

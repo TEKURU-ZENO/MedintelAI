@@ -31,6 +31,9 @@ outputs/
 ehthumbs.db
 Thumbs.db
 
-# Large dataset directories
+# Large dataset directories & model weights
 datasets/cvl-database-1-1/
 datasets/archive/
+app/ai/models/
+*.safetensors
+*.bin

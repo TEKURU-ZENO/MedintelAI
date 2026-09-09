@@ -5,7 +5,7 @@ import torch
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from torch.utils.data import Dataset, DataLoader
-from transformers import TrOCRProcessor, VisionEncoderDecoderModel, AdamW
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 
 # Ensure repository root is on sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -14,35 +14,58 @@ from app.ai.ocr.medical_postprocessor import MedicalVocabularyPostProcessor
 
 class MedicalHandwritingDataset(Dataset):
     """
-    Medical Handwriting Dataset with paired line images and clinical ground truth.
-    Generates realistic synthetic variations of physician handwriting:
-    varying stroke widths, angles, cursive noise, and real medical regimens.
+    Document-Agnostic Medical Handwriting Dataset with paired line images and clinical ground truth.
+    Generates realistic variations of medical handwritten notes, form entries, lab values, and regimens:
+    varying stroke widths, angles, cursive slant, paper grain, and clinical domain terminology.
     """
     
-    PRESCRIPTION_TEMPLATES = [
+    DOCUMENT_TEMPLATES = [
+        # 1. Clinical Bedside Notes & Physical Exam
+        "Patient presents with acute onset of fever and persistent cough",
+        "Past Medical History: Type 2 Diabetes Mellitus, Hypertension",
+        "Physical Exam: Lungs clear to auscultation bilaterally, abdomen soft",
+        "Impression: Acute upper respiratory tract infection, mild dehydration",
+        "Plan: Rest, oral hydration, symptomatic relief, follow-up in 5 days",
+        "Vital Signs: BP 120/80 mmHg, HR 72 bpm, Temp 98.6 F, SpO2 98%",
+        "Chest X-Ray shows no active pulmonary infiltrate or effusion",
+
+        # 2. Administrative & Form Entries (Demographics, Conditions, Checkboxes)
+        "Applicant's Name: Rahul Kumar, DOB: 05/09/1984, Sex: Male",
+        "Mailing Address: 1422 Medical Center Blvd, Suite 300",
+        "Cardiovascular: Regular rate and rhythm, no murmurs noted",
+        "Neurological: Alert and oriented x3, cranial nerves II-XII intact",
+        "Dementia / Hypoglycemia: Negative, patient reports no episodes",
+        "Loss of Consciousness: Denies syncope, seizure, or lightheadedness",
+        "How long treated: 3 years. Frequency: routine semi-annual follow-up",
+        "Date of last examination: 05/09/2026 by primary care physician",
+        "Diagnoses: Essential hypertension, seasonal allergic rhinitis",
+        "Treatment: Medical management with oral pharmacotherapy",
+
+        # 3. Laboratory Values & Diagnostic Observations
+        "Complete Blood Count: WBC 6.8 K/uL, Hemoglobin 14.2 g/dL, Platelets 220 K/uL",
+        "Comprehensive Metabolic Panel: Serum Sodium 138 mEq/L, Potassium 4.2 mEq/L",
+        "Fasting Blood Glucose: 104 mg/dL, Glycated Hemoglobin HbA1c: 6.1%",
+        "Renal Function: Blood Urea Nitrogen 14 mg/dL, Serum Creatinine 0.9 mg/dL",
+        "Lipid Profile: Total Cholesterol 185 mg/dL, Triglycerides 140 mg/dL",
+
+        # 4. Prescriptions & Pharmaceutical Regimens
         "Tab Amoxicillin {dosage} - {freq} x {duration}",
-        "Cap Augmentin {dosage} - {freq} x {duration}",
-        "Tab Paracetamol 650 mg - {freq} SOS",
-        "Tab Metformin 500 mg - {freq} with meals",
-        "Tab Atorvastatin 20 mg - 0-0-1 at bedtime",
-        "Cap Omeprazole 20 mg - 1-0-0 before breakfast",
-        "Tab Pantoprazole 40 mg - 1-0-0 AC",
-        "Tab Cetirizine 10 mg - 0-0-1 for allergies",
-        "Syp Cough Relief 10 ml - {freq} x {duration}",
-        "Tab Azithromycin 500 mg - 1-0-0 x 3 days",
-        "Tab Ciprofloxacin 500 mg - {freq} x {duration}",
-        "Tab Ibuprofen 400 mg - {freq} after food",
-        "Dolo 650 mg - 1-0-1 SOS fever",
-        "Tab Montelukast 10 mg - 0-0-1 at night",
-        "Tab Amlodipine 5 mg - 1-0-0 daily",
-        "Tab Telmisartan 40 mg - 1-0-0 morning"
+        "Cap Augmentin 625 mg - 1-0-1 x 5 days after meals",
+        "Tab Paracetamol 650 mg - {freq} SOS for fever",
+        "Tab Metformin 500 mg - {freq} with breakfast and dinner",
+        "Tab Atorvastatin 20 mg - 0-0-1 at bedtime orally",
+        "Cap Omeprazole 20 mg - 1-0-0 30 mins before breakfast",
+        "Tab Pantoprazole 40 mg - 1-0-0 AC morning",
+        "Tab Cetirizine 10 mg - 0-0-1 PRN allergic symptoms",
+        "Syp Cough Relief 10 ml - {freq} at night x {duration}",
+        "Tab Azithromycin 500 mg - 1-0-0 x 3 days stat"
     ]
 
     DOSAGES = ["250 mg", "500 mg", "650 mg", "100 mg", "50 mg", "20 mg", "10 mg"]
-    FREQUENCIES = ["1-0-1", "1-1-1", "1-0-0", "0-0-1", "0-1-0", "BID", "TID", "OD", "SOS"]
-    DURATIONS = ["3 days", "5 days", "7 days", "10 days", "14 days", "1 month"]
+    FREQUENCIES = ["1-0-1", "1-1-1", "1-0-0", "0-0-1", "BID", "TID", "OD", "SOS"]
+    DURATIONS = ["3 days", "5 days", "7 days", "10 days", "14 days"]
 
-    def __init__(self, processor, size: int = 120):
+    def __init__(self, processor, size: int = 40):
         self.processor = processor
         self.size = size
         self.samples = self._generate_samples(size)
@@ -50,7 +73,7 @@ class MedicalHandwritingDataset(Dataset):
     def _generate_samples(self, n: int):
         samples = []
         for _ in range(n):
-            template = random.choice(self.PRESCRIPTION_TEMPLATES)
+            template = random.choice(self.DOCUMENT_TEMPLATES)
             text = template.format(
                 dosage=random.choice(self.DOSAGES),
                 freq=random.choice(self.FREQUENCIES),
