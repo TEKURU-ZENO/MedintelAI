@@ -1,8 +1,8 @@
 #!/bin/bash
-# MedIntel AI ? Medical Document OCR Production Deployment Script
+# OCR Document Reading System Production Deployment Script
 
 echo "====================================================="
-echo "   Deploying MedIntel AI ? Medical OCR System       "
+echo "   Deploying OCR Document Reading System             "
 echo "====================================================="
 
 # Stop existing containers if running
@@ -14,7 +14,7 @@ echo "[2/3] Building production containers..."
 docker-compose build --no-cache
 
 # Launch services in detached mode
-echo "[3/3] Launching MedIntel OCR services..."
+echo "[3/3] Launching OCR Document Reading System services..."
 docker-compose up -d
 
 echo "====================================================="

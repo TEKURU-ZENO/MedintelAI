@@ -8,7 +8,7 @@ from app.ai.pipeline.batch_processor import BatchProcessor
 logger = get_logger("run_pipeline")
 
 def main():
-    parser = argparse.ArgumentParser(description="MedIntel AI — Medical Document OCR Engine")
+    parser = argparse.ArgumentParser(description="OCR Document Reading System Engine")
     parser.add_argument("--config", type=str, default="config/default.yaml", help="Path to default configuration")
     parser.add_argument("--input", type=str, help="Path to input medical document image file")
     parser.add_argument("--dir", type=str, help="Path to input directory for batch OCR processing")
@@ -19,7 +19,7 @@ def main():
     if not (args.input or args.dir):
         parser.error("Must provide either --input or --dir")
         
-    logger.info("Initializing MedIntel AI Medical OCR Engine")
+    logger.info("Initializing OCR Document Reading System Engine")
     
     main_config = load_config(args.config) if os.path.exists(args.config) else {}
     prep_cfg_path = "config/preprocessing.yaml"

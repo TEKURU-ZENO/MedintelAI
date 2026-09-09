@@ -8,9 +8,9 @@ import tempfile
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
-    title="MedIntel AI — Medical Document OCR API",
+    title="OCR Document Reading System API",
     version="1.0.0",
-    description="Production Medical OCR Engine combining OpenCV preprocessing, PaddleOCR layout detection, and TrOCR handwriting extraction.",
+    description="Production Document OCR Engine combining OpenCV preprocessing, RapidOCR layout detection, and TrOCR handwriting extraction.",
 )
 
 # CORS Setup
@@ -32,12 +32,12 @@ except Exception as e:
 
 @app.get("/health", tags=["System"])
 async def health_check():
-    """Returns 200 OK if MedIntel OCR server is running."""
+    """Returns 200 OK if OCR Document Reading System server is running."""
     logger.info("Health check endpoint pinged")
-    return {"status": "ok", "system": "MedIntel AI OCR Engine", "version": "1.0.0"}
+    return {"status": "ok", "system": "OCR Document Reading System", "version": "1.0.0"}
 
 from app.api.ocr import router as ocr_router
-app.include_router(ocr_router, prefix="/ocr", tags=["MedIntel OCR Engine"])
+app.include_router(ocr_router, prefix="/ocr", tags=["OCR Document Reading System"])
 
 try:
     from app.api.auth import router as auth_router

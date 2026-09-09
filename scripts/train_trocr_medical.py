@@ -181,7 +181,7 @@ class HybridDocumentDataset(Dataset):
 
 def train_trocr(epochs: int = 1, batch_size: int = 4, lr: float = 5e-5, model_id: str = "microsoft/trocr-small-handwritten"):
     print("=" * 80)
-    print(f"MEDINTEL AI — TrOCR MULTI-SOURCE FINE-TUNING ({model_id})")
+    print(f"OCR DOCUMENT READING SYSTEM — TrOCR MULTI-SOURCE FINE-TUNING ({model_id})")
     print("=" * 80)
 
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app", "ai", "models", "trocr_medical_finetuned"))
@@ -240,7 +240,7 @@ def train_trocr(epochs: int = 1, batch_size: int = 4, lr: float = 5e-5, model_id
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Train MedIntel TrOCR model")
+    parser = argparse.ArgumentParser(description="Train OCR Document Reading System TrOCR model")
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--model_id", type=str, default="microsoft/trocr-small-handwritten")

@@ -1,7 +1,7 @@
-# MedIntel AI ? Medical Document OCR Production Deployment Script (PowerShell)
+# OCR Document Reading System Production Deployment Script (PowerShell)
 
 Write-Host "=====================================================" -ForegroundColor Cyan
-Write-Host "   Deploying MedIntel AI ? Medical OCR System       " -ForegroundColor Cyan
+Write-Host "   Deploying OCR Document Reading System             " -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor Cyan
 
 # Stop existing containers if running
@@ -13,7 +13,7 @@ Write-Host "[2/3] Building production containers..." -ForegroundColor Yellow
 docker-compose build --no-cache
 
 # Launch services
-Write-Host "[3/3] Launching MedIntel OCR services..." -ForegroundColor Yellow
+Write-Host "[3/3] Launching OCR Document Reading System services..." -ForegroundColor Yellow
 docker-compose up -d
 
 Write-Host "=====================================================" -ForegroundColor Green

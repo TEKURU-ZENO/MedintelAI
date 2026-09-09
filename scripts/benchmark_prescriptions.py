@@ -76,7 +76,7 @@ def run_prescription_benchmark():
     ]
 
     print("=" * 80)
-    print("MEDINTEL AI — PRESCRIPTION HANDWRITING OCR BENCHMARK")
+    print("OCR DOCUMENT READING SYSTEM — PRESCRIPTION HANDWRITING BENCHMARK")
     print("Evaluating TrOCR (Handwritten) + RapidOCR (Printed) + Medical PostProcessor")
     print("=" * 80)
 

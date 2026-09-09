@@ -63,7 +63,7 @@ def run_benchmark():
         return
 
     print("==========================================================================")
-    print("      MEDINTEL AI ? GENERAL MEDICAL DOCUMENT OCR BENCHMARK REPORT         ")
+    print("      OCR DOCUMENT READING SYSTEM — GENERAL BENCHMARK REPORT             ")
     print("==========================================================================")
     print(f"{'Category':<24} | {'CER':<8} | {'WER':<8} | {'Avg Latency':<12} | {'Pages'}")
     print("-" * 74)
@@ -132,7 +132,7 @@ def run_benchmark():
 
     output_data = {
         "status": "success",
-        "system": "MedIntel General Medical Document OCR Engine",
+        "system": "OCR Document Reading System Engine",
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
         "overall": {
             "cer": f"{sum(all_cer)/max(1, len(all_cer)) * 100:.1f}%",

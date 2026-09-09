@@ -1,12 +1,12 @@
-# MedIntel AI ? Medical Document OCR Production Deployment Guide
+# OCR Document Reading System — Production Deployment Guide
 
-This guide covers deploying the **MedIntel AI Medical Document OCR System** on Vercel, Docker, or Cloud Virtual Machines (AWS, DigitalOcean, Azure, GCP).
+This guide covers deploying the **OCR Document Reading System** on Vercel, Docker, or Cloud Virtual Machines (AWS, DigitalOcean, Azure, GCP).
 
 ---
 
 ## 1. Vercel Cloud Deployment
 
-MedIntel AI includes pre-configured **`vercel.json`**, **`.python-version` (3.10)**, and **`api/index.py`** serverless entrypoint for instant deployment on Vercel.
+The OCR Document Reading System includes pre-configured **`vercel.json`**, **`.python-version` (3.10)**, and **`api/index.py`** serverless entrypoint for instant deployment on Vercel.
 
 ### Vercel Setup Steps:
 1. Connect your GitHub repository `TEKURU-ZENO/MedintelAI` on [Vercel.com](https://vercel.com).

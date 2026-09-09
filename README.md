@@ -1,6 +1,6 @@
-# MedIntel AI - Medical Document OCR Engine & Verification System
+# OCR Document Reading System — Document OCR Engine & Verification System
 
-MedIntel AI is a production-grade medical document OCR engine combining OpenCV document image preprocessing, PaddleOCR layout & printed text extraction, TrOCR handwriting recognition, confidence status classification, and an interactive dual-pane clinician verification UI.
+OCR Document Reading System is a production-grade document OCR engine combining OpenCV document image preprocessing, RapidOCR layout & printed text extraction, TrOCR handwriting recognition, confidence status classification, and an interactive dual-pane verification UI.
 
 ---
 

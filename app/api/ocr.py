@@ -98,7 +98,7 @@ async def submit_correction(req: CorrectionRequest):
         logger.error(f'Failed to save correction: {e}')
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get('/benchmark', summary='Retrieve MedIntel OCR benchmark performance report across document categories')
+@router.get('/benchmark', summary='Retrieve OCR Document Reading System benchmark performance report across document categories')
 async def get_benchmark_report():
     # Check outputs/ or TEMP_BASE
     paths = ['outputs/benchmark_results.json', os.path.join(TEMP_BASE, 'benchmark_results.json')]
@@ -113,7 +113,7 @@ async def get_benchmark_report():
             
     return {
         'status': 'success',
-        'system': 'MedIntel General Medical Document OCR Engine',
+        'system': 'OCR Document Reading System Engine',
         'metrics': {
             'prescriptions': {'cer': '8.5%', 'wer': '14.2%', 'avg_time_sec': 0.12},
             'lab_reports': {'cer': '2.1%', 'wer': '4.3%', 'avg_time_sec': 0.14},

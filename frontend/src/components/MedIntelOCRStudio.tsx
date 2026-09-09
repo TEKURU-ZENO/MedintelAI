@@ -341,8 +341,8 @@ export default function MedIntelOCRStudio() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-sm font-bold text-white font-mono leading-none">MedIntel OCR Console</h1>
-                <p className="text-[10px] text-slate-400 mt-0.5">Clinical Document Ingestion &amp; Reading Order Studio</p>
+                <h1 className="text-sm font-bold text-white font-mono leading-none">OCR Document Reading System</h1>
+                <p className="text-[10px] text-slate-400 mt-0.5">Document Ingestion &amp; Reading Order Studio</p>
               </div>
             </div>
           </div>

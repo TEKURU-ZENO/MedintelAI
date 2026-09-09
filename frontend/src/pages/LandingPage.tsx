@@ -28,10 +28,10 @@ export default function LandingPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-lg font-bold tracking-tight text-white font-mono">MedIntel</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 font-semibold border border-teal-500/30">AI OCR v2.0</span>
+                <span className="text-base sm:text-lg font-bold tracking-tight text-white font-mono">OCR Document Reading System</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 font-semibold border border-teal-500/30">v2.0</span>
               </div>
-              <p className="text-[10px] text-slate-400">Medical Document Intelligence Platform</p>
+              <p className="text-[10px] text-slate-400">Intelligent Document Extraction Platform</p>
             </div>
           </div>
 
@@ -315,9 +315,9 @@ export default function LandingPage() {
       <footer className="border-t border-slate-900 py-8 bg-slate-950 text-slate-500 text-xs">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-300 font-mono">MedIntel AI</span>
+            <span className="font-bold text-slate-300 font-mono">OCR Document Reading System</span>
             <span>•</span>
-            <span>General-Purpose Medical Document OCR Platform</span>
+            <span>Document-Agnostic Intelligent OCR Platform</span>
           </div>
           <div>
             <span>Runs locally with ONNX Runtime • Zero cloud data leakage</span>

@@ -13,7 +13,7 @@ from scripts.benchmark_ocr import calculate_cer, calculate_wer
 
 def benchmark_report_dataset(samples: int = 10):
     print("=" * 76)
-    print("      MEDINTEL AI — REPORT DATASET (FUNSD) BENCHMARK REPORT")
+    print("      OCR DOCUMENT READING SYSTEM — REPORT DATASET BENCHMARK REPORT")
     print("=" * 76)
 
     loader = FUNSDLoader("datasets/report dataset")
@@ -97,7 +97,7 @@ def benchmark_report_dataset(samples: int = 10):
     print(f"Benchmark results saved to: {report_file}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Benchmark MedIntel OCR on Report Dataset")
+    parser = argparse.ArgumentParser(description="Benchmark OCR Document Reading System on Report Dataset")
     parser.add_argument("--samples", type=int, default=10, help="Number of test samples (default: 10, 0 for all 50)")
     args = parser.parse_args()
     benchmark_report_dataset(samples=args.samples)
