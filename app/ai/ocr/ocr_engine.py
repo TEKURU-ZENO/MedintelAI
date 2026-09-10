@@ -1,10 +1,13 @@
 import os
 import re
 import cv2
+import time
+import json
 import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
 from app.ai.utils.logger import get_logger
 from app.ai.ocr.medical_postprocessor import MedicalVocabularyPostProcessor
+from app.ai.preprocessing.preprocessing_pipeline import run_screen_preprocessing
 
 logger = get_logger(__name__)
 
@@ -307,21 +310,189 @@ class MedIntelOCREngine:
                 })
         return regions
 
-    def process_document(self, image: np.ndarray, doc_name: str = 'document', page_num: int = 1) -> Dict[str, Any]:
+    def _recognize_line_group(self, group: List[Dict[str, Any]], image: np.ndarray) -> Optional[Dict[str, Any]]:
+        """
+        Takes a group of horizontally adjacent detection items on the same baseline,
+        crops the entire consolidated line from the high-res image, and runs line-level recognition.
+        """
+        if not group:
+            return None
+        h_img, w_img = image.shape[:2]
+
+        xmin = max(0, min(it['bbox'][0] for it in group))
+        ymin = max(0, min(it['bbox'][1] for it in group))
+        xmax = min(w_img, max(it['bbox'][2] for it in group))
+        ymax = min(h_img, max(it['bbox'][3] for it in group))
+
+        # Add 2px margin to ensure full ascenders/descenders are captured
+        c_ymin = max(0, ymin - 2)
+        c_ymax = min(h_img, ymax + 2)
+        c_xmin = max(0, xmin - 2)
+        c_xmax = min(w_img, xmax + 2)
+
+        line_crop = image[c_ymin:c_ymax, c_xmin:c_xmax]
+        crop_w = c_xmax - c_xmin
+
+        joined_text = " ".join(it['text'].strip() for it in group if it.get('text')).strip()
+        avg_conf = float(np.mean([it['confidence'] for it in group]))
+
+        # Pure morphological classification: variance of stroke and baseline drift
+        region_type = self.classifier.classify(line_crop, base_score=avg_conf, rapid_text=joined_text)
+
+        final_text = joined_text
+        final_conf = avg_conf
+        model_used = 'rapidocr-printed'
+
+        if region_type == 'handwritten' and self._trocr_model is not None:
+            trocr_text, trocr_conf = self._trocr_recognize(line_crop)
+            if trocr_text and not self._is_hallucination(trocr_text, crop_w=crop_w):
+                final_text = trocr_text
+                final_conf = trocr_conf
+                model_used = 'trocr-handwritten'
+            else:
+                model_used = 'rapidocr-fallback'
+                region_type = 'printed'
+        else:
+            # Printed line recognition on the complete line crop
+            if len(group) > 1 and self._rapid_ocr is not None and hasattr(self._rapid_ocr, 'text_recognizer') and line_crop.size > 0:
+                try:
+                    rec_res, _ = self._rapid_ocr.text_recognizer([line_crop])
+                    if rec_res and rec_res[0][0] and float(rec_res[0][1]) > 0.78:
+                        rec_line_text = rec_res[0][0].strip()
+                        # If recognized line is valid and not severely truncated
+                        if abs(len(rec_line_text) - len(joined_text)) <= max(4, int(len(joined_text) * 0.4)):
+                            final_text = rec_line_text
+                            final_conf = float(rec_res[0][1])
+                except Exception:
+                    pass
+
+        final_text = self.postprocessor.clean_text(final_text)
+        if not final_text:
+            return None
+
+        bw = max(1, xmax - xmin)
+        bh = max(1, ymax - ymin)
+        norm_bbox = [
+            round(float(xmin) / max(1, w_img), 5),
+            round(float(ymin) / max(1, h_img), 5),
+            round(float(xmax) / max(1, w_img), 5),
+            round(float(ymax) / max(1, h_img), 5)
+        ]
+
+        return {
+            'text': final_text,
+            'confidence': round(final_conf, 4),
+            'source': region_type,
+            'model_used': model_used,
+            'bbox': [xmin, ymin, xmax, ymax],
+            'normalized_bbox': norm_bbox,
+            'width': bw,
+            'height': bh,
+            'status': self._get_status(final_conf)
+        }
+
+    def group_and_merge_lines(self, items: List[Dict[str, Any]], image: np.ndarray) -> List[Dict[str, Any]]:
+        """
+        Consolidates detection fragments into complete text-line candidates using spatial
+        baseline overlap and horizontal proximity, then runs complete line recognition.
+        """
+        if not items:
+            return []
+
+        # 1. Filter micro-noise fragments
+        valid_items = []
+        for it in items:
+            w = it['bbox'][2] - it['bbox'][0]
+            h = it['bbox'][3] - it['bbox'][1]
+            conf = it['confidence']
+            text = it.get('text', '')
+            if w < 6 or h < 6:
+                continue
+            if conf < 0.40 and len(text) <= 2:
+                continue
+            valid_items.append(it)
+
+        if not valid_items:
+            valid_items = items
+
+        # 2. Sort primarily by ymin, secondarily by xmin
+        sorted_items = sorted(valid_items, key=lambda b: (b['bbox'][1], b['bbox'][0]))
+
+        # 3. Cluster into lines based on baseline overlap
+        lines = []
+        for item in sorted_items:
+            b_ymin, b_ymax = item['bbox'][1], item['bbox'][3]
+            b_h = max(1, b_ymax - b_ymin)
+            b_mid = (b_ymin + b_ymax) / 2.0
+
+            placed = False
+            for line in lines:
+                line_ymin = min(it['bbox'][1] for it in line)
+                line_ymax = max(it['bbox'][3] for it in line)
+                line_h = max(1, line_ymax - line_ymin)
+                line_mid = (line_ymin + line_ymax) / 2.0
+
+                overlap = max(0, min(b_ymax, line_ymax) - max(b_ymin, line_ymin))
+                overlap_ratio = overlap / min(b_h, line_h)
+                mid_diff = abs(b_mid - line_mid)
+
+                if overlap_ratio >= 0.45 or mid_diff <= 0.4 * min(b_h, line_h):
+                    line.append(item)
+                    placed = True
+                    break
+            if not placed:
+                lines.append([item])
+
+        # 4. Within each line, merge adjacent boxes into complete line crops
+        consolidated_blocks = []
+        for line in lines:
+            line.sort(key=lambda it: it['bbox'][0])
+
+            cur_group = []
+            for item in line:
+                if not cur_group:
+                    cur_group = [item]
+                else:
+                    prev_x2 = max(it['bbox'][2] for it in cur_group)
+                    cur_x1 = item['bbox'][0]
+                    line_h = max(max(it['bbox'][3] - it['bbox'][1] for it in cur_group), item['bbox'][3] - item['bbox'][1])
+                    gap = cur_x1 - prev_x2
+
+                    if -0.3 * line_h <= gap <= 2.2 * line_h:
+                        cur_group.append(item)
+                    else:
+                        block = self._recognize_line_group(cur_group, image)
+                        if block:
+                            consolidated_blocks.append(block)
+                        cur_group = [item]
+            if cur_group:
+                block = self._recognize_line_group(cur_group, image)
+                if block:
+                    consolidated_blocks.append(block)
+
+        consolidated_blocks.sort(key=lambda b: (b['bbox'][1], b['bbox'][0]))
+        return consolidated_blocks
+
+    def process_document(
+        self,
+        image: np.ndarray,
+        doc_name: str = 'document',
+        page_num: int = 1,
+        input_mode: str = 'auto',
+        debug: bool = False
+    ) -> Dict[str, Any]:
         """
         True Hybrid Processing Pipeline:
-        1. Detects text bounding boxes.
-        2. Classifies each crop as printed or handwritten.
-        3. Routes:
-           - Printed regions -> RapidOCR
-           - Handwritten regions -> TrOCR (VisionEncoderDecoder)
-        4. Applies medical lexicon normalization.
-        5. Rebuilds 2D reading order.
+        1. High-resolution text detection.
+        2. Spatial grouping into complete line candidates.
+        3. Line-level crop recognition (RapidOCR / TrOCR).
+        4. Medical lexicon normalization.
+        5. Reading-order reconstruction.
         """
         h_img, w_img = image.shape[:2]
-        raw_blocks = []
+        raw_items = []
 
-        # 1. Primary: RapidOCR Detection & Hybrid Recognition Routing
+        # 1. Primary: RapidOCR Detection
         if self._rapid_ocr is not None:
             try:
                 ocr_results, elapse = self._rapid_ocr(image)
@@ -332,107 +503,39 @@ class MedIntelOCREngine:
                         ys = [int(p[1]) for p in box]
                         xmin, xmax = max(0, min(xs)), min(w_img, max(xs))
                         ymin, ymax = max(0, min(ys)), min(h_img, max(ys))
-                        crop = image[ymin:ymax, xmin:xmax]
-                        crop_w = xmax - xmin
-                        
+
                         rapid_text_clean = rapid_text.replace('\u53e3', '[ ]').replace('\u25a1', '[ ]')
-                        region_type = self.classifier.classify(crop, base_score=rapid_score, rapid_text=rapid_text_clean)
-
-                        if region_type == 'handwritten' and self._trocr_model is not None:
-                            # ROUTE TO TrOCR FOR HANDWRITING
-                            trocr_text, trocr_conf = self._trocr_recognize(crop)
-                            
-                            # Anti-hallucination validation
-                            if trocr_text and not self._is_hallucination(trocr_text, crop_w=crop_w):
-                                final_text = self.postprocessor.clean_text(trocr_text)
-                                model_used = 'trocr-handwritten'
-                                final_conf = trocr_conf
-                            else:
-                                if trocr_text:
-                                    logger.warning(f"Discarded hallucinated TrOCR generation: {repr(trocr_text)}. Falling back to RapidOCR.")
-                                final_text = self.postprocessor.clean_text(rapid_text_clean)
-                                model_used = 'rapidocr-fallback' if trocr_text else 'rapidocr-printed'
-                                final_conf = rapid_score
-                                region_type = 'printed'
-                        else:
-                            # ROUTE TO RapidOCR FOR PRINTED TEXT
-                            final_text = self.postprocessor.clean_text(rapid_text_clean)
-                            model_used = 'rapidocr-printed'
-                            final_conf = rapid_score
-
-                        status = self._get_status(final_conf)
-                        bw = max(1, xmax - xmin)
-                        bh = max(1, ymax - ymin)
-                        norm_bbox = [
-                            round(float(xmin) / max(1, w_img), 5),
-                            round(float(ymin) / max(1, h_img), 5),
-                            round(float(xmax) / max(1, w_img), 5),
-                            round(float(ymax) / max(1, h_img), 5)
-                        ]
-                        raw_blocks.append({
-                            'id': f'block_{idx + 1}',
-                            'text': final_text,
-                            'confidence': round(final_conf, 4),
-                            'source': region_type,
-                            'model_used': model_used,
-                            'bbox': [xmin, ymin, xmax, ymax],
-                            'normalized_bbox': norm_bbox,
-                            'width': bw,
-                            'height': bh,
-                            'status': status
+                        raw_items.append({
+                            'id': f'raw_{idx + 1}',
+                            'text': rapid_text_clean,
+                            'confidence': round(rapid_score, 4),
+                            'bbox': [xmin, ymin, xmax, ymax]
                         })
             except Exception as e:
                 logger.error(f'RapidOCR execution failed: {e}')
 
         # 2. Secondary: Contour Detection Fallback
-        if not raw_blocks:
+        if not raw_items:
             detected_regions = self.detect_regions(image)
             for idx, r in enumerate(detected_regions):
                 xmin, ymin, xmax, ymax = r['bbox']
-                crop = r['crop']
-                crop_w = xmax - xmin
-                region_type = self.classifier.classify(crop)
-                
-                if self._trocr_model is not None:
-                    trocr_text, trocr_conf = self._trocr_recognize(crop)
-                    if trocr_text and not self._is_hallucination(trocr_text, crop_w=crop_w):
-                        final_text = self.postprocessor.clean_text(trocr_text)
-                        model_used = 'trocr-handwritten'
-                        conf = trocr_conf
-                    else:
-                        final_text = f'[Text Region {idx + 1}]'
-                        model_used = 'opencv-contour'
-                        conf = 0.70
-                else:
-                    final_text = f'[Text Region {idx + 1}]'
-                    model_used = 'opencv-contour'
-                    conf = 0.70
-
-                status = self._get_status(conf)
-                bw = max(1, xmax - xmin)
-                bh = max(1, ymax - ymin)
-                norm_bbox = [
-                    round(float(xmin) / max(1, w_img), 5),
-                    round(float(ymin) / max(1, h_img), 5),
-                    round(float(xmax) / max(1, w_img), 5),
-                    round(float(ymax) / max(1, h_img), 5)
-                ]
-                raw_blocks.append({
-                    'id': f'block_{idx + 1}',
-                    'text': final_text,
-                    'confidence': round(conf, 4),
-                    'source': region_type,
-                    'model_used': model_used,
-                    'bbox': [xmin, ymin, xmax, ymax],
-                    'normalized_bbox': norm_bbox,
-                    'width': bw,
-                    'height': bh,
-                    'status': status
+                raw_items.append({
+                    'id': f'raw_{idx + 1}',
+                    'text': '',
+                    'confidence': 0.70,
+                    'bbox': [xmin, ymin, xmax, ymax]
                 })
 
-        # Reconstruct reading order and produce coherent plain text (raw_text)
-        sorted_blocks, raw_text = self.rebuilder.rebuild_order(raw_blocks)
+        # 3. Spatial Line Grouping & Complete Line Crop Recognition
+        consolidated_blocks = self.group_and_merge_lines(raw_items, image)
+
+        # 4. Reconstruct 2D reading order and clean text
+        sorted_blocks, raw_text = self.rebuilder.rebuild_order(consolidated_blocks)
         overall_conf = float(np.mean([b['confidence'] for b in sorted_blocks])) if sorted_blocks else 0.0
+
+        # 5. Debug Artifacts
+        if debug or os.environ.get('DEBUG_OCR', '').lower() in ('true', '1'):
+            self._save_debug_artifacts(image, sorted_blocks, doc_name)
 
         return {
             'status': 'success',
@@ -446,18 +549,27 @@ class MedIntelOCREngine:
             'raw_text': raw_text
         }
 
-    def process_region(self, image: np.ndarray, region_bbox: List[int], doc_name: str = 'snippet') -> Dict[str, Any]:
+    def process_region(
+        self,
+        image: np.ndarray,
+        region_bbox: List[int],
+        doc_name: str = 'snippet',
+        input_mode: str = 'screen'
+    ) -> Dict[str, Any]:
         """
         Processes a focused sub-region / marquee snippet within a larger document.
-        Crops image[ymin:ymax, xmin:xmax], executes the hybrid pipeline,
-        and translates all detected bounding boxes back to the global coordinates of the original image.
+        Applies resolution-preserving upscaling (2.5x) for small crops,
+        runs line-level detection & recognition, and translates all bounding boxes
+        back to the original global coordinates.
         """
         h_img, w_img = image.shape[:2]
         rx1, ry1, rx2, ry2 = region_bbox
         rx1, rx2 = max(0, min(rx1, rx2)), min(w_img, max(rx1, rx2))
         ry1, ry2 = max(0, min(ry1, ry2)), min(h_img, max(ry1, ry2))
 
-        if (rx2 - rx1) < 10 or (ry2 - ry1) < 8:
+        crop_w = rx2 - rx1
+        crop_h = ry2 - ry1
+        if crop_w < 10 or crop_h < 8:
             return {
                 'status': 'error',
                 'message': 'Selected region too small for text recognition',
@@ -471,15 +583,31 @@ class MedIntelOCREngine:
             }
 
         snippet_crop = image[ry1:ry2, rx1:rx2]
-        res = self.process_document(snippet_crop, doc_name=doc_name)
 
-        # Offset blocks back to original document coordinate space
+        # Multi-scale upscale for screen snippets where font height may be small (12-24px)
+        scale = 1.0
+        if crop_h < 400 or input_mode in ('screen', 'digital'):
+            scale = 2.5 if crop_h < 250 else 1.8
+            upscaled_snippet = cv2.resize(snippet_crop, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+        else:
+            upscaled_snippet = snippet_crop
+
+        preproc_snippet = run_screen_preprocessing(upscaled_snippet)
+        res = self.process_document(preproc_snippet, doc_name=doc_name, input_mode=input_mode)
+
+        # Unscale coordinates back to snippet space, then offset to global document coordinates
         for b in res.get('blocks', []):
             local_x1, local_y1, local_x2, local_y2 = b['bbox']
-            gx1 = rx1 + local_x1
-            gy1 = ry1 + local_y1
-            gx2 = rx1 + local_x2
-            gy2 = ry1 + local_y2
+            ux1 = local_x1 / scale
+            uy1 = local_y1 / scale
+            ux2 = local_x2 / scale
+            uy2 = local_y2 / scale
+
+            gx1 = int(round(rx1 + ux1))
+            gy1 = int(round(ry1 + uy1))
+            gx2 = int(round(rx1 + ux2))
+            gy2 = int(round(ry1 + uy2))
+
             b['bbox'] = [gx1, gy1, gx2, gy2]
             b['normalized_bbox'] = [
                 round(float(gx1) / max(1, w_img), 5),
@@ -493,6 +621,28 @@ class MedIntelOCREngine:
         res['region_bbox'] = [rx1, ry1, rx2, ry2]
         res['image_dimensions'] = [w_img, h_img]
         return res
+
+    def _save_debug_artifacts(self, image: np.ndarray, blocks: List[Dict[str, Any]], doc_name: str):
+        """Saves annotated debug image and block JSON for visual pipeline inspection."""
+        try:
+            debug_dir = os.path.join("outputs", "debug")
+            os.makedirs(debug_dir, exist_ok=True)
+            ts = int(time.time())
+            safe_name = os.path.splitext(os.path.basename(doc_name))[0]
+
+            annotated = image.copy()
+            for b in blocks:
+                x1, y1, x2, y2 = b['bbox']
+                color = (0, 200, 0) if b.get('source') == 'printed' else (0, 140, 255)
+                cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 2)
+                cv2.putText(annotated, b['id'], (x1, max(12, y1 - 4)), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+
+            cv2.imwrite(os.path.join(debug_dir, f"{safe_name}_{ts}_lines.png"), annotated)
+            with open(os.path.join(debug_dir, f"{safe_name}_{ts}_blocks.json"), 'w', encoding='utf-8') as f:
+                json.dump(blocks, f, indent=2)
+            logger.info(f"Saved debug artifacts to {debug_dir} for {doc_name}")
+        except Exception as e:
+            logger.warning(f"Failed to save debug artifacts: {e}")
 
     def _get_status(self, conf: float) -> str:
         if conf >= 0.90:

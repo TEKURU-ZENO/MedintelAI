@@ -29,24 +29,25 @@ class PipelineController:
         self,
         document_input: Union[str, bytes, np.ndarray],
         doc_name: str = "document",
-        output_json_path: str = None,
-        output_txt_path: str = None
+        output_json_path: Optional[str] = None,
+        output_txt_path: Optional[str] = None,
+        input_mode: str = "auto"
     ) -> Dict[str, Any]:
         """
-        Processes arbitrary document (Image or PDF):
-        - Ingests all pages.
-        - Preprocesses each page with CLAHE, Bilateral Denoising, Deskewing, Binarization.
-        - Extracts text blocks, routes regions, and rebuilds reading order.
-        - Assembles multi-page results into JSON and formatted .txt.
+        Processes an uploaded medical document (image or multi-page PDF).
+        Executes preprocessing, hybrid OCR routing, 2D reading order reconstruction,
+        and saves JSON + .txt artifacts.
         """
-        logger.info(f"Ingesting document: {doc_name}")
+        logger.info(f"Ingesting document: {doc_name} (mode: {input_mode})")
+        if input_mode == 'auto' and ('screen' in doc_name.lower() or doc_name.lower().endswith('.pdf')):
+            input_mode = 'screen' if 'screen' in doc_name.lower() else 'digital'
+
         pages = load_document_pages(document_input, filename=doc_name)
-        
         if not pages:
-            logger.error(f"No valid image pages loaded for {doc_name}")
+            logger.error(f"Failed to load pages for document: {doc_name}")
             return {
                 'status': 'error',
-                'message': 'Failed to decode or render document.',
+                'message': 'Failed to decode or parse document file.',
                 'document': doc_name,
                 'pages': 0,
                 'total_blocks': 0,
@@ -61,11 +62,11 @@ class PipelineController:
 
         for idx, page_img in enumerate(pages):
             page_num = idx + 1
-            # 1. OpenCV Preprocessing
-            clean_page = run_preprocessing_pipeline(page_img, self.preprocess_config)
+            # 1. Appropriate Preprocessing (Screen / Digital vs Scanned Paper)
+            clean_page = run_preprocessing_pipeline(page_img, self.preprocess_config, input_mode=input_mode)
             
             # 2. General-Purpose OCR Engine Execution
-            page_result = self.ocr_engine.process_document(clean_page, doc_name=doc_name, page_num=page_num)
+            page_result = self.ocr_engine.process_document(clean_page, doc_name=doc_name, page_num=page_num, input_mode=input_mode)
             
             # Tag blocks with page number
             for b in page_result.get('blocks', []):
@@ -143,10 +144,13 @@ class PipelineController:
         self,
         document_input: Union[str, bytes, np.ndarray],
         region_bbox: List[int],
-        doc_name: str = "snippet"
+        doc_name: str = "snippet",
+        input_mode: str = "screen"
     ) -> Dict[str, Any]:
         """
         Processes a focused sub-region / snippet from the document.
+        Passes the original high-resolution page image directly into ocr_engine.process_region
+        so the region crop can be upscaled and preprocessed without full-page binarization.
         """
         pages = load_document_pages(document_input, filename=doc_name)
         if not pages:
@@ -157,6 +161,5 @@ class PipelineController:
                 'raw_text': ''
             }
         page_img = pages[0]
-        clean_page = run_preprocessing_pipeline(page_img, self.preprocess_config)
-        return self.ocr_engine.process_region(clean_page, region_bbox, doc_name=doc_name)
+        return self.ocr_engine.process_region(page_img, region_bbox, doc_name=doc_name, input_mode=input_mode)
 

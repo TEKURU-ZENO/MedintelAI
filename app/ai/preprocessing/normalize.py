@@ -17,28 +17,18 @@ def apply_normalization(image: np.ndarray, config: Dict[str, Any]) -> np.ndarray
     Returns:
         np.ndarray: Normalized image.
     """
-    target_height = config.get('target_height', 800)
-    maintain_aspect_ratio = config.get('maintain_aspect_ratio', True)
-    
+    # Only scale down if image exceeds maximum dimension (e.g. 4096px) to prevent OOM
+    max_dim = config.get('max_dimension', 4096)
     h, w = image.shape[:2]
     
-    if h == target_height:
+    if max(h, w) <= max_dim:
         return image
         
-    if maintain_aspect_ratio:
-        scale = target_height / float(h)
-        target_width = int(w * scale)
-    else:
-        target_width = w
-        
-    logger.debug(f"Normalizing image from {w}x{h} to {target_width}x{target_height}")
+    scale = max_dim / float(max(h, w))
+    target_width = int(w * scale)
+    target_height = int(h * scale)
+    logger.info(f"Downscaling extremely large image from {w}x{h} to {target_width}x{target_height}")
     
-    # If the image target is binary we should interpolate carefully
-    interpolation = cv2.INTER_AREA if target_height < h else cv2.INTER_CUBIC
+    interpolation = cv2.INTER_AREA
     normalized = cv2.resize(image, (target_width, target_height), interpolation=interpolation)
-    
-    # In case it is a binary image, cubic might blur the edges. Hard threshold back to binary.
-    if len(normalized.shape) == 2 and np.unique(normalized).size > 2:
-        _, normalized = cv2.threshold(normalized, 127, 255, cv2.THRESH_BINARY)
-        
     return normalized

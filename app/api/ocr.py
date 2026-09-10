@@ -23,7 +23,10 @@ class CorrectionRequest(BaseModel):
     clinician_notes: Optional[str] = None
 
 @router.post('/extract', response_model=Dict[str, Any], summary='Extract structured OCR text & reading order from arbitrary medical document (Image or PDF)')
-async def extract_ocr(file: UploadFile = File(...)):
+async def extract_ocr(
+    file: UploadFile = File(...),
+    input_mode: Optional[str] = Form(None)
+):
     valid_exts = ('.jpg', '.jpeg', '.png', '.bmp', '.pdf', '.tiff', '.webp')
     if not file.filename.lower().endswith(valid_exts):
         raise HTTPException(status_code=400, detail=f'Invalid file format. Supported formats: {", ".join(valid_exts)}')
@@ -33,7 +36,8 @@ async def extract_ocr(file: UploadFile = File(...)):
         if not contents:
             raise HTTPException(status_code=400, detail='Uploaded document is empty.')
             
-        ocr_result = controller.process_document(contents, doc_name=file.filename)
+        mode = input_mode or ('screen' if (file.filename.lower().startswith('screen_capture_') or file.filename.lower().endswith('.pdf')) else 'auto')
+        ocr_result = controller.process_document(contents, doc_name=file.filename, input_mode=mode)
         if not ocr_result or ocr_result.get('status') == 'error':
             raise HTTPException(status_code=500, detail=ocr_result.get('message', 'OCR processing failed.'))
             
@@ -50,15 +54,17 @@ async def extract_region_ocr(
     xmin: int = Form(...),
     ymin: int = Form(...),
     xmax: int = Form(...),
-    ymax: int = Form(...)
+    ymax: int = Form(...),
+    input_mode: Optional[str] = Form(None)
 ):
     try:
         contents = await file.read()
         if not contents:
             raise HTTPException(status_code=400, detail='Uploaded document is empty.')
 
+        mode = input_mode or ('screen' if (file.filename.lower().startswith('screen_capture_') or file.filename.lower().endswith('.pdf')) else 'screen')
         region_bbox = [xmin, ymin, xmax, ymax]
-        result = controller.process_region(contents, region_bbox=region_bbox, doc_name=file.filename)
+        result = controller.process_region(contents, region_bbox=region_bbox, doc_name=file.filename, input_mode=mode)
         return result
     except HTTPException:
         raise
