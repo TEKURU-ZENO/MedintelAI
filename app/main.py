@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # Mount temporary directory safely for read-only serverless environments
-temp_dir = os.path.join(tempfile.gettempdir(), "medintel_temp")
+temp_dir = os.path.join(tempfile.gettempdir(), "ocr_document_temp")
 try:
     os.makedirs(temp_dir, exist_ok=True)
     app.mount("/temp", StaticFiles(directory=temp_dir), name="temp")

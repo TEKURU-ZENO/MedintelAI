@@ -78,7 +78,7 @@ const SAMPLE_OPTIONS = [
   }
 ];
 
-export default function MedIntelOCRStudio() {
+export default function OCRDocumentStudio() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -1469,3 +1469,5 @@ export default function MedIntelOCRStudio() {
     </div>
   );
 }
+
+export const MedIntelOCRStudio = OCRDocumentStudio;

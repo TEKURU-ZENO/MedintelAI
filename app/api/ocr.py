@@ -12,7 +12,7 @@ from app.core.logging import logger
 router = APIRouter()
 controller = PipelineController()
 
-TEMP_BASE = os.path.join(tempfile.gettempdir(), 'medintel_temp')
+TEMP_BASE = os.path.join(tempfile.gettempdir(), 'ocr_document_temp')
 CORRECTIONS_FILE = os.path.join(TEMP_BASE, 'corrections.json')
 
 class CorrectionRequest(BaseModel):

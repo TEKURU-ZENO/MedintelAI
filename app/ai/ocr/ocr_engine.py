@@ -130,11 +130,12 @@ class ReadingOrderRebuilder:
         return sorted_blocks, raw_text
 
 
-class MedIntelOCREngine:
+class OCRDocumentReadingEngine:
     """
-    True Hybrid Medical OCR Engine:
+    OCR Document Reading System Hybrid Engine:
     - RapidOCR (ONNX) for detection & printed text recognition
-    - TrOCR (VisionEncoderDecoder) for handwritten clinical text recognition
+    - TrOCR (VisionEncoderDecoder) for handwritten text recognition
+    - Spatial line grouping & line-level crop recognition
     - MedicalVocabularyPostProcessor for medicine & dosage normalization
     - ReadingOrderRebuilder for 2D layout reading-order recovery
     """
@@ -651,3 +652,6 @@ class MedIntelOCREngine:
             return 'REVIEW_REQUIRED'
         else:
             return 'HUMAN_VERIFICATION_NEEDED'
+
+# Backwards-compatible alias
+MedIntelOCREngine = OCRDocumentReadingEngine

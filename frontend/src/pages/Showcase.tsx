@@ -39,7 +39,7 @@ export default function Showcase() {
             <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-glowIndigo">
                 S
             </div>
-            <span className="font-display font-bold text-textPrimary text-xl tracking-tight">Aksharabyasa</span>
+            <span className="font-display font-bold text-textPrimary text-xl tracking-tight">OCR Document Reading System</span>
             <span className="ml-2 px-2 py-0.5 bg-indigoLight text-indigo text-xs font-bold rounded-md uppercase tracking-wider">Showcase Mode</span>
           </div>
           <button

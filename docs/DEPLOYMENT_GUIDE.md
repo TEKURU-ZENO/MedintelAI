@@ -1,244 +1,174 @@
-# AksharabyasaAI — Deployment Guide
+# OCR Document Reading System — Deployment & Operations Guide
 
-> **Version:** 2.0.0 | **Stack:** Docker + FastAPI + Nginx + PostgreSQL
-
----
-
-## 1. Prerequisites
-
-| Tool | Version | Required For |
-|------|---------|-------------|
-| Docker | 24+ | Container orchestration |
-| Docker Compose | 2.x+ | Multi-service orchestration |
-| Python | 3.10+ | Local development only |
-| Node.js | 20+ | Local frontend development only |
+> **Audience:** DevOps Engineers, System Administrators, and Cloud Architects
 
 ---
 
-## 2. Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-# Database
-DATABASE_URL=postgresql://akshar_user:akshar_password@db:5432/aksharabyasa
-
-# Auth
-SECRET_KEY=<generate a secure 256-bit random hex string>
-
-# App
-ENVIRONMENT=production
-```
-
-Generate a secure `SECRET_KEY`:
-
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-> ⚠️ **Never commit a real SECRET_KEY to version control.**
-
----
-
-## 3. Docker Architecture
+## 1. Production Topology
 
 ```
-docker-compose.yml
- ├── db        postgres:15-alpine
- │              Port: 5432 (internal only)
- │              Volume: pgdata (persistent)
- │
- ├── backend   backend.Dockerfile
- │              Port: 8000 (internal)
- │              Runs: alembic upgrade head → uvicorn app.main:app
- │              Volume: ./app/cache → /app/app/cache (TTS audio persistence)
- │
- └── frontend  frontend.Dockerfile
-                Port: 80 (exposed to host)
-                Stage 1: node:20-alpine → npm run build → /dist
-                Stage 2: nginx:alpine → serves /dist + proxies /api/ and /audio/
+                  Internet / Client Requests
+                              │
+                              ▼
+                       Nginx / Traefik
+               (SSL Termination, Rate Limiting)
+                              │
+               ┌──────────────┴──────────────┐
+               ▼                             ▼
+       Static Web Assets             FastAPI ASGI Service
+     (React 19 / Port 80)           (Uvicorn / Port 8000)
+                                             │
+                       ┌─────────────────────┴─────────────────────┐
+                       ▼                                           ▼
+             RapidOCR ONNX Runtime                       TrOCR Transformer Runtime
+            (Multi-threaded CPU/GPU)                     (PyTorch / CUDA Inference)
 ```
 
 ---
 
-## 4. Running Locally (Development)
+## 2. Environment Variables Specification
 
-### Backend
+Configure the following variables in `/etc/ocr-system.env` or `.env`:
 
-```bash
-# From project root
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-Requires a local PostgreSQL instance at `localhost:5432/akshara`.
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-# Runs on http://localhost:5173 (or :5174 if port is busy)
-```
-
-> **Important**: If port 8000 is occupied by another project, find and kill it:
->
-> ```powershell
-> netstat -ano | findstr ":8000"
-> Stop-Process -Id <PID> -Force
-> ```
-
-### Run Tests
-
-```bash
-python -m pytest tests/test_analytics_service.py tests/test_ml_recommendations.py tests/test_phase2_learning_engine.py tests/test_profile_service.py tests/test_stroke_analyzer.py -v
-```
-
-Expected: **198 passed**.
-
-### Build Frontend (Production Validation)
-
-```bash
-cd frontend && npm run build
-```
-
-Expected: **Exit code 0, 0 TypeScript errors**.
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `ENVIRONMENT` | `production` | Deployment mode (`development`, `staging`, `production`) |
+| `PORT` | `8000` | Backend API port |
+| `HOST` | `0.0.0.0` | Binding interface |
+| `TROCR_MODEL_NAME` | `microsoft/trocr-base-handwritten` | HuggingFace model identifier or local directory |
+| `DEBUG_OCR` | `false` | When `true`, saves annotated debug crops to `outputs/debug/` |
+| `MAX_UPLOAD_SIZE_MB` | `50` | Maximum file size for multi-page PDFs |
+| `CORS_ORIGINS` | `*` | Allowed client origins (comma-separated) |
 
 ---
 
-## 5. Docker Deployment
+## 3. Docker Compose Production Deployment
 
-### First Run
-
-```bash
-# Build and start all services
-docker-compose up --build -d
-
-# Verify all containers are healthy
-docker-compose ps
-
-# Check backend started correctly (migrations ran)
-docker-compose logs backend
-```
-
-Look for:
-
-```
-INFO: Application startup complete.
-```
-
-### Seed Demo Data
-
-After containers are running:
-
-```bash
-docker-compose exec backend python app/scripts/seed_demo.py
-```
-
-This creates a demo user with a 4-day "Struggling → Confident Learner" progression for showcase demos.
-
-### Stopping
-
-```bash
-docker-compose down          # stop containers (data persists)
-docker-compose down -v       # stop + delete all data volumes
-```
-
----
-
-## 6. Audio File Persistence
-
-The backend TTS service caches generated audio files locally to avoid repeated API calls.
-
-In `docker-compose.yml`:
-
+### `docker-compose.yml`
 ```yaml
-backend:
-  volumes:
-    - ./app/cache:/app/app/cache
+version: '3.8'
+
+services:
+  ocr-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ocr_document_backend
+    restart: always
+    environment:
+      - ENVIRONMENT=production
+      - PORT=8000
+      - OMP_NUM_THREADS=4
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - temp_data:/tmp/ocr_document_temp
+
+  ocr-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ocr_document_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - ocr-backend
+
+volumes:
+  temp_data:
 ```
 
-This means audio files survive container restarts. Ensure the host has adequate disk space (estimate ~1MB per 100 unique TTS clips).
+### Deployment Commands:
+```bash
+docker compose up -d --build
+docker compose ps
+docker compose logs -f ocr-backend
+```
 
 ---
 
-## 7. HTTPS (Production Deployment on a VPS)
+## 4. Bare-Metal Linux Service (Systemd)
 
-Place **Caddy** or **NGINX** as a reverse proxy in front of the Docker stack.
+Create systemd service `/etc/systemd/system/ocr-system.service`:
 
-### Option A: Caddy (Recommended — Auto SSL)
+```ini
+[Unit]
+Description=OCR Document Reading System Backend Service
+After=network.target
 
-```caddyfile
-yourdomain.com {
-    reverse_proxy localhost:80
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/ocr-document-system
+EnvironmentFile=/opt/ocr-document-system/.env
+ExecStart=/opt/ocr-document-system/venv/bin/gunicorn \
+    -w 4 \
+    -k uvicorn.workers.UvicornWorker \
+    --bind 0.0.0.0:8000 \
+    --timeout 120 \
+    app.main:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start service:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable ocr-system
+sudo systemctl start ocr-system
+sudo systemctl status ocr-system
+```
+
+---
+
+## 5. Nginx Reverse Proxy Configuration
+
+```nginx
+server {
+    listen 80;
+    server_name ocr.yourdomain.com;
+
+    client_max_body_size 50M;
+
+    location / {
+        root /var/www/ocr-document-system;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /ocr/ {
+        proxy_pass http://127.0.0.1:8000/ocr/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 180s;
+        proxy_connect_timeout 60s;
+    }
+
+    location /health {
+        proxy_pass http://127.0.0.1:8000/health;
+    }
 }
 ```
 
-Caddy auto-manages Let's Encrypt certificates.
-
-### Option B: NGINX + Certbot
-
-```bash
-certbot --nginx -d yourdomain.com
-```
-
-The Docker NGINX container only listens on port 80. Your host-level reverse proxy handles SSL termination and forwards HTTP to `localhost:80`.
-
 ---
 
-## 8. Frontend API Base URL
+## 6. Performance Tuning & Scaling Guidelines
 
-The Vite frontend currently points to `http://localhost:8000` in development (`src/api/client.ts`).
-
-For production, update this to your domain:
-
-```typescript
-// src/api/client.ts
-export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8000",
-});
-```
-
-And set in your production `.env`:
-
-```env
-VITE_API_URL=https://api.yourdomain.com
-```
-
-Or, use the NGINX proxy approach (preferred) — all requests go to `/api/` on the same domain, eliminating CORS entirely.
-
----
-
-## 9. Database Migrations
-
-Migrations are handled by **Alembic** and run automatically on backend container startup.
-
-To create a new migration after changing a model:
-
-```bash
-alembic revision --autogenerate -m "describe your change"
-alembic upgrade head
-```
-
-To check current migration state:
-
-```bash
-alembic current
-```
-
----
-
-## 10. Health Check
-
-```bash
-curl http://localhost:8000/health
-# Expected: {"status": "ok", "version": "2.0.0"}
-```
-
-The Swagger UI is available at:
-
-```
-http://localhost:8000/docs
-```
-
-Should show **AksharabyasaAI 2.0.0** — if it shows any other title, a different server is running on port 8000.
+1. **ONNX Runtime Concurrency**:
+   Set `OMP_NUM_THREADS` and `ONNX_NUM_THREADS` equal to the number of physical CPU cores (e.g. 4 or 8) to optimize RapidOCR DBNet inference without CPU context switching overhead.
+2. **GPU Acceleration**:
+   If an NVIDIA GPU is available, install `onnxruntime-gpu` and ensure PyTorch detects CUDA (`torch.cuda.is_available() == True`). TrOCR will automatically execute on the GPU, lowering line inference latency from ~150ms to ~15ms.
+3. **Multi-Page PDF Processing**:
+   Large PDFs (10+ pages) are rasterized page-by-page via `pypdfium2` generator iteration, ensuring RAM usage remains bounded regardless of document length.

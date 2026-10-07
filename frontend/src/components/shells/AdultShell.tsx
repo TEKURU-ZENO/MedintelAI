@@ -25,7 +25,7 @@ export default function AdultShell() {
             <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-glowIndigo">
                 A
             </div>
-            <span className="font-display font-bold text-textPrimary text-xl tracking-tight">Aksharabyasa</span>
+            <span className="font-display font-bold text-textPrimary text-xl tracking-tight">OCR Document Reading System</span>
           </div>
           <div className="flex items-center gap-6">
             <button

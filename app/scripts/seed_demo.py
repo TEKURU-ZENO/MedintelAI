@@ -25,7 +25,7 @@ def seed_demo_data():
     db = SessionLocal()
     
     # 1. Create Demo User
-    demo_email = "demo@aksharabyasa.com"
+    demo_email = "demo@ocrdocuments.com"
     user = db.query(User).filter(User.email == demo_email).first()
     
     if not user:

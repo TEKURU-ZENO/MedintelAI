@@ -1,7 +1,7 @@
 /**
  * src/pages/FreeWritingStudio.tsx
  *
- * The new core identity of AksharabyasaAI.
+ * The handwriting studio module of OCR Document Reading System.
  * Three acts: Goal setting → Free Writing → Quality Report
  *
  * Product philosophy:

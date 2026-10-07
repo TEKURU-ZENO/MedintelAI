@@ -1,6 +1,6 @@
-import MedIntelOCRStudio from "../components/MedIntelOCRStudio";
+import OCRDocumentStudio from "../components/MedIntelOCRStudio";
 
 export default function Home() {
-  return <MedIntelOCRStudio />;
+  return <OCRDocumentStudio />;
 }
 

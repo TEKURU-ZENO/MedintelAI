@@ -7,23 +7,23 @@ import numpy as np
 from app.ai.utils.logger import get_logger
 from app.ai.utils.pdf_handler import load_document_pages
 from app.ai.preprocessing.preprocessing_pipeline import run_preprocessing_pipeline
-from app.ai.ocr.ocr_engine import MedIntelOCREngine
+from app.ai.ocr.ocr_engine import OCRDocumentReadingEngine, MedIntelOCREngine
 
 logger = get_logger(__name__)
 
 class PipelineController:
     """
-    General-Purpose Medical Document Pipeline Controller.
+    OCR Document Reading System Pipeline Controller.
     Accepts arbitrary documents (Image files, image bytes, or multi-page PDFs),
-    runs OpenCV preprocessing, hybrid OCR extraction, reading-order reconstruction,
+    runs resolution-preserving preprocessing, hybrid OCR extraction, reading-order reconstruction,
     and structured JSON + .txt export.
     """
     def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
         self.preprocess_config = self.config.get("preprocessing", {})
-        self.ocr_engine = MedIntelOCREngine()
-        self.output_dir = os.path.join(tempfile.gettempdir(), "medintel_json")
-        self.txt_output_dir = os.path.join(tempfile.gettempdir(), "medintel_txt")
+        self.ocr_engine = OCRDocumentReadingEngine()
+        self.output_dir = os.path.join(tempfile.gettempdir(), "ocr_document_json")
+        self.txt_output_dir = os.path.join(tempfile.gettempdir(), "ocr_document_txt")
 
     def process_document(
         self,

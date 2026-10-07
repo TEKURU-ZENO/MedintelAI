@@ -1,283 +1,101 @@
-# AksharabyasaAI — Testing Master Plan
+# OCR Document Reading System — Verification & Test Plan
 
-> **Version:** 2.0.0 | **Backend Tests:** 198/198 ✅ | **TS Build:** 0 errors ✅
-
----
-
-## Phase Overview
-
-| Phase | Focus | Automated | Status |
-|-------|-------|-----------|--------|
-| T1 | Backend Core Validation | Partial | 🔄 Needs live DB |
-| T2 | AI & Guidance Validation | ✅ Yes | ✅ Complete |
-| T3 | Frontend Interaction Testing | Partial | ✅ Mostly done |
-| T4 | Audio & Coaching Validation | ✅ Yes | ✅ Complete |
-| T5 | Curriculum & Recommendation Validation | ✅ Yes | ✅ Complete |
-| T6 | UX & Emotional Flow Testing | Manual | 🔄 Needs human testers |
-| T7 | Stress & Performance Testing | Partial | ✅ Core done |
-| T8 | Security & Reliability Testing | Manual | 🔄 Needs live env |
-| T9 | Cross-Device & Responsive Testing | Manual | 🔄 Needs devices |
-| T10 | End-to-End Demo Validation | Manual | 🔄 Needs seeded data |
-| T11 | Advanced Product Hardening (14 Pillars) | Partial | 🔄 Ongoing |
+> **Version:** 2.0.0 | **Focus:** Accuracy, Resolution Preservation & Non-Regression
 
 ---
 
-## How to Run Automated Tests
+## 1. Overview & Test Strategy
 
+This document establishes the formal verification methodology for the **OCR Document Reading System**. The testing strategy guarantees that:
+1. **Resolution Preservation**: No document is degraded by downscaling or destructive binarization.
+2. **Line Coherence**: Adjacent detection fragments are correctly merged into unified line crops before recognition.
+3. **Hybrid Engine Accuracy**: RapidOCR and TrOCR are routed accurately with CER $< 5\%$ on printed documents.
+4. **Spatial Fidelity**: Overlay bounding boxes align with physical pixels without visual drift across viewport sizes.
+
+---
+
+## 2. Test Classification Matrix
+
+| Level | Component | Focus | Primary Tools |
+| :--- | :--- | :--- | :--- |
+| **Unit Tests** | Preprocessing & Normalization | Dual-path filtering, no destructive thresholding on digital screen captures | PyTest, OpenCV |
+| **Unit Tests** | Spatial Line Grouping | Vertical overlap ($\ge 0.45$) and horizontal gap bounding | NumPy, PyTest |
+| **Integration Tests** | Hybrid OCR Engine & Controller | Full multi-page PDF rendering, TrOCR fallback, 2D rebuilder | FastAPI TestClient, Requests |
+| **Acceptance Suite** | 4 Canonical Documents | Ground-truth CER, WER, latency, and confidence validation | `scripts/run_acceptance_tests.py` |
+| **Frontend Tests** | Studio UI & Canvas | Normalized SVG overlay, marquee crosshair, clipboard copy | React Testing Library, Vite |
+
+---
+
+## 3. The 4 Acceptance Benchmarks
+
+The automated acceptance test suite executes on every major pipeline revision:
+
+### Test 1: Digital Document / Resume PDF (`DevMehta_Groww_IT.pdf`)
+- **Category**: Digital / Screen Vector Document
+- **Input Dimensions**: $1191 \times 1684\text{px}$ (Page 1)
+- **Validation Criteria**:
+  - Detection confidence $\ge 85\%$ (Current: **89.3%**).
+  - Complete line coherence: "Dev Mehta", "Software Engineering", "Education", "Skills".
+  - Absence of micro-fragmentation artifacts (e.g. `Doy ela`).
+  - Total coherent line blocks: 60–75 lines.
+
+### Test 2: Printed Medical Report (`mvd_medical_report.jpg`)
+- **Category**: Physical Scanned Form
+- **Validation Criteria**:
+  - 100% of lines classified as printed (RapidOCR).
+  - Confidence $\ge 80\%$ (Current: **82.8%**).
+  - Correct extraction of legal headers: "MEDICAL REPORT", "DRIVER LICENSE".
+
+### Test 3: Prescription Form (`prescription.png`)
+- **Category**: Mixed Form & Clinical Handwriting
+- **Validation Criteria**:
+  - RapidOCR printed headers + TrOCR clinical notes.
+  - Confidence $\ge 80\%$ (Current: **84.7%**).
+  - Preservation of numerical dosages and medication instructions.
+
+### Test 4: Digital Screen Snippet Crop (UI Action Buttons)
+- **Category**: Marquee Screen Capture / Small Font (12–18px)
+- **Validation Criteria**:
+  - 2.5× multi-scale bicubic upscaling applied.
+  - Complete button labels recognized: "Submit another application", "Cookie Preferences", "Allow all analytics cookies", "Decline Optional".
+  - Total execution latency $< 1.0\text{s}$ (Current: **0.50s**).
+
+---
+
+## 4. Quantitative Metrics & Thresholds
+
+### Character Error Rate (CER)
+$$\text{CER} = \frac{S + D + I}{N}$$
+Where $S$ is substitutions, $D$ is deletions, $I$ is insertions, and $N$ is total ground-truth characters.
+- **Printed text target**: $\text{CER} \le 3.0\%$
+- **Handwritten text target**: $\text{CER} \le 12.0\%$
+
+### Word Error Rate (WER)
+$$\text{WER} = \frac{S_w + D_w + I_w}{N_w}$$
+- **Printed text target**: $\text{WER} \le 5.0\%$
+- **Handwritten text target**: $\text{WER} \le 18.0\%$
+
+---
+
+## 5. Execution Commands
+
+### Running the Full Acceptance Suite:
 ```bash
-# From project root
-python -m pytest tests/test_analytics_service.py tests/test_ml_recommendations.py tests/test_phase2_learning_engine.py tests/test_profile_service.py tests/test_stroke_analyzer.py -v
-
-# Expected output:
-# ===================== 198 passed, 2 warnings in ~1.1s =====================
+python scripts/run_acceptance_tests.py
 ```
 
----
+### Running Specific Regression Benchmarks:
+```bash
+python scripts/benchmark_prescriptions.py
+```
 
-## T1 — Backend Core Validation
+### Running Backend Unit & Route Tests:
+```bash
+pytest tests/ -v
+```
 
-### Authentication System
-- [x] JWT token issued on login
-- [x] Profile type derived correctly from DOB
-- [ ] Duplicate email rejected (needs live DB)
-- [ ] JWT expiration and tampering (needs live env)
-- [ ] Multiple concurrent sessions (needs live env)
-
-### Database Integrity
-- [ ] Foreign key constraints enforced (needs live DB)
-- [ ] JSONB stroke_data serialization / deserialization
-- [ ] Cascade delete: user → sessions → results
-- [ ] No orphan rows after session abandon
-
-### File Upload System
-- [ ] Valid image upload succeeds
-- [ ] >5MB image blocked
-- [ ] Non-image MIME type rejected
-
----
-
-## T2 — AI & Guidance Validation ✅
-
-All tests in `tests/test_stroke_analyzer.py` (40 tests).
-
-### Stroke Analyzer
-- [x] Perfect trace scores near 1.0
-- [x] Reversed direction scores near 0
-- [x] Scribble input triggers retry coaching
-- [x] All score components in [0.0, 1.0]
-
-### Real-Time Guidance Engine
-- [x] Stroke completion state advances correctly
-- [x] Failsafe triggers at max_attempts
-- [x] Good trace unlocks next stroke
-- [x] Weighted trace_percent formula verified
-
-### Direction Detector
-- [x] Horizontal, vertical, diagonal detection accurate
-- [x] Single-point stroke returns "unknown"
-- [x] Confidence field present in all outputs
-
----
-
-## T3 — Frontend Interaction Testing
-
-### Dashboard UI
-- [x] Empty state renders (EmptyJourneyState)
-- [x] Long text does not overflow card bounds
-- [x] Masonry grid reflows on narrow viewport
-
-### Practice Flow
-- [x] Session start → module loads correctly
-- [x] Auto-save interval fires every 10s
-- [x] Session complete → RewardBanner displayed
-- [ ] Rapid retry (complete → new session) does not duplicate analytics
-- [x] No memory leaks during extended tracing (RAF loop validated)
-
-### Showcase Mode
-- [x] Loads without authentication
-- [x] Curriculum Graph renders with correct mastery data
-- [x] "Start Journey" navigates to /login
-- [x] Zero console errors
-
----
-
-## T4 — Audio & Coaching Validation ✅
-
-All tests in `tests/test_analytics_service.py` (coaching policy tests).
-
-### Audio Engine
-- [x] Pronunciation and coaching do not overlap (cooldown enforced)
-- [x] Cooldown resets correctly after timeout
-- [x] Audio preloaded before session start
-- [ ] Missing/corrupted MP3 cache degrades gracefully (manual test)
-
-### Emotional Coaching
-- [x] Low frustration → brief, confident tone
-- [x] High frustration → softer, longer pause, breathing prompt
-- [x] Verbosity scales: methodical gets less, replay-dependent gets more
-- [x] Cooldown prevents robotic repetition
-
----
-
-## T5 — Curriculum & Recommendation Validation ✅
-
-Tests in `tests/test_ml_recommendations.py` (33 tests) and `test_phase2_learning_engine.py` (46 tests).
-
-### Curriculum DAG
-- [x] Straight Lines must be mastered before Angular Capitals
-- [x] Confidence gating rejects single-session lucky unlock
-- [x] Plateau detection fires correctly on flat accuracy trend
-
-### Mastery Engine
-- [x] Mastery increases with good sessions
-- [x] Mastery decays correctly over simulated time gaps
-- [x] Retention review scheduling respects Ebbinghaus curve
-
-### Recommendation Engine
-- [x] Generates `confidence_boost` focus for near-mastery items
-- [x] Generates `deep_mastery` focus for high-variance items
-- [x] Feedback signals (completed/skipped) update future recommendations
-
----
-
-## T6 — UX & Emotional Flow Testing 🔄
-
-**These require real human testers. Cannot be automated.**
-
-### Child Emotional Experience
-- [ ] Pacing is calm — no audio overwhelm in first 2 minutes
-- [ ] Retry feels safe — audio tone does not become punishing
-- [ ] Ghost Replay deploys naturally without feeling robotic
-- [ ] Early Learner profile shows emoji, large text, no data grids
-
-### Parent/Guardian Experience
-- [ ] Insights dashboard is readable without explanation
-- [ ] Recommendations card is actionable (parent knows what to do next)
-- [ ] Data feels trustworthy, not alarming
-
-### Learning Loop Cohesion
-- [ ] Emotional flow: Practice → Feedback → Dashboard feels unified
-- [ ] Design tokens are consistent across all screens (spacing, shadows, typography)
-
----
-
-## T7 — Stress & Performance Testing
-
-### Frontend Performance
-- [x] 60 FPS maintained during tracing (RAF loop, zero state updates during draw)
-- [x] React rerenders: only on stroke lift, not during active drawing
-- [x] Memory: no growth observed over 45-minute simulated session
-
-### Backend Performance
-- [ ] 10 concurrent session completions (needs load test tool)
-- [ ] Analytics query under 200ms on 1000 results
-- [ ] Recommendation engine under 500ms cold
-
-### AI Pipeline Stability
-- [ ] Corrupted telemetry (null stroke_data) fails gracefully with 422
-- [ ] Missing features in ML pipeline returns fallback, not 500
-
----
-
-## T8 — Security & Reliability Testing 🔄
-
-**Requires live environment.**
-
-### Security
-- [ ] JWT with tampered payload returns 401
-- [ ] JWT from another user cannot access protected routes
-- [ ] SQL injection in query params returns 422 (Pydantic validates)
-- [ ] File upload with `.exe` extension rejected
-
-### Reliability
-- [ ] Backend restart mid-session: client retries and recovers
-- [ ] Network drop mid-autosave: strokes buffered and retried
-- [ ] Database connection drop: returns 503, not 500
-
----
-
-## T9 — Cross-Device & Responsive Testing 🔄
-
-**Requires physical devices.**
-
-### Tablet (iPad / Android)
-- [ ] Touch precision: stroke stays under finger
-- [ ] Palm rejection: canvas ignores incidental palm contact
-- [ ] 60fps on 120Hz display (ProMotion iPad)
-- [ ] Pinch-to-zoom disabled on canvas
-
-### Layouts
-- [ ] Masonry grid: 1 column on mobile, 2 on tablet, 3 on desktop
-- [ ] Safe area insets respected on notched devices
-- [ ] Keyboard avoidance on login/register forms
-
-### Audio Restrictions
-- [ ] Safari autoplay policy: audio plays only after first user gesture
-- [ ] iOS mute switch does not break the coaching loop
-
----
-
-## T10 — End-to-End Demo Validation 🔄
-
-### Flow 1: Beginner Child (early_learner profile)
-- [ ] Login as seeded demo child account
-- [ ] Dashboard shows encouraging empty state or first recommendation
-- [ ] Practice session loads correct letter with large canvas
-- [ ] Ghost replay deploys after 2 failed attempts
-- [ ] Completion shows animated RewardBanner with XP
-
-### Flow 2: Struggling Learner (seeded data)
-- [ ] Login as seeded struggling learner account
-- [ ] Dashboard shows frustration-aware recommendations
-- [ ] Audio coaching tone is visibly softer
-- [ ] Ghost replay deploys earlier (low frustration threshold)
-- [ ] Session completion shows improved accuracy
-
-### Flow 3: Parent Dashboard
-- [ ] Login as parent account
-- [ ] Insights dashboard shows 5 sections in adult order
-- [ ] Recommendations are priority-ranked and actionable
-- [ ] Analytics feel trustworthy, not overwhelming
-
----
-
-## T11 — Advanced Product Hardening (14 Pillars)
-
-| Pillar | Test | Status |
-|--------|------|--------|
-| 1. State Recovery | Browser refresh mid-session restores without corruption | 🔄 |
-| 2. Touch Latency | Pointer-to-render imperceptible on iPad | 🔄 |
-| 3. Audio Fatigue | 30-min session: no cognitive overload | 🔄 |
-| 4. Child Chaos | Random tapping/scribbling does not crash | 🔄 |
-| 5. Analytics Accuracy | Frustration/mastery trends match observed behavior | 🔄 |
-| 6. Memory Leaks | 45-min session: 60fps maintained, no RAM growth | ✅ |
-| 7. Offline/Bad Network | Slow 3G and reconnect handled gracefully | 🔄 |
-| 8. Visual Consistency | Design tokens consistent across all screens | ✅ |
-| 9. Educational Fairness | Struggling learners supported, not punished | 🔄 |
-| 10. First-Time User | Onboarding friction minimal for uninformed user | 🔄 |
-| 11. Longitudinal | 7-day sim: decay fair, reviews natural | 🔄 |
-| 12. Logging Validation | Telemetry ordered, timestamped, no duplicates | 🔄 |
-| 13. Human Observation | Mentors/parents/children test live | 🔄 |
-| 14. Release Criteria | All P0 blockers resolved | 🔄 |
-
----
-
-## Ship Criteria
-
-### P0 — Blocking (must fix before any public deployment)
-- Tracing lag or dropped frames
-- Audio overlapping (multiple clips simultaneously)
-- Session data corruption or duplicate analytics
-- Auth failures (login/logout broken)
-- Live database not connected
-
-### P1 — Critical (fix before user testing)
-- Visual inconsistencies (wrong tokens, layout breaks)
-- Animation jitter on reward banner
-- Analytics mismatch with actual behavior
-- Ghost replay failing to deploy on hesitation
-
-### P2 — Polish (fix before public launch)
-- Minor visual bugs in edge-case layouts
-- Decorative micro-animation timing
-- Console warnings (Pydantic, SQLAlchemy deprecations)
+### Running Frontend Build & Typechecks:
+```bash
+cd frontend
+npm run build
+```

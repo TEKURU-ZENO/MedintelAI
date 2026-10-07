@@ -29,7 +29,7 @@ export default function ChildShell() {
           <span className="text-2xl">✍️</span>
           <div>
             <h1 className="font-bold text-gray-800 text-lg leading-none">
-              AksharabyasaAI
+              OCR Document Reading System
             </h1>
             <p className="text-xs text-indigo-600 font-semibold">
               Welcome back, {firstName}! Keep it up 🌟

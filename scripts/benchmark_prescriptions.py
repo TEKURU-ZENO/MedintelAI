@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 # Ensure repository root is on sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.ai.ocr.ocr_engine import MedIntelOCREngine
+from app.ai.ocr.ocr_engine import OCRDocumentReadingEngine, MedIntelOCREngine
 
 def levenshtein_distance(s1: str, s2: str) -> int:
     if len(s1) < len(s2):
@@ -56,7 +56,7 @@ def calculate_wer(predicted: str, ground_truth: str) -> float:
     return min(1.0, float(d[len(gt_words)][len(pred_words)]) / float(len(gt_words)))
 
 def run_prescription_benchmark():
-    engine = MedIntelOCREngine()
+    engine = OCRDocumentReadingEngine()
     
     test_cases = [
         {
