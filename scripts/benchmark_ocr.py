@@ -54,7 +54,7 @@ def calculate_wer(reference: str, hypothesis: str) -> float:
     return min(1.0, dp[n][m] / len(ref_words))
 
 def run_benchmark():
-    datasets_dir = Path("datasets")
+    datasets_dir = Path(__file__).resolve().parent.parent / "datasets"
     controller = PipelineController()
     
     category_dirs = [d for d in datasets_dir.iterdir() if d.is_dir() and not d.name.startswith(('.', '__'))]

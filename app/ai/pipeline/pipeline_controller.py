@@ -1,7 +1,7 @@
 import os
 import json
 import tempfile
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List, Union, Optional
 import numpy as np
 
 from app.ai.utils.logger import get_logger
@@ -31,7 +31,8 @@ class PipelineController:
         doc_name: str = "document",
         output_json_path: Optional[str] = None,
         output_txt_path: Optional[str] = None,
-        input_mode: str = "auto"
+        input_mode: str = "auto",
+        preprocessing_mode: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Processes an uploaded medical document (image or multi-page PDF).
@@ -63,7 +64,7 @@ class PipelineController:
         for idx, page_img in enumerate(pages):
             page_num = idx + 1
             # 1. Appropriate Preprocessing (Screen / Digital vs Scanned Paper)
-            clean_page = run_preprocessing_pipeline(page_img, self.preprocess_config, input_mode=input_mode)
+            clean_page = run_preprocessing_pipeline(page_img, self.preprocess_config, input_mode=input_mode, preprocessing_mode=preprocessing_mode)
             
             # 2. General-Purpose OCR Engine Execution
             page_result = self.ocr_engine.process_document(clean_page, doc_name=doc_name, page_num=page_num, input_mode=input_mode)
@@ -145,7 +146,8 @@ class PipelineController:
         document_input: Union[str, bytes, np.ndarray],
         region_bbox: List[int],
         doc_name: str = "snippet",
-        input_mode: str = "screen"
+        input_mode: str = "screen",
+        preprocessing_mode: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Processes a focused sub-region / snippet from the document.

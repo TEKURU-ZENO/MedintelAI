@@ -7,7 +7,7 @@ import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
 from app.ai.utils.logger import get_logger
 from app.ai.ocr.medical_postprocessor import MedicalVocabularyPostProcessor
-from app.ai.preprocessing.preprocessing_pipeline import run_screen_preprocessing
+from app.ai.preprocessing.preprocessing_pipeline import run_screen_preprocessing, run_preprocessing_pipeline
 
 logger = get_logger(__name__)
 
@@ -555,7 +555,8 @@ class OCRDocumentReadingEngine:
         image: np.ndarray,
         region_bbox: List[int],
         doc_name: str = 'snippet',
-        input_mode: str = 'screen'
+        input_mode: str = 'screen',
+        preprocessing_mode: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Processes a focused sub-region / marquee snippet within a larger document.
@@ -593,7 +594,7 @@ class OCRDocumentReadingEngine:
         else:
             upscaled_snippet = snippet_crop
 
-        preproc_snippet = run_screen_preprocessing(upscaled_snippet)
+        preproc_snippet = run_preprocessing_pipeline(upscaled_snippet, input_mode=input_mode, preprocessing_mode=preprocessing_mode)
         res = self.process_document(preproc_snippet, doc_name=doc_name, input_mode=input_mode)
 
         # Unscale coordinates back to snippet space, then offset to global document coordinates

@@ -97,6 +97,44 @@ def run_scanned_preprocessing(image: np.ndarray, config: Dict[str, Any] = None) 
         return cv2.cvtColor(processed_bin, cv2.COLOR_GRAY2BGR)
     return processed_bin
 
+def auto_detect_input_mode(image: np.ndarray) -> str:
+    """
+    Intelligent document classifier that inspects visual provenance signals:
+    - Background texture variance (clean solid white vs textured/noisy paper)
+    - Illumination gradient (uniform digital canvas vs shadows/faded lighting)
+    - Edge sharpness and color transitions
+    Returns 'screen' (for digital vector/screenshots) or 'scanned_paper' (for physical documents).
+    """
+    try:
+        h, w = image.shape[:2]
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(image.shape) == 3 else image
+
+        # Sample border corner patches
+        patch_size = max(10, min(30, int(min(h, w) * 0.05)))
+        corners = [
+            gray[0:patch_size, 0:patch_size],
+            gray[0:patch_size, max(0, w - patch_size):w],
+            gray[max(0, h - patch_size):h, 0:patch_size],
+            gray[max(0, h - patch_size):h, max(0, w - patch_size):w]
+        ]
+        
+        corner_stds = [float(np.std(c)) for c in corners if c.size > 0]
+        corner_means = [float(np.mean(c)) for c in corners if c.size > 0]
+        
+        avg_std = np.mean(corner_stds) if corner_stds else 0.0
+        avg_mean = np.mean(corner_means) if corner_means else 255.0
+        max_mean_diff = (max(corner_means) - min(corner_means)) if corner_means else 0.0
+
+        if max_mean_diff > 25.0 or avg_std > 12.0 or avg_mean < 230.0:
+            logger.info(f"Auto-router classified document as 'scanned_paper' (avg_std={avg_std:.2f}, avg_mean={avg_mean:.1f}, grad={max_mean_diff:.1f})")
+            return 'scanned_paper'
+
+        logger.info(f"Auto-router classified document as 'screen' (avg_std={avg_std:.2f}, avg_mean={avg_mean:.1f}, grad={max_mean_diff:.1f})")
+        return 'screen'
+    except Exception as e:
+        logger.warning(f"Auto-router encountered exception, defaulting to screen: {e}")
+        return 'screen'
+
 def run_preprocessing_pipeline(
     image: np.ndarray,
     config: Dict[str, Any] = None,
@@ -104,15 +142,13 @@ def run_preprocessing_pipeline(
     preprocessing_mode: Optional[str] = None
 ) -> np.ndarray:
     """
-    Dispatches to appropriate preprocessing pipeline based on input_mode.
+    Dispatches to appropriate preprocessing pipeline based on input_mode and preset.
     
     Args:
         image: Original input image array.
         config: Optional custom configuration dict.
         input_mode: 'screen', 'digital', 'scanned_paper', or 'auto'.
-        preprocessing_mode: Optional UI preset. When omitted, legacy input_mode
-            dispatch is unchanged. Supported presets are balanced,
-            high-contrast, grayscale, and none.
+        preprocessing_mode: Optional UI preset ('balanced', 'high-contrast', 'grayscale', 'none').
     """
     if preprocessing_mode not in (None, 'balanced', 'high-contrast', 'grayscale', 'none'):
         raise ValueError(f"Unsupported preprocessing_mode: {preprocessing_mode}")
@@ -127,26 +163,14 @@ def run_preprocessing_pipeline(
     if preprocessing_mode == 'high-contrast':
         return run_scanned_preprocessing(image, config)
 
-    # balanced and omitted values both preserve the established input-mode path.
+    # Balanced and default flow:
     if input_mode in ('screen', 'digital'):
         return run_screen_preprocessing(image)
     elif input_mode == 'scanned_paper':
         return run_scanned_preprocessing(image, config)
     
-    # Auto-detection: digital documents generally have very clean white/uniform backgrounds
-    # or are rendered from PDF / screen captures.
-    # If image already has clean background (std dev in corners is low), treat as digital.
-    try:
-        h, w = image.shape[:2]
-        corners = [
-            image[0:min(20, h), 0:min(20, w)],
-            image[0:min(20, h), max(0, w-20):w]
-        ]
-        corner_stds = [np.std(c) for c in corners if c.size > 0]
-        if corner_stds and np.mean(corner_stds) < 8.0:
-            return run_screen_preprocessing(image)
-    except Exception:
-        pass
-        
+    # Auto-detection
+    detected_mode = auto_detect_input_mode(image)
+    if detected_mode == 'scanned_paper':
+        return run_scanned_preprocessing(image, config)
     return run_screen_preprocessing(image)
-
