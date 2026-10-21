@@ -85,17 +85,18 @@ def run_scanned_preprocessing(image: np.ndarray, config: Dict[str, Any] = None) 
         if len(processed.shape) == 2:
             processed = cv2.bilateralFilter(processed, 9, 75, 75)
             
-    # 5. Controlled Thresholding
-    thresh_cfg = config.get('thresholding', {'method': 'adaptive', 'block_size': 35, 'c': 10})
-    processed_bin = apply_threshold(processed, thresh_cfg)
-    
-    # 6. Deskew
+    # 5. Deskew
     if config.get('deskew', {}).get('enabled', True):
-        processed_bin = apply_deskew(processed_bin, config.get('deskew', {}))
+        processed = apply_deskew(processed, config.get('deskew', {}))
+
+    # 6. Optional thresholding (disabled by default to preserve anti-aliased gradients for DBNet)
+    if config.get('thresholding', {}).get('enabled', False):
+        thresh_cfg = config.get('thresholding', {'method': 'adaptive', 'block_size': 35, 'c': 10})
+        processed = apply_threshold(processed, thresh_cfg)
         
-    if len(processed_bin.shape) == 2:
-        return cv2.cvtColor(processed_bin, cv2.COLOR_GRAY2BGR)
-    return processed_bin
+    if len(processed.shape) == 2:
+        return cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
+    return processed
 
 def auto_detect_input_mode(image: np.ndarray) -> str:
     """

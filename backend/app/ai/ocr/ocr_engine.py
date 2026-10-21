@@ -8,6 +8,7 @@ from typing import Dict, Any, List, Tuple, Optional
 from app.ai.utils.logger import get_logger
 from app.ai.ocr.medical_postprocessor import MedicalVocabularyPostProcessor
 from app.ai.preprocessing.preprocessing_pipeline import run_screen_preprocessing, run_preprocessing_pipeline
+from app.ai.preprocessing.enhance import enhance_small_or_lowres_text
 
 logger = get_logger(__name__)
 
@@ -353,16 +354,22 @@ class MedIntelOCREngine:
                 model_used = 'rapidocr-fallback'
                 region_type = 'printed'
         else:
-            # Printed line recognition on the complete line crop
-            if len(group) > 1 and self._rapid_ocr is not None and hasattr(self._rapid_ocr, 'text_recognizer') and line_crop.size > 0:
+            # Printed line recognition on the complete line crop with small/low-res enhancement
+            enhanced_crop, _ = enhance_small_or_lowres_text(line_crop, target_min_height=36)
+            if self._rapid_ocr is not None and hasattr(self._rapid_ocr, 'text_recognizer') and enhanced_crop.size > 0:
                 try:
-                    rec_res, _ = self._rapid_ocr.text_recognizer([line_crop])
-                    if rec_res and rec_res[0][0] and float(rec_res[0][1]) > 0.78:
+                    rec_res, _ = self._rapid_ocr.text_recognizer([enhanced_crop])
+                    if rec_res and rec_res[0][0]:
                         rec_line_text = rec_res[0][0].strip()
-                        # If recognized line is valid and not severely truncated
-                        if abs(len(rec_line_text) - len(joined_text)) <= max(4, int(len(joined_text) * 0.4)):
-                            final_text = rec_line_text
-                            final_conf = float(rec_res[0][1])
+                        rec_score = float(rec_res[0][1])
+                        if len(group) > 1:
+                            if rec_score > 0.70 and abs(len(rec_line_text) - len(joined_text)) <= max(4, int(len(joined_text) * 0.45)):
+                                final_text = rec_line_text
+                                final_conf = rec_score
+                        else:
+                            if rec_score > avg_conf:
+                                final_text = rec_line_text
+                                final_conf = rec_score
                 except Exception:
                     pass
 
@@ -495,7 +502,11 @@ class MedIntelOCREngine:
         # 1. Primary: RapidOCR Detection
         if self._rapid_ocr is not None:
             try:
-                ocr_results, elapse = self._rapid_ocr(image)
+                if input_mode in ('screen', 'digital'):
+                    det_kwargs = {'box_thresh': 0.42, 'unclip_ratio': 1.85, 'text_score': 0.38}
+                else:
+                    det_kwargs = {'box_thresh': 0.45, 'unclip_ratio': 1.75, 'text_score': 0.40}
+                ocr_results, elapse = self._rapid_ocr(image, **det_kwargs)
                 if ocr_results:
                     for idx, item in enumerate(ocr_results):
                         box, rapid_text, rapid_score = item[0], item[1], float(item[2])

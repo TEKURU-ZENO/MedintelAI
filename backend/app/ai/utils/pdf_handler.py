@@ -62,3 +62,22 @@ def load_document_pages(file_path_or_bytes: Union[str, bytes, np.ndarray], filen
     except (OSError, DocumentProcessingError, TypeError, ValueError) as exc:
         logger.warning("Document page loading failed: %s", exc)
         return []
+
+
+def extract_pdf_digital_text(file_path_or_bytes: Union[str, bytes]) -> List[str]:
+    """
+    Extracts native digital vector text directly from PDF textpage if present.
+    Returns list of page texts.
+    """
+    text_pages = []
+    try:
+        import pypdfium2 as pdfium
+        pdf = pdfium.PdfDocument(file_path_or_bytes)
+        for page in pdf:
+            textpage = page.get_textpage()
+            text = textpage.get_text_range()
+            text_pages.append(text.strip() if text else "")
+        return text_pages
+    except Exception as e:
+        logger.warning(f"Could not extract digital text from PDF: {e}")
+        return []
