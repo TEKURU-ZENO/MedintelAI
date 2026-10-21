@@ -1,0 +1,25 @@
+{
+  "name": "medintelai-ocr-studio-desktop",
+  "private": true,
+  "version": "1.1.0",
+  "type": "module",
+  "main": "electron-main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "desktop": "npm run build && electron .",
+    "desktop:dir": "npm run build && electron-builder --dir",
+    "desktop:win": "npm run build && electron-builder --win nsis"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^6.0.5"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}

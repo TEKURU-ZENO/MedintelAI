@@ -1,0 +1,16 @@
+appId: com.medintelai.ocrstudio
+productName: MedIntel AI OCR Studio
+directories:
+  output: release
+files:
+  - dist/**/*
+  - electron-main.cjs
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true

@@ -99,98 +99,79 @@ A high-accuracy, production-grade document intelligence platform that ingests ar
 
 ---
 
-## Quantitative Benchmarks
+## Benchmark Performance Matrix
 
-Benchmarked across canonical real-world test sets:
-
-| Test Document | Input Mode | Blocks Detected | Confidence | Accuracy Highlights | Latency | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Resume PDF** (`DevMehta_Groww_IT.pdf`) | Screen / Digital | 70 lines | **89.3%** | "Dev Mehta", "Software Engineering", 0 fragmented characters | 7.62s | **PASS** |
-| **Printed Medical Report** (`mvd_medical_report.jpg`) | Scanned Form | 36 lines | **82.8%** | 100% printed lines detected, "MEDICAL REPORT", "DRIVER LICENSE" | 2.47s | **PASS** |
-| **Prescription Form** (`prescription.png`) | Mixed / Auto | 7 lines | **84.7%** | All header and dosage information intact | 0.77s | **PASS** |
-| **Web UI Snippet** (Buttons) | Screen Snippet | 4 lines | **89.7%** | "Submit another application", "Cookie Preferences" | 0.50s | **PASS** |
+| Document Category | Target | Resolution | Confidence | Routing | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Digital Vector PDF (Resume)** | Multi-column, modern fonts | $1191 \times 1684$ | **89.3%** | 100% RapidOCR | PASS |
+| **Scanned Medical Report (MVD)** | Official hospital form | $1024 \times 1448$ | **82.8%** | 100% RapidOCR | PASS |
+| **Clinical Prescription** | Mixed printed + cursive | $800 \times 1000$ | **84.7%** | Hybrid RapidOCR + TrOCR | PASS |
+| **Digital Screen Capture Snippet** | UI action buttons / menus | $460 \times 320$ | **89.7%** | RapidOCR + 2.5× Upscale | PASS |
 
 ---
 
-## REST API Specification
+## API Routes & Endpoints
 
-The FastAPI backend exposes the following endpoints:
-
-### 1. Document OCR Ingestion
-- **`POST /ocr/extract`**
-  - **Payload**: `file` (multipart/form-data: PDF, PNG, JPG, TIFF, WEBP), `input_mode` (optional: `auto`, `screen`, `scanned`).
-  - **Response**: JSON containing `status`, `document`, `pages`, `total_blocks`, `overall_confidence`, `blocks` (with `id`, `text`, `confidence`, `source`, `model_used`, `bbox`, `normalized_bbox`), and `raw_text`.
-
-### 2. Snippet / Marquee Crop OCR
-- **`POST /ocr/extract-region`**
-  - **Payload**: `file`, `xmin`, `ymin`, `xmax`, `ymax`, `input_mode` (optional).
-  - **Response**: Up-scaled snippet OCR with global coordinates mapped back to the document canvas.
-
-### 3. Plain Text Export
-- **`POST /ocr/export/txt`**
-  - **Payload**: `file`
-  - **Response**: Plain text file attachment (`.txt`) with reading-order preserved text.
-
-### 4. Human Clinician Correction
-- **`POST /ocr/correct`**
-  - **Payload**: JSON `{ "document": "filename", "block_id": "b1", "original_text": "...", "corrected_text": "...", "clinician_notes": "..." }`
-  - **Response**: Status acknowledgement stored in corrections registry.
-
-### 5. Health Check
-- **`GET /health`**
-  - **Response**: `{"status": "ok", "system": "OCR Document Reading System", "version": "1.0.0"}`
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/health` | Engine health check, initialized models & system status |
+| `POST` | `/ocr/extract` | Ingests PDF or image, runs resolution preservation & line grouping |
+| `POST` | `/ocr/extract-region` | Processes a cropped snippet with 2.5× multi-scale bicubic upscaling |
+| `POST` | `/ocr/correct` | Submits human clinician transcription correction |
+| `POST` | `/ocr/evaluate` | Evaluates Character Error Rate (CER) and Word Error Rate (WER) against ground truth |
+| `GET` | `/ocr/stats` | Pipeline latency and confidence breakdown |
 
 ---
 
-## Technology Stack
-
-- **Backend**: Python 3.10+, FastAPI, Uvicorn, OpenCV (`opencv-python-headless`), NumPy, PyPDFium2.
-- **Inference Engines**: RapidOCR ONNX Runtime, HuggingFace Transformers (`VisionEncoderDecoderModel`), PyTorch.
-- **Frontend**: React 19, TypeScript, Vite 8, Tailwind CSS v4, Axios, React Router.
-- **Deployment**: Docker, Docker Compose, Nginx, Vercel Serverless.
-
----
-
-## Quick Start Guide
+## Quickstart
 
 ### Prerequisites
-- Python 3.10+ (64-bit)
-- Node.js 20+ & npm
+- Python 3.10, 3.11, or 3.12 (64-bit)
+- Node.js 20+ and npm
 
-### 1. Backend Setup
+### 1. Clone & Set Up Backend
 ```bash
-# Clone the repository
 git clone https://github.com/TEKURU-ZENO/MedintelAI.git
 cd MedintelAI
 
-# Create and activate virtual environment
+# Create virtual environment
 python -m venv venv
-# On Windows:
 .\venv\Scripts\activate
-# On Linux/macOS:
-source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Start FastAPI backend
+# Start backend server (port 8000)
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Interactive API documentation available at: `http://localhost:8000/docs`
-
-### 2. Frontend Setup
+### 2. Set Up Web Frontend
 ```bash
 cd frontend
-
-# Install packages
 npm install
-
-# Start Vite development server
 npm run dev -- --host 0.0.0.0 --port 5173
 ```
+- Open [http://localhost:5173](http://localhost:5173) in your browser.
+- Interactive API docs available at [http://localhost:8000/docs](http://localhost:8000/docs).
 
-Access the UI at: `http://localhost:5173`
+---
+
+## Windows Desktop Studio & Electron App
+
+In addition to the web studio, a standalone Windows desktop workspace is included:
+
+### Desktop Shell Features
+- **Electron Integration**: Native Windows desktop shell (`electron-main.cjs`) running React with direct local backend service pairing.
+- **Automated Windows Scripts**:
+  - `setup-windows.cmd` — Automates Python virtual environment setup and dependencies.
+  - `run-medintel.cmd` — Starts the backend OCR API on `127.0.0.1:8000` and launches the Electron desktop app.
+  - `start-desktop.cmd` — Launches the Electron desktop UI directly.
+  - `build-windows-installer.cmd` — Compiles a native Windows NSIS installer (`.exe`) via `electron-builder` into `release/`.
+
+To build the Windows desktop installer:
+```powershell
+npm run desktop:win
+```
 
 ---
 
@@ -223,9 +204,13 @@ Access the UI at: `http://localhost:5173`
 │   │   │   └── Home.tsx                  # Root console view
 │   │   └── App.tsx                       # Router configuration
 │   └── package.json
-├── docs/                                 # Architectural specifications & guides
+├── backend/                              # Desktop companion tools & fallback APIs
+├── design/                               # Desktop UI mockups and specifications
+├── docs/                                 # Architectural specifications & deployment guides
+├── electron-main.cjs                     # Electron desktop shell entry point
+├── electron-builder.yml                  # NSIS Windows installer configuration
 ├── scripts/                              # Benchmark & evaluation harnesses
-├── requirements.txt                      # Backend dependencies
+├── requirements.txt                      # Primary OCR engine dependencies
 └── README.md
 ```
 

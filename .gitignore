@@ -7,21 +7,27 @@ __pycache__/
 venv/
 ENV/
 env/
+backend/.venv/
 
 # Environment secrets (keeps credentials off Git)
 .env
 .env.*
+!.env.example
 
 # Node dependencies and build outputs
+node_modules/
+dist/
+release/
 frontend/node_modules/
 frontend/dist/
 frontend/.eslintcache
 
-# Local application data stores & uploads
+# Local application data stores, outputs & logs
 app/cache/
 thumbnails/
 uploads/
 outputs/
+data/
 .gemini/
 *.log
 
