@@ -1,0 +1,17 @@
+HOSPITAL DISCHARGE SUMMARY
+Patient Name: Nitin Gadhavi
+Age / Sex: 52 Yrs / F
+Date of Admission: 01/07/2026
+Date of Discharge: 04/07/2026
+Consultant Doctor: Dr. Ananya Roy
+Department: Consultant Pediatrician
+FINAL DIAGNOSIS (Dx): Acute Calculous Cholecystitis s/p Laparoscopic Cholecystectomy
+CONDITION AT DISCHARGE: Hemodynamically stable, afebrile, surgical wound clean and dry
+DISCHARGE MEDICATIONS & REGIMEN:
+1. Tab Augmentin 625 mg | 1-0-1 | x 5 days | After food
+2. Tab Pantoprazole 40 mg | 1-0-0 | x 7 days | Before breakfast
+3. Tab Paracetamol 650 mg | 1-0-1 | SOS | For pain/fever
+4. Syp Liv-52 | 2 tsp BID | x 15 days | With water
+FOLLOW-UP & POST-OP ADVICE:
+Review in OPD after 7 days for suture removal. Emergency visit if fever or severe pain.
+Authorized Medical Officer: Dr. Ananya Roy

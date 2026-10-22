@@ -1,0 +1,15 @@
+METROPATH CLINICAL LABORATORIES
+ISO 15189 Certified Diagnostic Pathology & Molecular Medicine
+Patient Name: Sunita Nair    Sample Date: 15/07/2026
+Age / Sex: 54 Yrs / Male    Ref. By: Dr. R. K. Sharma
+DEPARTMENT OF BIOCHEMISTRY & HEMATOLOGY — COMPLETE BLOOD COUNT (CBC)
+TEST NAME                      | RESULT     | UNITS        | REFERENCE RANGE
+Hemoglobin (Hb)                | 14.4       | g/dL         | 12.0 - 16.0
+Total Leukocyte Count (WBC)    | 8345       | /cu.mm       | 4000 - 11000
+Platelet Count (PLT)           | 286        | K/uL         | 150 - 450
+RBC Count                      | 4.56       | million/uL   | 4.2 - 5.5
+Hematocrit (PCV)               | 37.5       | %            | 37.0 - 48.0
+ESR (Westergren)               | 19         | mm/hr        | 0 - 20
+Pathologist Remarks / Observations:
+Sample processed under controlled temperature. Vitals & morphology correlate with clinical history.
+Dr. K. N. Sen, MD (Pathology) — Senior Consultant Pathologist

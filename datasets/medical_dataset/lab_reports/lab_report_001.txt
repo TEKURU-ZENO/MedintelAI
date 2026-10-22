@@ -1,0 +1,16 @@
+METROPATH CLINICAL LABORATORIES
+ISO 15189 Certified Diagnostic Pathology & Molecular Medicine
+Patient Name: Arjun Reddy    Sample Date: 13/10/2026
+Age / Sex: 51 Yrs / Male    Ref. By: Dr. S. Mehta
+DEPARTMENT OF BIOCHEMISTRY & HEMATOLOGY — COMPREHENSIVE METABOLIC PANEL (CMP)
+TEST NAME                      | RESULT     | UNITS        | REFERENCE RANGE
+Fasting Blood Sugar (FBS)      | 84         | mg/dL        | 70 - 100
+Post Prandial Sugar (PPBS)     | 145        | mg/dL        | < 140
+HbA1c (Glycated Hb)            | 5.4        | %            | < 5.7 Normal
+Serum Creatinine (Cr)          | 1.16       | mg/dL        | 0.6 - 1.2
+Blood Urea Nitrogen (BUN)      | 18         | mg/dL        | 7 - 20
+Total Cholesterol              | 198        | mg/dL        | < 200
+Serum Bilirubin Total          | 0.93       | mg/dL        | 0.2 - 1.2
+Pathologist Remarks / Observations:
+Sample processed under controlled temperature. Vitals & morphology correlate with clinical history.
+Dr. K. N. Sen, MD (Pathology) — Senior Consultant Pathologist

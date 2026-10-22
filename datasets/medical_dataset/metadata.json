@@ -1,0 +1,793 @@
+{
+  "dataset_name": "MedIntel Medical OCR Comprehensive Dataset",
+  "total_samples": 20,
+  "categories": {
+    "prescription": 5,
+    "clinical_note": 5,
+    "lab_report": 5,
+    "mixed_document": 5
+  },
+  "samples": [
+    {
+      "id": "prescription_001",
+      "category": "prescription",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_001.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_001.txt",
+      "text": "CITY CARE HOSPITAL & RESEARCH CENTER\nD-96, Amar Colony, Lajpat Nagar-IV, New Delhi-110024\nDr. Vinay Kumar, BAMS, MBA (Healthcare)\nConsultant Ayurvedic Physician | Reg No: CGMC 643/2006\nPh: 9871033775\nPatient: Priya Sharma    Age: 36 yrs    Sex: M    Date: 24/05/2026\nVitals: BP: 110/70 mmHg, HR: 86 bpm, SpO2: 98% on RA\nDiagnosis (Dx): Acute Bronchitis with URI\nRx:\n1. Tab. Triphala 500 mg - TID x 10 days\n2. Tab. Ashwagandha 250 mg - 1-0-1 x 1 month\n3. Tab. Septilin 250 mg - 0-0-1 x 10 days\nAdv: Avoid oily/spicy food, take medicines after meals, review after 5 days\nDoctor's Signature: Dr. Vinay Kumar",
+      "entities": {
+        "drugs": [
+          "Ashwagandha",
+          "Triphala",
+          "Septilin"
+        ],
+        "dosages": [
+          "500 mg",
+          "250 mg"
+        ],
+        "frequencies": [
+          "TID",
+          "1-0-1",
+          "0-0-1"
+        ],
+        "units": [
+          "mmHg",
+          "bpm",
+          "Tab",
+          "mg"
+        ],
+        "abbreviations": [
+          "Rx",
+          "Dx",
+          "Adv",
+          "BP",
+          "HR",
+          "SpO2",
+          "TID"
+        ]
+      }
+    },
+    {
+      "id": "prescription_002",
+      "category": "prescription",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_002.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_002.txt",
+      "text": "CITY CARE HOSPITAL & RESEARCH CENTER\nD-96, Amar Colony, Lajpat Nagar-IV, New Delhi-110024\nDr. R. K. Sharma, MBBS, MD (Cardiology)\nConsultant Cardiologist | Reg No: DMC 31920/2005\nPh: 9810998877\nPatient: Suresh Verma    Age: 40 yrs    Sex: F    Date: 13/02/2026\nVitals: BP: 120/70 mmHg, HR: 69 bpm, SpO2: 99% on RA\nDiagnosis (Dx): Type 2 Diabetes Mellitus with Essential Hypertension\nRx:\n1. Tab. Amoxicillin 500 mg - 1-0-1 SOS x 1 month\n2. Tab. Naproxen 250 mg - TID x 5 days\n3. Tab. Aspirin 10 mg - 1-0-1 x 7 days\n4. Tab. Losartan 20 mg - 1-0-0 x 1 month\nAdv: Plenty of oral fluids, rest x 3 days, avoid cold drinks\nDoctor's Signature: Dr. R. K. Sharma",
+      "entities": {
+        "drugs": [
+          "Amoxicillin",
+          "Aspirin",
+          "Naproxen",
+          "Losartan"
+        ],
+        "dosages": [
+          "500 mg",
+          "250 mg",
+          "10 mg",
+          "20 mg"
+        ],
+        "frequencies": [
+          "1-0-1",
+          "SOS",
+          "TID",
+          "1-0-0"
+        ],
+        "units": [
+          "F",
+          "mmHg",
+          "bpm",
+          "Tab",
+          "mg"
+        ],
+        "abbreviations": [
+          "Rx",
+          "Dx",
+          "Adv",
+          "BP",
+          "HR",
+          "SpO2",
+          "TID",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "prescription_003",
+      "category": "prescription",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_003.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_003.txt",
+      "text": "ST. JUDE HEALTHCARE & DIAGNOSTIC CENTER\nB-22, Civil Lines, North Campus, Delhi-110054\nDr. Vinay Kumar, BAMS, MBA (Healthcare)\nConsultant Ayurvedic Physician | Reg No: CGMC 643/2006\nPh: 9871033775\nPatient: Rajesh Patel    Age: 29 yrs    Sex: F    Date: 25/11/2026\nVitals: BP: 130/80 mmHg, HR: 82 bpm, SpO2: 97% on RA\nDiagnosis (Dx): Acute Gastritis with Acid Reflux\nRx:\n1. Tab. Septilin 10 mg - TID x 10 days\n2. Tab. Pantocid 500 mg - 1-0-1 x 7 days\n3. Tab. Brahmi 40 mg - 1-0-1 x 5 days\n4.  Kanchanar Guggulu 2 tab - x 2 with water x 5 days\n5. Tab. Cystone 10 mg - 1-0-1 SOS x 7 days\nAdv: Low salt diet, regular morning walk, review after 1 month with FBS/PPBS\nDoctor's Signature: Dr. Vinay Kumar",
+      "entities": {
+        "drugs": [
+          "Pantocid",
+          "Kanchanar Guggulu",
+          "Brahmi",
+          "Septilin",
+          "Cystone"
+        ],
+        "dosages": [
+          "10 mg",
+          "500 mg",
+          "40 mg"
+        ],
+        "frequencies": [
+          "TID",
+          "1-0-1",
+          "SOS"
+        ],
+        "units": [
+          "F",
+          "mmHg",
+          "bpm",
+          "Tab",
+          "mg"
+        ],
+        "abbreviations": [
+          "Rx",
+          "Dx",
+          "Adv",
+          "BP",
+          "HR",
+          "SpO2",
+          "FBS",
+          "PPBS",
+          "TID",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "prescription_004",
+      "category": "prescription",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_004.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_004.txt",
+      "text": "ST. JUDE HEALTHCARE & DIAGNOSTIC CENTER\nB-22, Civil Lines, North Campus, Delhi-110054\nDr. S. Mehta, MBBS, MD (Medicine)\nSenior Consultant Physician | Reg No: DMC 48291/2012\nPh: 9811442299\nPatient: Anita Devi    Age: 35 yrs    Sex: M    Date: 17/10/2026\nVitals: BP: 124/88 mmHg, HR: 79 bpm, SpO2: 98% on RA\nDiagnosis (Dx): Osteoarthritis Knee with Joint Pain\nRx:\n1. Tab. Pan-D 40 mg - 1-1-1 x 7 days\n2. Tab. Rosuvastatin 650 mg - 1-0-0 x 10 days\n3. Tab. Montelukast 650 mg - 1-0-0 x 5 days\n4. Tab. Ranitidine 650 mg - TID x 3 days\nAdv: Plenty of oral fluids, rest x 3 days, avoid cold drinks\nDoctor's Signature: Dr. S. Mehta",
+      "entities": {
+        "drugs": [
+          "Ranitidine",
+          "Pan-D",
+          "Rosuvastatin",
+          "Montelukast"
+        ],
+        "dosages": [
+          "40 mg",
+          "650 mg"
+        ],
+        "frequencies": [
+          "1-1-1",
+          "1-0-0",
+          "TID"
+        ],
+        "units": [
+          "mmHg",
+          "bpm",
+          "Tab",
+          "mg"
+        ],
+        "abbreviations": [
+          "Rx",
+          "Dx",
+          "Adv",
+          "BP",
+          "HR",
+          "SpO2",
+          "TID"
+        ]
+      }
+    },
+    {
+      "id": "prescription_005",
+      "category": "prescription",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_005.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\prescriptions\\prescription_005.txt",
+      "text": "APEX CLINICAL WELLNESS & AYURVEDA KENDRA\nC-916, Arya Vidyasala, Sec-7, New Delhi-110075\nDr. Ananya Roy, MBBS, DCH, DNB (Pediatrics)\nConsultant Pediatrician | Reg No: WBMC 59281\nPh: 9748012345\nPatient: Rahul Kumar    Age: 32 yrs    Sex: F    Date: 07/07/2026\nVitals: BP: 110/88 mmHg, HR: 76 bpm, SpO2: 98% on RA\nDiagnosis (Dx): Acute Gastritis with Acid Reflux\nRx:\n1. Tab. Amoxicillin 10 mg - 1-0-1 x 5 days\n2. Tab. Cetirizine 650 mg - 1-0-1 SOS x 3 days\n3. Tab. Combiflam 250 mg - 1-0-1 x 3 days\n4. Tab. Sucralfate 500 mg - 1-0-1 SOS x 10 days\nAdv: Low salt diet, regular morning walk, review after 1 month with FBS/PPBS\nDoctor's Signature: Dr. Ananya Roy",
+      "entities": {
+        "drugs": [
+          "Amoxicillin",
+          "Combiflam",
+          "Sucralfate",
+          "Cetirizine"
+        ],
+        "dosages": [
+          "10 mg",
+          "650 mg",
+          "250 mg",
+          "500 mg"
+        ],
+        "frequencies": [
+          "1-0-1",
+          "SOS"
+        ],
+        "units": [
+          "C",
+          "F",
+          "mmHg",
+          "bpm",
+          "Tab",
+          "mg"
+        ],
+        "abbreviations": [
+          "Rx",
+          "Dx",
+          "Adv",
+          "BP",
+          "HR",
+          "SpO2",
+          "FBS",
+          "PPBS",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "clinical_note_001",
+      "category": "clinical_note",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_001.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_001.txt",
+      "text": "PROGRESS NOTE \u2014 OPD CONSULTATION CLINIC\nPatient: Deepak Joshi    Age: 46    Date: 06/08/2026    Time: 17:30 AM\nC/O: Pt c/o fever with chills, productive cough and headache x 3 days\nK/C/O: Type 2 DM x 6 yrs on Tab Metformin 500 mg BD. No drug allergies\nVitals: BP: 118/76 mmHg, HR: 85 bpm, Temp: 99.2 F, SpO2: 97% on RA\nO/E: Chest: Bilateral coarse crepitations, air entry equal bilaterally\n     CVS: S1 S2 heard regular, no murmur. P/A: Soft, non-tender\nImpression (Dx): Community Acquired Pneumonia (CAP) with URI\nPlan: 1. Inj Ceftriaxone 1 g IV BD after test dose\n      2. Tab Azithromycin 500 mg OD x 5 days\n      3. Tab Paracetamol 650 mg SOS for fever\n      4. Nebulization with Salbutamol + Budesonide Q8H\n      5. Send CBC, CRP, Blood Culture, CXR PA view stat\nReview in evening round with lab reports.\nAttending Physician: Dr. S. Mehta, MD",
+      "entities": {
+        "drugs": [
+          "Azithromycin",
+          "Ceftriaxone",
+          "Paracetamol",
+          "Metformin",
+          "Salbutamol",
+          "Budesonide"
+        ],
+        "dosages": [
+          "500 mg",
+          "1 g",
+          "650 mg"
+        ],
+        "frequencies": [
+          "OD",
+          "SOS",
+          "STAT"
+        ],
+        "units": [
+          "C",
+          "Tab",
+          "mg",
+          "mmHg",
+          "bpm",
+          "F",
+          "CAP",
+          "g"
+        ],
+        "abbreviations": [
+          "Dx",
+          "O/E",
+          "C/O",
+          "K/C/O",
+          "BP",
+          "HR",
+          "Temp",
+          "SpO2",
+          "CBC",
+          "CRP",
+          "CXR",
+          "OD",
+          "BD",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "clinical_note_002",
+      "category": "clinical_note",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_002.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_002.txt",
+      "text": "PROGRESS NOTE \u2014 INTENSIVE CARE UNIT (STEP DOWN)\nPatient: Vikram Malhotra    Age: 33    Date: 21/07/2026    Time: 13:00 AM\nC/O: Pt c/o fever with chills, productive cough and headache x 3 days\nK/C/O: Type 2 DM x 6 yrs on Tab Metformin 500 mg BD. No drug allergies\nVitals: BP: 120/90 mmHg, HR: 85 bpm, Temp: 98.4 F, SpO2: 99% on RA\nO/E: Chest: Bilateral coarse crepitations, air entry equal bilaterally\n     CVS: S1 S2 heard regular, no murmur. P/A: Soft, non-tender\nImpression (Dx): Community Acquired Pneumonia (CAP) with URI\nPlan: 1. Inj Ceftriaxone 1 g IV BD after test dose\n      2. Tab Azithromycin 500 mg OD x 5 days\n      3. Tab Paracetamol 650 mg SOS for fever\n      4. Nebulization with Salbutamol + Budesonide Q8H\n      5. Send CBC, CRP, Blood Culture, CXR PA view stat\nReview in evening round with lab reports.\nAttending Physician: Dr. S. Mehta, MD",
+      "entities": {
+        "drugs": [
+          "Azithromycin",
+          "Ceftriaxone",
+          "Paracetamol",
+          "Metformin",
+          "Salbutamol",
+          "Budesonide"
+        ],
+        "dosages": [
+          "500 mg",
+          "1 g",
+          "650 mg"
+        ],
+        "frequencies": [
+          "OD",
+          "SOS",
+          "STAT"
+        ],
+        "units": [
+          "C",
+          "Tab",
+          "mg",
+          "mmHg",
+          "bpm",
+          "F",
+          "CAP",
+          "g"
+        ],
+        "abbreviations": [
+          "Dx",
+          "O/E",
+          "C/O",
+          "K/C/O",
+          "BP",
+          "HR",
+          "Temp",
+          "SpO2",
+          "CBC",
+          "CRP",
+          "CXR",
+          "OD",
+          "BD",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "clinical_note_003",
+      "category": "clinical_note",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_003.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_003.txt",
+      "text": "PROGRESS NOTE \u2014 OPD CONSULTATION CLINIC\nPatient: Ritu Agarwal    Age: 36    Date: 02/05/2026    Time: 14:00 PM\nC/O: Pt c/o fever with chills, productive cough and headache x 3 days\nK/C/O: Type 2 DM x 6 yrs on Tab Metformin 500 mg BD. No drug allergies\nVitals: BP: 140/80 mmHg, HR: 75 bpm, Temp: 98.6 F, SpO2: 97% on RA\nO/E: Chest: Bilateral coarse crepitations, air entry equal bilaterally\n     CVS: S1 S2 heard regular, no murmur. P/A: Soft, non-tender\nImpression (Dx): Community Acquired Pneumonia (CAP) with URI\nPlan: 1. Inj Ceftriaxone 1 g IV BD after test dose\n      2. Tab Azithromycin 500 mg OD x 5 days\n      3. Tab Paracetamol 650 mg SOS for fever\n      4. Nebulization with Salbutamol + Budesonide Q8H\n      5. Send CBC, CRP, Blood Culture, CXR PA view stat\nReview in evening round with lab reports.\nAttending Physician: Dr. S. Mehta, MD",
+      "entities": {
+        "drugs": [
+          "Azithromycin",
+          "Ceftriaxone",
+          "Paracetamol",
+          "Metformin",
+          "Salbutamol",
+          "Budesonide"
+        ],
+        "dosages": [
+          "500 mg",
+          "1 g",
+          "650 mg"
+        ],
+        "frequencies": [
+          "OD",
+          "SOS",
+          "STAT"
+        ],
+        "units": [
+          "C",
+          "Tab",
+          "mg",
+          "mmHg",
+          "bpm",
+          "F",
+          "CAP",
+          "g"
+        ],
+        "abbreviations": [
+          "Dx",
+          "O/E",
+          "C/O",
+          "K/C/O",
+          "BP",
+          "HR",
+          "Temp",
+          "SpO2",
+          "CBC",
+          "CRP",
+          "CXR",
+          "OD",
+          "BD",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "clinical_note_004",
+      "category": "clinical_note",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_004.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_004.txt",
+      "text": "PROGRESS NOTE \u2014 INTENSIVE CARE UNIT (STEP DOWN)\nPatient: Ritu Agarwal    Age: 70    Date: 28/12/2026    Time: 12:30 AM\nC/O: Pt c/o fever with chills, productive cough and headache x 3 days\nK/C/O: Type 2 DM x 6 yrs on Tab Metformin 500 mg BD. No drug allergies\nVitals: BP: 120/80 mmHg, HR: 82 bpm, Temp: 99.2 F, SpO2: 98% on RA\nO/E: Chest: Bilateral coarse crepitations, air entry equal bilaterally\n     CVS: S1 S2 heard regular, no murmur. P/A: Soft, non-tender\nImpression (Dx): Community Acquired Pneumonia (CAP) with URI\nPlan: 1. Inj Ceftriaxone 1 g IV BD after test dose\n      2. Tab Azithromycin 500 mg OD x 5 days\n      3. Tab Paracetamol 650 mg SOS for fever\n      4. Nebulization with Salbutamol + Budesonide Q8H\n      5. Send CBC, CRP, Blood Culture, CXR PA view stat\nReview in evening round with lab reports.\nAttending Physician: Dr. S. Mehta, MD",
+      "entities": {
+        "drugs": [
+          "Azithromycin",
+          "Ceftriaxone",
+          "Paracetamol",
+          "Metformin",
+          "Salbutamol",
+          "Budesonide"
+        ],
+        "dosages": [
+          "500 mg",
+          "1 g",
+          "650 mg"
+        ],
+        "frequencies": [
+          "OD",
+          "SOS",
+          "STAT"
+        ],
+        "units": [
+          "C",
+          "Tab",
+          "mg",
+          "mmHg",
+          "bpm",
+          "F",
+          "CAP",
+          "g"
+        ],
+        "abbreviations": [
+          "Dx",
+          "O/E",
+          "C/O",
+          "K/C/O",
+          "BP",
+          "HR",
+          "Temp",
+          "SpO2",
+          "CBC",
+          "CRP",
+          "CXR",
+          "OD",
+          "BD",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "clinical_note_005",
+      "category": "clinical_note",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_005.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\clinical_notes\\clinical_note_005.txt",
+      "text": "PROGRESS NOTE \u2014 OPD CONSULTATION CLINIC\nPatient: Vikram Malhotra    Age: 70    Date: 07/07/2026    Time: 14:30 AM\nC/O: Pt c/o fever with chills, productive cough and headache x 3 days\nK/C/O: Type 2 DM x 6 yrs on Tab Metformin 500 mg BD. No drug allergies\nVitals: BP: 140/84 mmHg, HR: 68 bpm, Temp: 99.2 F, SpO2: 96% on RA\nO/E: Chest: Bilateral coarse crepitations, air entry equal bilaterally\n     CVS: S1 S2 heard regular, no murmur. P/A: Soft, non-tender\nImpression (Dx): Community Acquired Pneumonia (CAP) with URI\nPlan: 1. Inj Ceftriaxone 1 g IV BD after test dose\n      2. Tab Azithromycin 500 mg OD x 5 days\n      3. Tab Paracetamol 650 mg SOS for fever\n      4. Nebulization with Salbutamol + Budesonide Q8H\n      5. Send CBC, CRP, Blood Culture, CXR PA view stat\nReview in evening round with lab reports.\nAttending Physician: Dr. S. Mehta, MD",
+      "entities": {
+        "drugs": [
+          "Azithromycin",
+          "Ceftriaxone",
+          "Paracetamol",
+          "Metformin",
+          "Salbutamol",
+          "Budesonide"
+        ],
+        "dosages": [
+          "500 mg",
+          "1 g",
+          "650 mg"
+        ],
+        "frequencies": [
+          "OD",
+          "SOS",
+          "STAT"
+        ],
+        "units": [
+          "C",
+          "Tab",
+          "mg",
+          "mmHg",
+          "bpm",
+          "F",
+          "CAP",
+          "g"
+        ],
+        "abbreviations": [
+          "Dx",
+          "O/E",
+          "C/O",
+          "K/C/O",
+          "BP",
+          "HR",
+          "Temp",
+          "SpO2",
+          "CBC",
+          "CRP",
+          "CXR",
+          "OD",
+          "BD",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "lab_report_001",
+      "category": "lab_report",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_001.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_001.txt",
+      "text": "METROPATH CLINICAL LABORATORIES\nISO 15189 Certified Diagnostic Pathology & Molecular Medicine\nPatient Name: Arjun Reddy    Sample Date: 13/10/2026\nAge / Sex: 51 Yrs / Male    Ref. By: Dr. S. Mehta\nDEPARTMENT OF BIOCHEMISTRY & HEMATOLOGY \u2014 COMPREHENSIVE METABOLIC PANEL (CMP)\nTEST NAME                      | RESULT     | UNITS        | REFERENCE RANGE\nFasting Blood Sugar (FBS)      | 84         | mg/dL        | 70 - 100\nPost Prandial Sugar (PPBS)     | 145        | mg/dL        | < 140\nHbA1c (Glycated Hb)            | 5.4        | %            | < 5.7 Normal\nSerum Creatinine (Cr)          | 1.16       | mg/dL        | 0.6 - 1.2\nBlood Urea Nitrogen (BUN)      | 18         | mg/dL        | 7 - 20\nTotal Cholesterol              | 198        | mg/dL        | < 200\nSerum Bilirubin Total          | 0.93       | mg/dL        | 0.2 - 1.2\nPathologist Remarks / Observations:\nSample processed under controlled temperature. Vitals & morphology correlate with clinical history.\nDr. K. N. Sen, MD (Pathology) \u2014 Senior Consultant Pathologist",
+      "entities": {
+        "drugs": [],
+        "dosages": [],
+        "frequencies": [],
+        "units": [
+          "mg"
+        ],
+        "abbreviations": [
+          "Hb",
+          "BUN",
+          "Cr",
+          "FBS",
+          "PPBS",
+          "HbA1c"
+        ]
+      }
+    },
+    {
+      "id": "lab_report_002",
+      "category": "lab_report",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_002.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_002.txt",
+      "text": "METROPATH CLINICAL LABORATORIES\nISO 15189 Certified Diagnostic Pathology & Molecular Medicine\nPatient Name: Arjun Reddy    Sample Date: 22/06/2026\nAge / Sex: 51 Yrs / Male    Ref. By: Dr. R. K. Sharma\nDEPARTMENT OF BIOCHEMISTRY & HEMATOLOGY \u2014 COMPREHENSIVE METABOLIC PANEL (CMP)\nTEST NAME                      | RESULT     | UNITS        | REFERENCE RANGE\nFasting Blood Sugar (FBS)      | 89         | mg/dL        | 70 - 100\nPost Prandial Sugar (PPBS)     | 137        | mg/dL        | < 140\nHbA1c (Glycated Hb)            | 6.1        | %            | < 5.7 Normal\nSerum Creatinine (Cr)          | 1.03       | mg/dL        | 0.6 - 1.2\nBlood Urea Nitrogen (BUN)      | 15         | mg/dL        | 7 - 20\nTotal Cholesterol              | 180        | mg/dL        | < 200\nSerum Bilirubin Total          | 0.92       | mg/dL        | 0.2 - 1.2\nPathologist Remarks / Observations:\nSample processed under controlled temperature. Vitals & morphology correlate with clinical history.\nDr. K. N. Sen, MD (Pathology) \u2014 Senior Consultant Pathologist",
+      "entities": {
+        "drugs": [],
+        "dosages": [],
+        "frequencies": [],
+        "units": [
+          "mg"
+        ],
+        "abbreviations": [
+          "Hb",
+          "BUN",
+          "Cr",
+          "FBS",
+          "PPBS",
+          "HbA1c"
+        ]
+      }
+    },
+    {
+      "id": "lab_report_003",
+      "category": "lab_report",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_003.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_003.txt",
+      "text": "METROPATH CLINICAL LABORATORIES\nISO 15189 Certified Diagnostic Pathology & Molecular Medicine\nPatient Name: Farida Begum    Sample Date: 20/10/2026\nAge / Sex: 67 Yrs / Male    Ref. By: Dr. Vishnu Gupta\nDEPARTMENT OF BIOCHEMISTRY & HEMATOLOGY \u2014 COMPREHENSIVE METABOLIC PANEL (CMP)\nTEST NAME                      | RESULT     | UNITS        | REFERENCE RANGE\nFasting Blood Sugar (FBS)      | 82         | mg/dL        | 70 - 100\nPost Prandial Sugar (PPBS)     | 137        | mg/dL        | < 140\nHbA1c (Glycated Hb)            | 5.8        | %            | < 5.7 Normal\nSerum Creatinine (Cr)          | 0.91       | mg/dL        | 0.6 - 1.2\nBlood Urea Nitrogen (BUN)      | 19         | mg/dL        | 7 - 20\nTotal Cholesterol              | 193        | mg/dL        | < 200\nSerum Bilirubin Total          | 0.89       | mg/dL        | 0.2 - 1.2\nPathologist Remarks / Observations:\nSample processed under controlled temperature. Vitals & morphology correlate with clinical history.\nDr. K. N. Sen, MD (Pathology) \u2014 Senior Consultant Pathologist",
+      "entities": {
+        "drugs": [],
+        "dosages": [],
+        "frequencies": [],
+        "units": [
+          "mg"
+        ],
+        "abbreviations": [
+          "Hb",
+          "BUN",
+          "Cr",
+          "FBS",
+          "PPBS",
+          "HbA1c"
+        ]
+      }
+    },
+    {
+      "id": "lab_report_004",
+      "category": "lab_report",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_004.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_004.txt",
+      "text": "METROPATH CLINICAL LABORATORIES\nISO 15189 Certified Diagnostic Pathology & Molecular Medicine\nPatient Name: Sunita Nair    Sample Date: 26/12/2026\nAge / Sex: 56 Yrs / Female    Ref. By: Dr. S. Mehta\nDEPARTMENT OF BIOCHEMISTRY & HEMATOLOGY \u2014 COMPLETE BLOOD COUNT (CBC)\nTEST NAME                      | RESULT     | UNITS        | REFERENCE RANGE\nHemoglobin (Hb)                | 12.6       | g/dL         | 12.0 - 16.0\nTotal Leukocyte Count (WBC)    | 10638      | /cu.mm       | 4000 - 11000\nPlatelet Count (PLT)           | 322        | K/uL         | 150 - 450\nRBC Count                      | 4.87       | million/uL   | 4.2 - 5.5\nHematocrit (PCV)               | 36.9       | %            | 37.0 - 48.0\nESR (Westergren)               | 20         | mm/hr        | 0 - 20\nPathologist Remarks / Observations:\nSample processed under controlled temperature. Vitals & morphology correlate with clinical history.\nDr. K. N. Sen, MD (Pathology) \u2014 Senior Consultant Pathologist",
+      "entities": {
+        "drugs": [],
+        "dosages": [],
+        "frequencies": [],
+        "units": [
+          "g",
+          "K/uL",
+          "mm/hr"
+        ],
+        "abbreviations": [
+          "CBC",
+          "WBC",
+          "RBC",
+          "Hb",
+          "PLT",
+          "ESR"
+        ]
+      }
+    },
+    {
+      "id": "lab_report_005",
+      "category": "lab_report",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_005.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\lab_reports\\lab_report_005.txt",
+      "text": "METROPATH CLINICAL LABORATORIES\nISO 15189 Certified Diagnostic Pathology & Molecular Medicine\nPatient Name: Sunita Nair    Sample Date: 15/07/2026\nAge / Sex: 54 Yrs / Male    Ref. By: Dr. R. K. Sharma\nDEPARTMENT OF BIOCHEMISTRY & HEMATOLOGY \u2014 COMPLETE BLOOD COUNT (CBC)\nTEST NAME                      | RESULT     | UNITS        | REFERENCE RANGE\nHemoglobin (Hb)                | 14.4       | g/dL         | 12.0 - 16.0\nTotal Leukocyte Count (WBC)    | 8345       | /cu.mm       | 4000 - 11000\nPlatelet Count (PLT)           | 286        | K/uL         | 150 - 450\nRBC Count                      | 4.56       | million/uL   | 4.2 - 5.5\nHematocrit (PCV)               | 37.5       | %            | 37.0 - 48.0\nESR (Westergren)               | 19         | mm/hr        | 0 - 20\nPathologist Remarks / Observations:\nSample processed under controlled temperature. Vitals & morphology correlate with clinical history.\nDr. K. N. Sen, MD (Pathology) \u2014 Senior Consultant Pathologist",
+      "entities": {
+        "drugs": [],
+        "dosages": [],
+        "frequencies": [],
+        "units": [
+          "g",
+          "K/uL",
+          "mm/hr"
+        ],
+        "abbreviations": [
+          "CBC",
+          "WBC",
+          "RBC",
+          "Hb",
+          "PLT",
+          "ESR"
+        ]
+      }
+    },
+    {
+      "id": "mixed_document_001",
+      "category": "mixed_document",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_001.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_001.txt",
+      "text": "HOSPITAL DISCHARGE SUMMARY\nPatient Name: Pooja Bose\nAge / Sex: 28 Yrs / M\nDate of Admission: 04/08/2026\nDate of Discharge: 06/08/2026\nConsultant Doctor: Dr. Ananya Roy\nDepartment: Consultant Pediatrician\nFINAL DIAGNOSIS (Dx): Acute Calculous Cholecystitis s/p Laparoscopic Cholecystectomy\nCONDITION AT DISCHARGE: Hemodynamically stable, afebrile, surgical wound clean and dry\nDISCHARGE MEDICATIONS & REGIMEN:\n1. Tab Augmentin 625 mg | 1-0-1 | x 5 days | After food\n2. Tab Pantoprazole 40 mg | 1-0-0 | x 7 days | Before breakfast\n3. Tab Paracetamol 650 mg | 1-0-1 | SOS | For pain/fever\n4. Syp Liv-52 | 2 tsp BID | x 15 days | With water\nFOLLOW-UP & POST-OP ADVICE:\nReview in OPD after 7 days for suture removal. Emergency visit if fever or severe pain.\nAuthorized Medical Officer: Dr. Ananya Roy",
+      "entities": {
+        "drugs": [
+          "Augmentin",
+          "Paracetamol",
+          "Pantoprazole",
+          "Liv-52"
+        ],
+        "dosages": [
+          "625 mg",
+          "40 mg",
+          "650 mg",
+          "2 tsp"
+        ],
+        "frequencies": [
+          "1-0-1",
+          "1-0-0",
+          "SOS",
+          "BID"
+        ],
+        "units": [
+          "Tab",
+          "mg",
+          "tsp"
+        ],
+        "abbreviations": [
+          "Dx",
+          "BID",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "mixed_document_002",
+      "category": "mixed_document",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_002.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_002.txt",
+      "text": "HOSPITAL DISCHARGE SUMMARY\nPatient Name: Pooja Bose\nAge / Sex: 35 Yrs / F\nDate of Admission: 15/05/2026\nDate of Discharge: 17/05/2026\nConsultant Doctor: Dr. Vishnu Gupta\nDepartment: Consultant Surgeon\nFINAL DIAGNOSIS (Dx): Acute Calculous Cholecystitis s/p Laparoscopic Cholecystectomy\nCONDITION AT DISCHARGE: Hemodynamically stable, afebrile, surgical wound clean and dry\nDISCHARGE MEDICATIONS & REGIMEN:\n1. Tab Augmentin 625 mg | 1-0-1 | x 5 days | After food\n2. Tab Pantoprazole 40 mg | 1-0-0 | x 7 days | Before breakfast\n3. Tab Paracetamol 650 mg | 1-0-1 | SOS | For pain/fever\n4. Syp Liv-52 | 2 tsp BID | x 15 days | With water\nFOLLOW-UP & POST-OP ADVICE:\nReview in OPD after 7 days for suture removal. Emergency visit if fever or severe pain.\nAuthorized Medical Officer: Dr. Vishnu Gupta",
+      "entities": {
+        "drugs": [
+          "Augmentin",
+          "Paracetamol",
+          "Pantoprazole",
+          "Liv-52"
+        ],
+        "dosages": [
+          "625 mg",
+          "40 mg",
+          "650 mg",
+          "2 tsp"
+        ],
+        "frequencies": [
+          "1-0-1",
+          "1-0-0",
+          "SOS",
+          "BID"
+        ],
+        "units": [
+          "F",
+          "Tab",
+          "mg",
+          "tsp"
+        ],
+        "abbreviations": [
+          "Dx",
+          "BID",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "mixed_document_003",
+      "category": "mixed_document",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_003.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_003.txt",
+      "text": "HOSPITAL DISCHARGE SUMMARY\nPatient Name: Gopal Krishna\nAge / Sex: 33 Yrs / M\nDate of Admission: 08/07/2026\nDate of Discharge: 12/07/2026\nConsultant Doctor: Dr. S. Mehta\nDepartment: Senior Consultant Physician\nFINAL DIAGNOSIS (Dx): Acute Calculous Cholecystitis s/p Laparoscopic Cholecystectomy\nCONDITION AT DISCHARGE: Hemodynamically stable, afebrile, surgical wound clean and dry\nDISCHARGE MEDICATIONS & REGIMEN:\n1. Tab Augmentin 625 mg | 1-0-1 | x 5 days | After food\n2. Tab Pantoprazole 40 mg | 1-0-0 | x 7 days | Before breakfast\n3. Tab Paracetamol 650 mg | 1-0-1 | SOS | For pain/fever\n4. Syp Liv-52 | 2 tsp BID | x 15 days | With water\nFOLLOW-UP & POST-OP ADVICE:\nReview in OPD after 7 days for suture removal. Emergency visit if fever or severe pain.\nAuthorized Medical Officer: Dr. S. Mehta",
+      "entities": {
+        "drugs": [
+          "Augmentin",
+          "Paracetamol",
+          "Pantoprazole",
+          "Liv-52"
+        ],
+        "dosages": [
+          "625 mg",
+          "40 mg",
+          "650 mg",
+          "2 tsp"
+        ],
+        "frequencies": [
+          "1-0-1",
+          "1-0-0",
+          "SOS",
+          "BID"
+        ],
+        "units": [
+          "Tab",
+          "mg",
+          "tsp"
+        ],
+        "abbreviations": [
+          "Dx",
+          "BID",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "mixed_document_004",
+      "category": "mixed_document",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_004.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_004.txt",
+      "text": "HOSPITAL DISCHARGE SUMMARY\nPatient Name: Pooja Bose\nAge / Sex: 62 Yrs / M\nDate of Admission: 25/10/2026\nDate of Discharge: 28/10/2026\nConsultant Doctor: Dr. Ananya Roy\nDepartment: Consultant Pediatrician\nFINAL DIAGNOSIS (Dx): Acute Calculous Cholecystitis s/p Laparoscopic Cholecystectomy\nCONDITION AT DISCHARGE: Hemodynamically stable, afebrile, surgical wound clean and dry\nDISCHARGE MEDICATIONS & REGIMEN:\n1. Tab Augmentin 625 mg | 1-0-1 | x 5 days | After food\n2. Tab Pantoprazole 40 mg | 1-0-0 | x 7 days | Before breakfast\n3. Tab Paracetamol 650 mg | 1-0-1 | SOS | For pain/fever\n4. Syp Liv-52 | 2 tsp BID | x 15 days | With water\nFOLLOW-UP & POST-OP ADVICE:\nReview in OPD after 7 days for suture removal. Emergency visit if fever or severe pain.\nAuthorized Medical Officer: Dr. Ananya Roy",
+      "entities": {
+        "drugs": [
+          "Augmentin",
+          "Paracetamol",
+          "Pantoprazole",
+          "Liv-52"
+        ],
+        "dosages": [
+          "625 mg",
+          "40 mg",
+          "650 mg",
+          "2 tsp"
+        ],
+        "frequencies": [
+          "1-0-1",
+          "1-0-0",
+          "SOS",
+          "BID"
+        ],
+        "units": [
+          "Tab",
+          "mg",
+          "tsp"
+        ],
+        "abbreviations": [
+          "Dx",
+          "BID",
+          "SOS"
+        ]
+      }
+    },
+    {
+      "id": "mixed_document_005",
+      "category": "mixed_document",
+      "image_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_005.png",
+      "ground_truth_path": "C:\\Users\\Dev Mehta\\Desktop\\SIMS OCR\\Aksharabyasa-AI-main\\datasets\\medical_dataset\\mixed_documents\\mixed_document_005.txt",
+      "text": "HOSPITAL DISCHARGE SUMMARY\nPatient Name: Nitin Gadhavi\nAge / Sex: 52 Yrs / F\nDate of Admission: 01/07/2026\nDate of Discharge: 04/07/2026\nConsultant Doctor: Dr. Ananya Roy\nDepartment: Consultant Pediatrician\nFINAL DIAGNOSIS (Dx): Acute Calculous Cholecystitis s/p Laparoscopic Cholecystectomy\nCONDITION AT DISCHARGE: Hemodynamically stable, afebrile, surgical wound clean and dry\nDISCHARGE MEDICATIONS & REGIMEN:\n1. Tab Augmentin 625 mg | 1-0-1 | x 5 days | After food\n2. Tab Pantoprazole 40 mg | 1-0-0 | x 7 days | Before breakfast\n3. Tab Paracetamol 650 mg | 1-0-1 | SOS | For pain/fever\n4. Syp Liv-52 | 2 tsp BID | x 15 days | With water\nFOLLOW-UP & POST-OP ADVICE:\nReview in OPD after 7 days for suture removal. Emergency visit if fever or severe pain.\nAuthorized Medical Officer: Dr. Ananya Roy",
+      "entities": {
+        "drugs": [
+          "Augmentin",
+          "Paracetamol",
+          "Pantoprazole",
+          "Liv-52"
+        ],
+        "dosages": [
+          "625 mg",
+          "40 mg",
+          "650 mg",
+          "2 tsp"
+        ],
+        "frequencies": [
+          "1-0-1",
+          "1-0-0",
+          "SOS",
+          "BID"
+        ],
+        "units": [
+          "F",
+          "Tab",
+          "mg",
+          "tsp"
+        ],
+        "abbreviations": [
+          "Dx",
+          "BID",
+          "SOS"
+        ]
+      }
+    }
+  ]
+}
