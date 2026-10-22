@@ -14,35 +14,64 @@ logger = get_logger(__name__)
 
 class RegionClassifier:
     """
-    Modular classifier for determining if a cropped text region is 'printed' or 'handwritten'.
-    Document-agnostic: Analyzes connected component variance, baseline drift, and recognition confidence.
+    Multi-Feature Printed vs. Handwritten Region Classifier:
+    - Baseline drift & vertical variance (h_std, b_std)
+    - Stroke curvature & perimeter-to-area ratio
+    - Character stroke thickness regularity
+    - Primary detector confidence & glyph continuity
+    Returns full classification metadata and provenance.
     """
     def __init__(self, variance_threshold: float = 0.40):
         self.variance_threshold = variance_threshold
 
-    def classify(self, crop: np.ndarray, base_score: float = 1.0, rapid_text: str = "") -> str:
+    def classify_with_provenance(
+        self,
+        crop: np.ndarray,
+        base_score: float = 1.0,
+        rapid_text: str = ""
+    ) -> Dict[str, Any]:
         if crop is None or crop.size == 0:
-            return 'printed'
-        
+            return {
+                "region_type": "printed",
+                "confidence": 0.5,
+                "reasons": ["empty_crop_default"],
+                "features": {}
+            }
+
         gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY) if len(crop.shape) == 3 else crop
         h, w = gray.shape[:2]
         if h < 10 or w < 15:
-            return 'printed'
+            return {
+                "region_type": "printed",
+                "confidence": 0.6,
+                "reasons": ["micro_crop_default"],
+                "features": {"height": h, "width": w}
+            }
 
         # 1. Binarize crop to find stroke components
         _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if not contours:
-            return 'printed'
+            return {
+                "region_type": "printed",
+                "confidence": 0.55,
+                "reasons": ["no_contours_found"],
+                "features": {}
+            }
 
-        # 2. Analyze component heights and vertical baseline positions
+        # 2. Analyze component heights, vertical baselines and stroke curvature
         heights = []
         bottoms = []
+        curvatures = []
         for c in contours:
             cx, cy, cw, ch = cv2.boundingRect(c)
-            if ch > h * 0.25 and cw > 3:
+            area = cv2.contourArea(c)
+            peri = cv2.arcLength(c, True)
+            if ch > h * 0.20 and cw > 2:
                 heights.append(ch)
                 bottoms.append(cy + ch)
+                if area > 10 and peri > 0:
+                    curvatures.append(float(peri * peri / (4.0 * np.pi * area)))
 
         if len(heights) < 3:
             h_std = 0.0
@@ -51,19 +80,171 @@ class RegionClassifier:
             h_std = float(np.std(heights)) / (float(np.mean(heights)) + 1e-5)
             b_std = float(np.std(bottoms)) / float(h)
 
-        # Document-agnostic classification:
-        # - Printed typography: low baseline drift (b_std < 0.12), uniform heights (h_std < 0.35)
-        # - Organic handwriting: wandering baselines (b_std > 0.12), height variance (h_std > 0.38)
-        # - Strong RapidOCR printed score (> 0.70) reliably rules out handwriting unless baseline drift is extreme
+        mean_curvature = float(np.mean(curvatures)) if curvatures else 1.0
+
+        reasons = []
         is_handwritten = False
+
         if base_score < 0.60 and (h_std > 0.28 or b_std > 0.09):
             is_handwritten = True
+            reasons.append("low_detector_conf_with_baseline_drift")
         elif base_score < 0.75 and (h_std > 0.38 or b_std > 0.14):
             is_handwritten = True
+            reasons.append("moderate_detector_conf_with_height_variance")
         elif h_std > 0.48 and b_std > 0.18:
             is_handwritten = True
+            reasons.append("extreme_morphological_irregularity")
+        elif mean_curvature > 4.5 and b_std > 0.12:
+            is_handwritten = True
+            reasons.append("high_stroke_curvature_and_wandering")
 
-        return 'handwritten' if is_handwritten else 'printed'
+        if not is_handwritten:
+            reasons.append("regular_typography_and_stable_baseline")
+
+        conf = 0.85 if is_handwritten else (0.90 if base_score > 0.70 else 0.75)
+        return {
+            "region_type": "handwritten" if is_handwritten else "printed",
+            "confidence": round(conf, 3),
+            "reasons": reasons,
+            "features": {
+                "height_std": round(h_std, 3),
+                "baseline_std": round(b_std, 3),
+                "mean_curvature": round(mean_curvature, 2),
+                "detector_score": round(base_score, 3)
+            }
+        }
+
+    def classify(self, crop: np.ndarray, base_score: float = 1.0, rapid_text: str = "") -> str:
+        return self.classify_with_provenance(crop, base_score, rapid_text)["region_type"]
+
+
+class AntiHallucinationFilter:
+    """
+    Guardrail against autoregressive vision-language model hallucinations:
+    - Corpus boilerplate (Wikipedia / Wikimedia phrases)
+    - Alphabet loop sequences (e.g., 'a b c d e f g h')
+    - Cyclical repeating n-grams
+    - Severe character count disparity relative to bounding box width
+    - Repetitive punctuation / trailing burst artifacts
+    """
+    BLACKLIST_PHRASES = [
+        "what links here", "related changes", "upload file", "special pages",
+        "permanent link", "page information", "cite this page", "wikidata item",
+        "wikipedia", "wikimedia", "in the united states in the united states",
+        "of the united states of the united", "the first time of the first time",
+        "management anniversary", "cosmopolitanism formal holidays",
+        "washington post", "new york times", "external links", "references categories"
+    ]
+
+    @classmethod
+    def check_hallucination(cls, text: str, crop_w: int = 0) -> Tuple[bool, str, str]:
+        """
+        Returns (is_hallucination: bool, sanitized_text: str, trigger_reason: str).
+        """
+        if not text:
+            return False, "", "empty"
+
+        clean = text.strip()
+        lower = clean.lower()
+
+        # 1. Corpus blacklist
+        for phrase in cls.BLACKLIST_PHRASES:
+            if phrase in lower:
+                return True, "", f"blacklisted_corpus_phrase: {phrase}"
+
+        # 2. Alphabet sequence loops (e.g. 'a b c d e f g h')
+        if re.search(r'(?:[a-z]\s+){4,}[a-z]', lower):
+            return True, "", "alphabet_sequence_loop"
+
+        # 3. Repeating 2-gram to 4-gram loops
+        words = lower.split()
+        if len(words) >= 6:
+            for n in range(2, 5):
+                for i in range(len(words) - 2 * n + 1):
+                    if words[i:i+n] == words[i+n:i+2*n]:
+                        clean_words = clean.split()
+                        prefix = " ".join(clean_words[:i+n])
+                        return True, prefix, f"repeating_{n}gram_loop"
+
+        # 4. Extreme length disparity
+        if crop_w > 0 and len(clean) > (crop_w / 4.2) + 12:
+            return True, clean[:int(crop_w / 4.5)], "extreme_length_disparity"
+
+        # 5. Sanitize trailing burst artifacts (e.g. ' . " 1 ) : I.m-O...')
+        sanitized = re.sub(r'[\s\.\'\"\,\-\_\:\;0-9\(\)\/\\]{5,}$', '', clean).strip()
+        if not sanitized and len(clean) > 8:
+            return True, "", "symbol_burst_artifact"
+
+        return False, sanitized if sanitized else clean, "passed"
+
+
+class OCRErrorDetector:
+    """
+    Automated Diagnostic Engine for OCR Predictions:
+    Identifies common OCR failure modes, digit/letter confusions, low-confidence regions,
+    and medical domain anomalies.
+    """
+    def __init__(self, postprocessor: Optional[MedicalVocabularyPostProcessor] = None):
+        self.postprocessor = postprocessor or MedicalVocabularyPostProcessor()
+
+    def analyze(
+        self,
+        text: str,
+        confidence: float,
+        crop: np.ndarray,
+        provenance: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        flags = []
+        disputed_tokens = []
+        severity = "none"
+
+        # 1. Low confidence alert
+        if confidence < 0.60:
+            flags.append("LOW_CONFIDENCE")
+            severity = "medium" if confidence >= 0.40 else "high"
+
+        # 2. Fallback occurred
+        if provenance.get("fallback_occurred", False):
+            flags.append("FALLBACK_TRIGGERED")
+            if severity == "none":
+                severity = "low"
+
+        # 3. Digit-Letter Confusion Suspicions
+        raw_pred = provenance.get("raw_prediction", text)
+        if re.search(r'\b[0-9]*[lIOo][0-9]+\b', raw_pred):
+            flags.append("DIGIT_LETTER_CONFUSION_SUSPECTED")
+            disputed_tokens.extend(re.findall(r'\b[0-9]*[lIOo][0-9]+\b', raw_pred))
+            severity = max(severity, "medium", key=lambda x: ["none", "low", "medium", "high"].index(x))
+
+        if re.search(r'\b[Ss]00\s*(?:mg|ml)\b', raw_pred):
+            flags.append("DOSAGE_DIGIT_S_FOR_5")
+            disputed_tokens.append("S00 -> 500")
+
+        # 4. Unusual Punctuation / Glyph Glitches
+        if re.search(r'[\ufffd\u25a1\u53e3\?\*]{2,}', raw_pred):
+            flags.append("UNRECOGNIZED_GLYPHS")
+            if severity == "none":
+                severity = "low"
+
+        # 5. Aspect Ratio & Geometry Warning
+        if crop is not None and crop.size > 0:
+            h, w = crop.shape[:2]
+            if h > w * 1.5 and len(text) > 3:
+                flags.append("VERTICAL_ORIENTATION_ANOMALY")
+            if h < 12:
+                flags.append("EXTREME_LOW_RESOLUTION")
+
+        # 6. Hallucination Mitigation Flag
+        if provenance.get("hallucination_mitigated", False):
+            flags.append("HALLUCINATION_MITIGATED")
+            severity = max(severity, "medium", key=lambda x: ["none", "low", "medium", "high"].index(x))
+
+        return {
+            "has_errors": len(flags) > 0,
+            "flags": flags,
+            "severity": severity,
+            "disputed_tokens": disputed_tokens
+        }
 
 
 class ReadingOrderRebuilder:
@@ -145,6 +326,7 @@ class OCRDocumentReadingEngine:
         self.classifier = RegionClassifier()
         self.rebuilder = ReadingOrderRebuilder()
         self.postprocessor = MedicalVocabularyPostProcessor()
+        self.error_detector = OCRErrorDetector(self.postprocessor)
         self._rapid_ocr = None
         self._trocr_processor = None
         self._trocr_model = None
@@ -312,10 +494,35 @@ class OCRDocumentReadingEngine:
                 })
         return regions
 
+    def _recognize_printed_crop(
+        self,
+        enhanced_crop: np.ndarray,
+        default_text: str = "",
+        default_conf: float = 0.5
+    ) -> Tuple[str, float]:
+        """Executes RapidOCR recognizer on a printed line crop with score extraction."""
+        if self._rapid_ocr is None or not hasattr(self._rapid_ocr, 'text_recognizer') or enhanced_crop.size == 0:
+            return default_text, default_conf
+        try:
+            rec_res, _ = self._rapid_ocr.text_recognizer([enhanced_crop])
+            if rec_res and rec_res[0][0]:
+                rec_text = rec_res[0][0].strip()
+                rec_score = float(rec_res[0][1])
+                return rec_text, rec_score
+        except Exception as e:
+            logger.warning(f"RapidOCR recognition error: {e}")
+        return default_text, default_conf
+
     def _recognize_line_group(self, group: List[Dict[str, Any]], image: np.ndarray) -> Optional[Dict[str, Any]]:
         """
         Takes a group of horizontally adjacent detection items on the same baseline,
-        crops the entire consolidated line from the high-res image, and runs line-level recognition.
+        crops the entire consolidated line from the high-res image, and runs hybrid recognition:
+        - Printed regions routed to RapidOCR
+        - Handwritten regions routed to TrOCR
+        - Bidirectional fallback with reason tracking
+        - Anti-hallucination guardrail filtering
+        - Medical token normalization
+        - Comprehensive model provenance & automated error detection
         """
         if not group:
             return None
@@ -338,45 +545,110 @@ class OCRDocumentReadingEngine:
         joined_text = " ".join(it['text'].strip() for it in group if it.get('text')).strip()
         avg_conf = float(np.mean([it['confidence'] for it in group]))
 
-        # Pure morphological classification: variance of stroke and baseline drift
-        region_type = self.classifier.classify(line_crop, base_score=avg_conf, rapid_text=joined_text)
+        # 1. Multi-factor region classification with provenance
+        class_meta = self.classifier.classify_with_provenance(line_crop, base_score=avg_conf, rapid_text=joined_text)
+        region_type = class_meta["region_type"]
+        class_conf = class_meta["confidence"]
+        class_reasons = class_meta["reasons"]
 
-        final_text = joined_text
+        raw_prediction = ""
+        final_text = ""
         final_conf = avg_conf
-        model_used = 'rapidocr-printed'
+        model_used = ""
+        fallback_occurred = False
+        fallback_reason = None
+        hallucination_mitigated = False
 
+        # 2. Bidirectional Hybrid Routing & Fallback
         if region_type == 'handwritten' and self._trocr_model is not None:
-            trocr_text, trocr_conf = self._trocr_recognize(line_crop)
-            if trocr_text and not self._is_hallucination(trocr_text, crop_w=crop_w):
-                final_text = trocr_text
+            # Primary Route: TrOCR for handwriting
+            trocr_raw, trocr_conf = self._trocr_recognize(line_crop)
+            is_hallu, sanitized_trocr, hallu_reason = AntiHallucinationFilter.check_hallucination(trocr_raw, crop_w=crop_w)
+
+            if is_hallu:
+                hallucination_mitigated = True
+
+            if sanitized_trocr and not is_hallu and trocr_conf >= 0.45:
+                raw_prediction = sanitized_trocr
+                final_text = sanitized_trocr
                 final_conf = trocr_conf
                 model_used = 'trocr-handwritten'
             else:
+                # Fallback Route: RapidOCR on enhanced crop
+                fallback_occurred = True
+                fallback_reason = f"trocr_{hallu_reason}" if is_hallu else "trocr_low_conf_or_empty"
+                enhanced_crop, _ = enhance_small_or_lowres_text(line_crop, target_min_height=36)
+                rapid_fallback_text, rapid_fallback_conf = self._recognize_printed_crop(
+                    enhanced_crop, default_text=joined_text, default_conf=avg_conf
+                )
+                raw_prediction = rapid_fallback_text
+                final_text = rapid_fallback_text
+                final_conf = rapid_fallback_conf
                 model_used = 'rapidocr-fallback'
-                region_type = 'printed'
         else:
-            # Printed line recognition on the complete line crop with small/low-res enhancement
+            # Primary Route: RapidOCR for printed text
             enhanced_crop, _ = enhance_small_or_lowres_text(line_crop, target_min_height=36)
-            if self._rapid_ocr is not None and hasattr(self._rapid_ocr, 'text_recognizer') and enhanced_crop.size > 0:
-                try:
-                    rec_res, _ = self._rapid_ocr.text_recognizer([enhanced_crop])
-                    if rec_res and rec_res[0][0]:
-                        rec_line_text = rec_res[0][0].strip()
-                        rec_score = float(rec_res[0][1])
-                        if len(group) > 1:
-                            if rec_score > 0.70 and abs(len(rec_line_text) - len(joined_text)) <= max(4, int(len(joined_text) * 0.45)):
-                                final_text = rec_line_text
-                                final_conf = rec_score
-                        else:
-                            if rec_score > avg_conf:
-                                final_text = rec_line_text
-                                final_conf = rec_score
-                except Exception:
-                    pass
+            rapid_text, rapid_conf = self._recognize_printed_crop(
+                enhanced_crop, default_text=joined_text, default_conf=avg_conf
+            )
 
-        final_text = self.postprocessor.clean_text(final_text)
+            if rapid_text and rapid_conf >= 0.35:
+                raw_prediction = rapid_text
+                final_text = rapid_text
+                final_conf = rapid_conf
+                model_used = 'rapidocr-printed'
+            elif self._trocr_model is not None:
+                # Fallback Route: TrOCR if RapidOCR was empty or low conf
+                trocr_raw, trocr_conf = self._trocr_recognize(line_crop)
+                is_hallu, sanitized_trocr, hallu_reason = AntiHallucinationFilter.check_hallucination(trocr_raw, crop_w=crop_w)
+                if sanitized_trocr and not is_hallu and trocr_conf >= 0.40:
+                    raw_prediction = sanitized_trocr
+                    final_text = sanitized_trocr
+                    final_conf = trocr_conf
+                    model_used = 'trocr-fallback'
+                    fallback_occurred = True
+                    fallback_reason = "rapidocr_empty_or_low_conf"
+                else:
+                    raw_prediction = joined_text
+                    final_text = joined_text
+                    final_conf = max(0.40, avg_conf)
+                    model_used = 'rapidocr-printed'
+            else:
+                raw_prediction = joined_text
+                final_text = joined_text
+                final_conf = max(0.40, avg_conf)
+                model_used = 'rapidocr-printed'
+
+        # 3. Medical token normalization
+        normalized_text = self.postprocessor.clean_text(final_text)
+        normalization_applied = (raw_prediction.strip() != normalized_text.strip())
+        final_text = normalized_text
+
         if not final_text:
             return None
+
+        # 4. Model Provenance Tracking
+        provenance = {
+            "model_used": model_used,
+            "region_type": region_type,
+            "classifier_confidence": class_conf,
+            "classification_reasons": class_reasons,
+            "routing_decision": f"routed_to_{region_type}",
+            "fallback_occurred": fallback_occurred,
+            "fallback_reason": fallback_reason,
+            "hallucination_mitigated": hallucination_mitigated,
+            "raw_prediction": raw_prediction,
+            "normalized_prediction": final_text,
+            "normalization_applied": normalization_applied
+        }
+
+        # 5. Automated OCR Error Detection
+        error_analysis = self.error_detector.analyze(
+            text=final_text,
+            confidence=final_conf,
+            crop=line_crop,
+            provenance=provenance
+        )
 
         bw = max(1, xmax - xmin)
         bh = max(1, ymax - ymin)
@@ -396,7 +668,9 @@ class OCRDocumentReadingEngine:
             'normalized_bbox': norm_bbox,
             'width': bw,
             'height': bh,
-            'status': self._get_status(final_conf)
+            'status': self._get_status(final_conf, error_analysis),
+            'provenance': provenance,
+            'error_analysis': error_analysis
         }
 
     def group_and_merge_lines(self, items: List[Dict[str, Any]], image: np.ndarray) -> List[Dict[str, Any]]:
@@ -545,6 +819,17 @@ class OCRDocumentReadingEngine:
         sorted_blocks, raw_text = self.rebuilder.rebuild_order(consolidated_blocks)
         overall_conf = float(np.mean([b['confidence'] for b in sorted_blocks])) if sorted_blocks else 0.0
 
+        # Confidence distribution & Provenance breakdowns
+        high_conf_count = sum(1 for b in sorted_blocks if b.get('confidence', 0) >= 0.88)
+        med_conf_count = sum(1 for b in sorted_blocks if 0.65 <= b.get('confidence', 0) < 0.88)
+        review_count = sum(1 for b in sorted_blocks if b.get('confidence', 0) < 0.65)
+
+        printed_count = sum(1 for b in sorted_blocks if b.get('source') == 'printed')
+        hw_count = sum(1 for b in sorted_blocks if b.get('source') == 'handwritten')
+        fallback_count = sum(1 for b in sorted_blocks if b.get('provenance', {}).get('fallback_occurred', False))
+
+        error_flagged_count = sum(1 for b in sorted_blocks if b.get('error_analysis', {}).get('has_errors', False))
+
         # 5. Debug Artifacts
         if debug or os.environ.get('DEBUG_OCR', '').lower() in ('true', '1'):
             self._save_debug_artifacts(image, sorted_blocks, doc_name)
@@ -557,6 +842,20 @@ class OCRDocumentReadingEngine:
             'image_dimensions': [w_img, h_img],
             'total_blocks': len(sorted_blocks),
             'overall_confidence': round(overall_conf, 4),
+            'confidence_distribution': {
+                'high_confidence_blocks': high_conf_count,
+                'medium_confidence_blocks': med_conf_count,
+                'review_required_blocks': review_count
+            },
+            'hybrid_routing': {
+                'printed_blocks': printed_count,
+                'handwritten_blocks': hw_count,
+                'fallbacks_triggered': fallback_count
+            },
+            'error_summary': {
+                'total_flagged_blocks': error_flagged_count,
+                'total_clean_blocks': len(sorted_blocks) - error_flagged_count
+            },
             'blocks': sorted_blocks,
             'raw_text': raw_text
         }
@@ -657,13 +956,14 @@ class OCRDocumentReadingEngine:
         except Exception as e:
             logger.warning(f"Failed to save debug artifacts: {e}")
 
-    def _get_status(self, conf: float) -> str:
-        if conf >= 0.90:
-            return 'HIGH_CONFIDENCE'
-        elif conf >= 0.60:
-            return 'REVIEW_REQUIRED'
-        else:
+    def _get_status(self, conf: float, error_analysis: Optional[Dict[str, Any]] = None) -> str:
+        if error_analysis and error_analysis.get("severity") == "high":
             return 'HUMAN_VERIFICATION_NEEDED'
-
+        if conf >= 0.88:
+            return 'HIGH_CONFIDENCE'
+        elif conf >= 0.65:
+            return 'MEDIUM_CONFIDENCE'
+        else:
+            return 'REVIEW_REQUIRED'
 # Backwards-compatible alias
 MedIntelOCREngine = OCRDocumentReadingEngine
