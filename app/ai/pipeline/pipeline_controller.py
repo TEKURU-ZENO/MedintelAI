@@ -60,6 +60,9 @@ class PipelineController:
         all_blocks = []
         page_texts = []
         confidences = []
+        doc_tables = []
+        doc_key_values = []
+        doc_checkboxes = []
 
         for idx, page_img in enumerate(pages):
             page_num = idx + 1
@@ -74,6 +77,21 @@ class PipelineController:
                 b['page'] = page_num
                 all_blocks.append(b)
                 confidences.append(b['confidence'])
+
+            # Collect page-level layout intelligence
+            page_layout = page_result.get('layout', {})
+            for t in page_layout.get('tables', []):
+                t_copy = dict(t)
+                t_copy['page'] = page_num
+                doc_tables.append(t_copy)
+            for kv in page_layout.get('key_value_pairs', []):
+                kv_copy = dict(kv)
+                kv_copy['page'] = page_num
+                doc_key_values.append(kv_copy)
+            for cb in page_layout.get('checkboxes', []):
+                cb_copy = dict(cb)
+                cb_copy['page'] = page_num
+                doc_checkboxes.append(cb_copy)
                 
             p_text = page_result.get('raw_text', '').strip()
             if p_text:
@@ -107,6 +125,14 @@ class PipelineController:
             'image_dimensions': image_dimensions,
             'total_blocks': len(all_blocks),
             'overall_confidence': round(overall_conf, 4),
+            'layout_intelligence': {
+                'total_tables': len(doc_tables),
+                'tables': doc_tables,
+                'total_key_values': len(doc_key_values),
+                'key_value_pairs': doc_key_values,
+                'total_checkboxes': len(doc_checkboxes),
+                'checkboxes': doc_checkboxes
+            },
             'blocks': all_blocks,
             'raw_text': combined_raw_text
         }

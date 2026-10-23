@@ -7,6 +7,7 @@ import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
 from app.ai.utils.logger import get_logger
 from app.ai.ocr.medical_postprocessor import MedicalVocabularyPostProcessor
+from app.ai.layout.layout_intelligence import LayoutIntelligenceEngine
 from app.ai.preprocessing.preprocessing_pipeline import run_screen_preprocessing, run_preprocessing_pipeline
 from app.ai.preprocessing.enhance import enhance_small_or_lowres_text
 
@@ -327,6 +328,7 @@ class OCRDocumentReadingEngine:
         self.rebuilder = ReadingOrderRebuilder()
         self.postprocessor = MedicalVocabularyPostProcessor()
         self.error_detector = OCRErrorDetector(self.postprocessor)
+        self.layout_engine = LayoutIntelligenceEngine()
         self._rapid_ocr = None
         self._trocr_processor = None
         self._trocr_model = None
@@ -815,8 +817,21 @@ class OCRDocumentReadingEngine:
         # 3. Spatial Line Grouping & Complete Line Crop Recognition
         consolidated_blocks = self.group_and_merge_lines(raw_items, image)
 
-        # 4. Reconstruct 2D reading order and clean text
-        sorted_blocks, raw_text = self.rebuilder.rebuild_order(consolidated_blocks)
+        # 4. Extract Comprehensive Layout Intelligence (Columns, Tables, Forms, Key-Values, Checkboxes)
+        layout_data = self.layout_engine.extract_full_layout_intelligence(
+            image=image,
+            blocks=consolidated_blocks,
+            page_num=page_num,
+            total_pages=1
+        )
+        sorted_blocks = layout_data["reading_order_blocks"]
+        raw_text = layout_data["raw_text"]
+        tables = layout_data["tables"]
+        key_values = layout_data["key_value_pairs"]
+        checkboxes = layout_data["checkboxes"]
+        columns = layout_data["columns"]
+        baseline_summary = layout_data["baseline_summary"]
+
         overall_conf = float(np.mean([b['confidence'] for b in sorted_blocks])) if sorted_blocks else 0.0
 
         # Confidence distribution & Provenance breakdowns
@@ -855,6 +870,14 @@ class OCRDocumentReadingEngine:
             'error_summary': {
                 'total_flagged_blocks': error_flagged_count,
                 'total_clean_blocks': len(sorted_blocks) - error_flagged_count
+            },
+            'layout': {
+                'column_count': len(columns),
+                'columns': columns,
+                'tables': tables,
+                'key_value_pairs': key_values,
+                'checkboxes': checkboxes,
+                'baseline_summary': baseline_summary
             },
             'blocks': sorted_blocks,
             'raw_text': raw_text

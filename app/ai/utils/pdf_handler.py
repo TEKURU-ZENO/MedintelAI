@@ -78,7 +78,18 @@ def render_pdf_to_images(file_path_or_bytes: Union[str, bytes], dpi_scale: float
 
     return pages
 
-def load_document_pages(file_path_or_bytes: Union[str, bytes, np.ndarray], filename: Optional[str] = None) -> List[np.ndarray]:
+def load_document_pages(file_path_or_bytes: Union[str, bytes, np.ndarray, list], filename: Optional[str] = None) -> List[np.ndarray]:
+    if isinstance(file_path_or_bytes, list):
+        pages = []
+        for item in file_path_or_bytes:
+            if isinstance(item, np.ndarray):
+                pages.append(item)
+            elif isinstance(item, str) and os.path.exists(item):
+                im = cv2.imread(item)
+                if im is not None:
+                    pages.append(im)
+        if pages:
+            return pages
     """
     General-purpose document loader accepting an Image (filepath, bytes, ndarray) or PDF.
     Always returns a list of OpenCV BGR images (one per page).
