@@ -10,24 +10,29 @@ interface OCRBlock {
   model_used?: string;
   bbox: [number, number, number, number];
   normalized_bbox?: [number, number, number, number];
+  screen_bbox?: [number, number, number, number];
+  client_rect?: { x: number; y: number; width: number; height: number };
   width?: number;
   height?: number;
   line_number?: number;
   reading_order?: number;
   status: 'HIGH_CONFIDENCE' | 'REVIEW_REQUIRED' | 'HUMAN_VERIFICATION_NEEDED';
   page?: number;
+  words?: Array<{ text: string; confidence: number; bbox: [number, number, number, number] }>;
 }
 
 interface OCRResponse {
   status: string;
   document: string;
-  pages: number;
+  pages?: number;
   total_blocks: number;
   overall_confidence: number;
   blocks: OCRBlock[];
   raw_text?: string;
   image_preview?: string;
   image_dimensions?: [number, number];
+  latency_ms?: number;
+  clinical_entities?: Record<string, string[]>;
 }
 
 const API_BASE_URL =
@@ -348,6 +353,9 @@ export default function OCRDocumentStudio() {
     formData.append('xmax', Math.round(x2).toString());
     formData.append('ymax', Math.round(y2).toString());
     formData.append('input_mode', 'screen');
+    formData.append('screen_origin_x', (window.screenX || 0).toString());
+    formData.append('screen_origin_y', (window.screenY || 0).toString());
+    formData.append('screen_scale_factor', (window.devicePixelRatio || 1.0).toString());
 
     try {
       const res = await axios.post(`${API_BASE_URL}/ocr/extract-region`, formData, {
@@ -358,7 +366,8 @@ export default function OCRDocumentStudio() {
         setOcrData(res.data);
         setSelectedRegion(null);
         setIsSelectingRegion(false);
-        setFeedbackMsg(`Snippet OCR Complete: ${res.data.total_blocks} blocks detected with ${(res.data.overall_confidence * 100).toFixed(1)}% confidence.`);
+        const latencyStr = res.data.latency_ms ? ` (${res.data.latency_ms}ms)` : '';
+        setFeedbackMsg(`Snippet OCR Complete: ${res.data.total_blocks} blocks detected with ${(res.data.overall_confidence * 100).toFixed(1)}% confidence${latencyStr}.`);
       }
     } catch (err: any) {
       console.error('Region extraction error:', err);

@@ -1,13 +1,14 @@
 import os
 import json
 import tempfile
-from typing import Dict, Any, List, Union, Optional
+from typing import Dict, Any, List, Union, Optional, Tuple
 import numpy as np
 
 from app.ai.utils.logger import get_logger
 from app.ai.utils.pdf_handler import load_document_pages
 from app.ai.preprocessing.preprocessing_pipeline import run_preprocessing_pipeline
 from app.ai.ocr.ocr_engine import OCRDocumentReadingEngine, MedIntelOCREngine
+from app.ai.ocr.lens_engine import GoogleLensOCREngine, ScreenCoordinateMapper
 
 logger = get_logger(__name__)
 
@@ -16,12 +17,13 @@ class PipelineController:
     OCR Document Reading System Pipeline Controller.
     Accepts arbitrary documents (Image files, image bytes, or multi-page PDFs),
     runs resolution-preserving preprocessing, hybrid OCR extraction, reading-order reconstruction,
-    and structured JSON + .txt export.
+    Google-Lens screen and snippet OCR, and structured JSON + .txt export.
     """
     def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
         self.preprocess_config = self.config.get("preprocessing", {})
         self.ocr_engine = OCRDocumentReadingEngine()
+        self.lens_engine = GoogleLensOCREngine(rapid_ocr=self.ocr_engine._rapid_ocr)
         self.output_dir = os.path.join(tempfile.gettempdir(), "ocr_document_json")
         self.txt_output_dir = os.path.join(tempfile.gettempdir(), "ocr_document_txt")
 
@@ -189,5 +191,76 @@ class PipelineController:
                 'raw_text': ''
             }
         page_img = pages[0]
+
+        # Use GoogleLensOCREngine snippet mode if screen/digital input mode
+        if input_mode in ('screen', 'snippet', 'digital', 'his', 'browser'):
+            lens_res = self.lens_engine.process_snippet_region(
+                image=page_img,
+                region_bbox=region_bbox,
+                mode=input_mode
+            )
+            lens_res['document'] = doc_name
+            lens_res['pages'] = 1
+            lens_res['image_dimensions'] = [page_img.shape[1], page_img.shape[0]]
+            return lens_res
+
         return self.ocr_engine.process_region(page_img, region_bbox, doc_name=doc_name, input_mode=input_mode)
 
+    def process_lens_snippet(
+        self,
+        document_input: Union[str, bytes, np.ndarray],
+        region_bbox: List[int],
+        screen_origin: Tuple[int, int] = (0, 0),
+        screen_scale_factor: float = 1.0,
+        doc_name: str = "snippet"
+    ) -> Dict[str, Any]:
+        """
+        Executes ultra-low-latency marquee snippet OCR with screen coordinate mapping.
+        """
+        pages = load_document_pages(document_input, filename=doc_name)
+        if not pages:
+            return {
+                'status': 'error',
+                'message': 'Failed to decode snippet document.',
+                'blocks': [],
+                'raw_text': ''
+            }
+        page_img = pages[0]
+        res = self.lens_engine.process_snippet_region(
+            image=page_img,
+            region_bbox=region_bbox,
+            screen_origin=screen_origin,
+            screen_scale_factor=screen_scale_factor
+        )
+        res['document'] = doc_name
+        return res
+
+    def process_screen_capture(
+        self,
+        document_input: Union[str, bytes, np.ndarray],
+        screen_origin: Tuple[int, int] = (0, 0),
+        screen_scale_factor: float = 1.0,
+        mode: str = "screen",
+        doc_name: str = "screen_capture"
+    ) -> Dict[str, Any]:
+        """
+        Executes Google-Lens full screen capture OCR with screen coordinate mapping,
+        line-level blocks, and specialized HIS/browser/pdf handling.
+        """
+        pages = load_document_pages(document_input, filename=doc_name)
+        if not pages:
+            return {
+                'status': 'error',
+                'message': 'Failed to decode screen capture.',
+                'blocks': [],
+                'raw_text': ''
+            }
+        page_img = pages[0]
+        res = self.lens_engine.process_screen_capture(
+            image=page_img,
+            screen_origin=screen_origin,
+            screen_scale_factor=screen_scale_factor,
+            mode=mode
+        )
+        res['document'] = doc_name
+        return res
