@@ -204,7 +204,12 @@ async def submit_correction(req: CorrectionRequest):
 
 @router.get('/benchmark', summary='Retrieve OCR Document Reading System benchmark performance report across document categories')
 async def get_benchmark_report():
-    paths = ['outputs/benchmark_results.json', os.path.join(TEMP_BASE, 'benchmark_results.json')]
+    paths = [
+        'outputs/phase8_benchmark_report.json',
+        'outputs/benchmark_results.json',
+        os.path.join(TEMP_BASE, 'benchmark_results.json'),
+        os.path.join(TEMP_BASE, 'phase8_benchmark_report.json')
+    ]
     for p in paths:
         if os.path.exists(p):
             try:
