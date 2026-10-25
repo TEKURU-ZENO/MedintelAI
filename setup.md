@@ -1,104 +1,54 @@
-# OCR Document Reading System — Developer Setup Guide
+# Desktop developer setup
 
-This guide provides step-by-step instructions for engineers to set up a local development environment, install all OCR inference dependencies, run the test suite, and launch the OCR Document Reading System.
+## Prerequisites
 
----
+- Windows 10/11
+- Python 3.11 64-bit (the setup script creates `backend/.venv` with `py -3.11`)
+- Node.js 20+ and npm
+- Internet access on first dependency/model download
+- For OpenCV on Linux, install the distribution's OpenGL and GLib runtime libraries (commonly `libgl1` and `libglib2.0-0`).
 
-## 1. Prerequisites
+## Install
 
-Before starting, ensure your workstation meets the following requirements:
-* **Python**: Version 3.10, 3.11, or 3.12 (64-bit recommended)
-* **Node.js**: Version 20+ (with `npm`)
-* **Git**: Installed and configured
-* **System Libraries (Linux only)**:
-  ```bash
-  sudo apt-get update && sudo apt-get install -y libgl1-mesa-glx libglib2.0-0
-  ```
+From the repository root in PowerShell:
 
----
-
-## 2. Backend Setup
-
-### A. Clone Repository & Create Virtual Environment
-```bash
-git clone https://github.com/TEKURU-ZENO/MedintelAI.git
-cd MedintelAI
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows PowerShell:
-.\venv\Scripts\activate
-# Windows Command Prompt:
-.\venv\Scripts\activate.bat
-# Linux / macOS:
-source venv/bin/activate
+```powershell
+cmd /c setup-windows.cmd
 ```
 
-### B. Install Python Dependencies
-```bash
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+The Python setup installs `backend/requirements-original.txt` (primary RapidOCR/TrOCR engine and test dependencies) and `backend/requirements.txt` (API and currently retained fallback dependencies). The desktop OCR path is the primary RapidOCR/TrOCR backend. Tesseract is not the primary desktop engine.
+
+The setup script checks Node and Python, creates the virtual environment, and uses `npm ci` with the tracked `package-lock.json`.
+
+## Launch
+
+```powershell
+cmd /c run-medintel.cmd
 ```
 
-Key packages installed:
-* `fastapi` & `uvicorn` — REST API framework and ASGI server
-* `rapidocr-onnxruntime` — ONNX DBNet text detection and printed line recognizer
-* `transformers` & `torch` — HuggingFace VisionEncoderDecoder runtime for TrOCR handwriting recognition
-* `pypdfium2` — High-performance PDF renderer
-* `opencv-python-headless` & `numpy` — Image manipulation, CLAHE, and deskewing
+The script starts `uvicorn app.main:app` from `backend/` on `127.0.0.1:8000` and launches Electron. For backend-only development:
 
-### C. Environment Configuration
-Create a `.env` file in the project root:
-```env
-ENVIRONMENT=development
-PORT=8000
-TROCR_MODEL_NAME=microsoft/trocr-base-handwritten
-DEBUG_OCR=true
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-### D. Verify Backend Service
-```bash
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-Navigate to `http://localhost:8000/docs` to inspect the Swagger UI.
+Health: `http://127.0.0.1:8000/health`; OpenAPI: `http://127.0.0.1:8000/openapi.json`.
 
----
+## Models and configuration
 
-## 3. Frontend Setup
+The base TrOCR model defaults to `microsoft/trocr-base-handwritten`, fetched by Transformers on first use and cached locally. Set `TROCR_MODEL_NAME` to another supported base model. Fine-tuning writes to `app/ai/models/trocr_medical_finetuned`; set `TROCR_FINETUNED_MODEL_PATH` to override the checkpoint location for desktop inference. The runtime will report and fall back if the configured checkpoint is missing or cannot load. No fine-tuned weights are committed or generated as part of setup.
 
-### A. Install Dependencies
-In a separate terminal window:
-```bash
-cd frontend
-npm install
-```
+PyTorch and Transformers are declared in `backend/requirements-original.txt`. GPU acceleration depends on a compatible PyTorch/CUDA environment; CPU inference is supported but may be slower. No additional OCR system binary is required for the primary RapidOCR/TrOCR path.
 
-### B. Start Vite Development Server
-```bash
-npm run dev -- --host 0.0.0.0 --port 5173
-```
-Open your browser at `http://localhost:5173` to interact with the **OCR Document Reading System** console.
+## Checks
 
-### C. Verify Production Build
-```bash
+```powershell
+Push-Location backend
+python -m pytest tests
+Pop-Location
 npm run build
 ```
-Confirms all TypeScript typings and JSX modules bundle cleanly without errors.
 
----
-
-## 4. Running Benchmarks & Acceptance Tests
-
-Execute the 4-document automated acceptance suite:
-
-```bash
-python scripts/run_acceptance_tests.py
-```
-
-This suite validates:
-1. **Screen / Digital Pipeline**: `DevMehta_Groww_IT.pdf` (Tests resolution preservation, verifies $\ge 85\%$ confidence and 0 fragmented characters).
-2. **Scanned Form Pipeline**: `mvd_medical_report.jpg` (Tests adaptive thresholding and 100% printed recognition).
-3. **Prescription Form**: `prescription.png` (Tests handwriting classification and dosage preservation).
-4. **Digital Screen Crop**: Tests multi-scale 2.5× bicubic upscale and spatial line grouping.
+These checks validate software behavior and buildability, not clinical OCR accuracy. Use representative labeled documents for quality evaluation.

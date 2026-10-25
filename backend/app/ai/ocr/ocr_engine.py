@@ -1,5 +1,6 @@
 import os
 import re
+from pathlib import Path
 import cv2
 import time
 import json
@@ -150,6 +151,16 @@ class MedIntelOCREngine:
         self._paddle_ocr = None
         self._init_models()
 
+    @staticmethod
+    def _find_finetuned_model_path(project_root: Path, configured_path: Optional[str] = None) -> Optional[Path]:
+        """Resolve configured or training-script checkpoint locations, without guessing weights."""
+        candidates = [Path(configured_path).expanduser()] if configured_path else []
+        candidates.extend([
+            project_root / "app" / "ai" / "models" / "trocr_medical_finetuned",
+            project_root / "backend" / "app" / "ai" / "models" / "trocr_medical_finetuned",
+        ])
+        return next((path.resolve() for path in candidates if path.is_dir()), None)
+
     def _init_models(self):
         # 1. RapidOCR for printed text and fast text line detection
         try:
@@ -163,13 +174,22 @@ class MedIntelOCREngine:
         try:
             from transformers import TrOCRProcessor, VisionEncoderDecoderModel
             model_id = os.getenv("TROCR_MODEL_NAME", "microsoft/trocr-base-handwritten")
-            finetuned_path = os.path.join(os.path.dirname(__file__), "..", "models", "trocr_medical_finetuned")
+            configured_path = os.getenv("TROCR_FINETUNED_MODEL_PATH")
+            if configured_path and not Path(configured_path).expanduser().is_dir():
+                logger.warning(f"TROCR_FINETUNED_MODEL_PATH does not exist or is not a directory: {configured_path}")
+            project_root = Path(__file__).resolve().parents[4]
+            finetuned_path = self._find_finetuned_model_path(project_root, configured_path)
             
-            if os.path.exists(finetuned_path):
+            if finetuned_path is not None:
                 logger.info(f"Loading fine-tuned medical TrOCR model from {finetuned_path}")
-                self._trocr_processor = TrOCRProcessor.from_pretrained(finetuned_path)
-                self._trocr_model = VisionEncoderDecoderModel.from_pretrained(finetuned_path)
-            else:
+                try:
+                    self._trocr_processor = TrOCRProcessor.from_pretrained(str(finetuned_path))
+                    self._trocr_model = VisionEncoderDecoderModel.from_pretrained(str(finetuned_path))
+                except Exception as ex:
+                    logger.warning(f"Could not load fine-tuned TrOCR from {finetuned_path} ({ex}); using base model")
+                    self._trocr_processor = None
+                    self._trocr_model = None
+            if self._trocr_model is None:
                 try:
                     logger.info(f"Loading base TrOCR model: {model_id}")
                     self._trocr_processor = TrOCRProcessor.from_pretrained(model_id)

@@ -2,6 +2,8 @@
 
 > **Scope:** Comprehensive architectural reference for all AI, computer vision, OCR, and geometric algorithms.
 
+> **Desktop runtime note:** The desktop app runs the implementation under `backend/app/`, not the root `app/main.py` web API. Training and evaluation resources under `scripts/` remain separate. `scripts/train_trocr_medical.py` writes to `app/ai/models/trocr_medical_finetuned`; desktop inference uses that output when a valid Transformers checkpoint exists, with `TROCR_FINETUNED_MODEL_PATH` available as an override. See [ARCHITECTURE.md](ARCHITECTURE.md) for the active desktop request flow and fallback behavior.
+
 ---
 
 ## 1. Directory Structure

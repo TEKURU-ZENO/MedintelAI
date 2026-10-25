@@ -1,155 +1,35 @@
-# OCR Document Reading System — Production Deployment Guide
+# Local desktop runtime operations
 
-This guide covers deployment procedures for the **OCR Document Reading System** across Docker containers, bare-metal servers, and cloud serverless platforms.
+This repository is currently maintained as a Windows Electron desktop application with a local FastAPI service. Web hosting, Docker Compose, Vercel, and installer delivery are outside this branch's current scope.
 
----
+## Runtime prerequisites
 
-## 1. System Requirements
+- Windows 10/11, Python 3.11 64-bit, Node.js 20+
+- Python dependencies in `backend/requirements-original.txt` and `backend/requirements.txt`
+- Node dependencies in the root `package-lock.json`
+- Sufficient local disk for Python packages and downloaded OCR model weights; TrOCR base weights are fetched from Hugging Face if not cached.
 
-### Minimum Requirements:
-- **CPU**: 4 cores (x86_64 or ARM64)
-- **RAM**: 8 GB (to accommodate RapidOCR ONNX and PyTorch TrOCR runtime models in memory)
-- **Disk**: 10 GB available SSD storage
-- **OS**: Linux (Ubuntu 22.04+ recommended), macOS (Apple Silicon supported), or Windows 11 / Server 2022
+## First-time setup and launch
 
-### Recommended for High-Throughput (GPU Accelerated):
-- **GPU**: NVIDIA GPU with 8GB+ VRAM (e.g., RTX 3060, T4, or A10G)
-- **CUDA**: 11.8+ or 12.1+
-- **RAM**: 16 GB DDR4/DDR5
-
----
-
-## 2. Docker Compose Deployment (Recommended)
-
-Docker Compose encapsulates the FastAPI backend, the ONNX/PyTorch dependencies, and the Vite production web server.
-
-### Steps:
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/TEKURU-ZENO/MedintelAI.git
-   cd MedintelAI
-   ```
-
-2. **Configure environment:**
-   Create a `.env` file in the root directory:
-   ```env
-   ENVIRONMENT=production
-   PORT=8000
-   VITE_API_URL=http://localhost:8000
-   TROCR_MODEL_NAME=microsoft/trocr-base-handwritten
-   ```
-
-3. **Build and launch containers:**
-   ```bash
-   docker compose up -d --build
-   ```
-
-4. **Verify container health:**
-   ```bash
-   docker compose ps
-   curl -f http://localhost:8000/health
-   ```
-
-Endpoints:
-- **Web Application Studio**: `http://localhost:5173` (or port 80 if reverse proxied)
-- **FastAPI Documentation**: `http://localhost:8000/docs`
-
----
-
-## 3. Manual Server Deployment (Ubuntu / Debian)
-
-### 1. System Dependencies:
-```bash
-sudo apt-get update && sudo apt-get install -y \
-    python3.10 python3.10-venv python3-pip \
-    libgl1-mesa-glx libglib2.0-0 tesseract-ocr \
-    nodejs npm git
+```powershell
+cmd /c setup-windows.cmd
+cmd /c run-medintel.cmd
 ```
 
-### 2. Backend Setup:
-```bash
-git clone https://github.com/TEKURU-ZENO/MedintelAI.git
-cd MedintelAI
+The launcher runs the desktop API on `127.0.0.1:8000` and opens the Electron UI. Check `http://127.0.0.1:8000/health` for service status and `/openapi.json` for the active API schema.
 
-python3.10 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
+## Model configuration
 
-# Run as a systemd service or background daemon
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
-```
+- `TROCR_FINETUNED_MODEL_PATH`: optional local Transformers checkpoint directory. The default is the root training output `app/ai/models/trocr_medical_finetuned`, followed by the legacy `backend/app/ai/models/trocr_medical_finetuned` directory.
+- `TROCR_MODEL_NAME`: base TrOCR model identifier or local directory; defaults to `microsoft/trocr-base-handwritten`.
 
-### 3. Frontend Production Build & Nginx:
-```bash
-cd frontend
-npm install
-npm run build
+The fine-tuned checkpoint is used only when files are present and the Transformers processor and model load successfully. Otherwise the service logs a warning and attempts the configured base model followed by its existing small-model fallback. Keep trained weights local unless separately approved for repository distribution.
 
-# Copy dist files to Nginx web root
-sudo cp -r dist/* /var/www/ocr-document-system/
-```
+## Troubleshooting
 
-Configure Nginx reverse proxy block:
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
+- Backend startup failures: run the command from `backend/` so `app.main:app` resolves correctly; check the installed dependencies and model download/cache.
+- Port conflict: stop the process already listening on port 8000 before launching.
+- Missing model: verify local cache/network access or set `TROCR_MODEL_NAME` to a valid local model directory.
+- Linux OpenCV runtime errors: install the platform's OpenGL and GLib runtime libraries.
 
-    root /var/www/ocr-document-system;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /ocr/ {
-        proxy_pass http://127.0.0.1:8000/ocr/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        client_max_body_size 50M;
-    }
-
-    location /health {
-        proxy_pass http://127.0.0.1:8000/health;
-    }
-}
-```
-
----
-
-## 4. Vercel Cloud Deployment
-
-The repository includes configuration for direct deployment to Vercel:
-- **`vercel.json`** routes frontend assets and serverless Python API functions.
-- **Frontend SPA**: Vite builds into static edge distribution.
-- **Serverless API**: Handled through `/api/index.py`.
-
-### Deploy Steps:
-1. Import repository `TEKURU-ZENO/MedintelAI` into the Vercel dashboard.
-2. In Project Settings, confirm Framework Preset is **Vite**.
-3. Deploy.
-
----
-
-## 5. Health Check & Validation
-
-Run the automated acceptance suite to ensure the deployed environment meets latency and accuracy requirements:
-
-```bash
-python scripts/run_acceptance_tests.py
-```
-
-Expected output:
-```
-======================================================================
-SUMMARY OF ACCEPTANCE BENCHMARKS
-======================================================================
-Test 1 (Resume PDF)         : PASS -> {'confidence': 0.8931, 'latency_sec': 7.62}
-Test 2 (Printed Report)     : PASS -> {'confidence': 0.8285, 'latency_sec': 2.47}
-Test 3 (Prescription)       : PASS -> {'confidence': 0.8470, 'latency_sec': 0.77}
-Test 4 (Screen Snippet Crop): PASS -> {'confidence': 0.8970, 'latency_sec': 0.50}
-
-Final Verdict: ALL 4 ACCEPTANCE TESTS PASSED
-```
+Do not treat health or API connectivity as evidence of OCR quality. Validate extracted content against labeled examples for each supported document type.
