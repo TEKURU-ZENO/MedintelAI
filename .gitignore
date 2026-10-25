@@ -39,8 +39,9 @@ datasets/cvl-database-1-1/
 datasets/archive/
 datasets/report dataset/
 datasets/__MACOSX/
-app/ai/models/
-*.safetensors
+app/ai/models/*.bak*
+app/ai/models/*/*.bak*
+app/ai/models/**/*.bak*
 *.bin
 
 # Downloaded HTR training corpora (scripts/download_htr_datasets.py)
