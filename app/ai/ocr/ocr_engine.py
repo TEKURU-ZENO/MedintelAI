@@ -332,6 +332,7 @@ class OCRDocumentReadingEngine:
         self._rapid_ocr = None
         self._trocr_processor = None
         self._trocr_model = None
+        self._htr = None
         self._paddle_ocr = None
         self._init_models()
 
@@ -347,10 +348,11 @@ class OCRDocumentReadingEngine:
         # 2. TrOCR for handwritten clinical text
         try:
             from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+            from app.ai.ocr.htr_engine import MedicalHTREngine, load_vocabularies, resolve_trocr_model_dir
             model_id = os.getenv("TROCR_MODEL_NAME", "microsoft/trocr-base-handwritten")
-            finetuned_path = os.path.join(os.path.dirname(__file__), "..", "models", "trocr_medical_finetuned")
-            
-            if os.path.exists(finetuned_path):
+            finetuned_path = resolve_trocr_model_dir()
+
+            if finetuned_path:
                 logger.info(f"Loading fine-tuned medical TrOCR model from {finetuned_path}")
                 self._trocr_processor = TrOCRProcessor.from_pretrained(finetuned_path)
                 self._trocr_model = VisionEncoderDecoderModel.from_pretrained(finetuned_path)
@@ -366,6 +368,16 @@ class OCRDocumentReadingEngine:
                     self._trocr_model = VisionEncoderDecoderModel.from_pretrained(fallback_id)
             self._trocr_model.eval()
             logger.info("TrOCR model initialized successfully for handwriting recognition")
+            try:
+                self._htr = MedicalHTREngine(
+                    self._trocr_processor,
+                    self._trocr_model,
+                    device="cuda" if self.use_gpu else "cpu",
+                    **load_vocabularies(finetuned_path)
+                )
+                logger.info(f"Medical HTR engine ready (lexicon terms: {len(self._htr.corrector or [])})")
+            except Exception as ex:
+                logger.warning(f"Medical HTR engine unavailable, using legacy TrOCR decoding: {ex}")
         except Exception as e:
             logger.warning(f"TrOCR not loaded: {e}")
 
@@ -427,6 +439,11 @@ class OCRDocumentReadingEngine:
         """
         if self._trocr_processor is None or self._trocr_model is None or crop is None or crop.size == 0:
             return "", 0.0
+        if self._htr is not None:
+            try:
+                return self._htr.recognize(crop)
+            except Exception as e:
+                logger.warning(f"Medical HTR engine failed, falling back to legacy TrOCR decoding: {e}")
         try:
             import torch
             import torch.nn.functional as F

@@ -148,6 +148,7 @@ class MedIntelOCREngine:
         self._rapid_ocr = None
         self._trocr_processor = None
         self._trocr_model = None
+        self._htr = None
         self._paddle_ocr = None
         self._init_models()
 
@@ -173,6 +174,7 @@ class MedIntelOCREngine:
         # 2. TrOCR for handwritten clinical text
         try:
             from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+            from app.ai.ocr.htr_engine import MedicalHTREngine, load_vocabularies
             model_id = os.getenv("TROCR_MODEL_NAME", "microsoft/trocr-base-handwritten")
             configured_path = os.getenv("TROCR_FINETUNED_MODEL_PATH")
             if configured_path and not Path(configured_path).expanduser().is_dir():
@@ -180,11 +182,13 @@ class MedIntelOCREngine:
             project_root = Path(__file__).resolve().parents[4]
             finetuned_path = self._find_finetuned_model_path(project_root, configured_path)
             
+            vocab_dir = None  # medical lexicon / tuned decoding only apply to the fine-tuned checkpoint
             if finetuned_path is not None:
                 logger.info(f"Loading fine-tuned medical TrOCR model from {finetuned_path}")
                 try:
                     self._trocr_processor = TrOCRProcessor.from_pretrained(str(finetuned_path))
                     self._trocr_model = VisionEncoderDecoderModel.from_pretrained(str(finetuned_path))
+                    vocab_dir = str(finetuned_path)
                 except Exception as ex:
                     logger.warning(f"Could not load fine-tuned TrOCR from {finetuned_path} ({ex}); using base model")
                     self._trocr_processor = None
@@ -201,6 +205,16 @@ class MedIntelOCREngine:
                     self._trocr_model = VisionEncoderDecoderModel.from_pretrained(fallback_id)
             self._trocr_model.eval()
             logger.info("TrOCR model initialized successfully for handwriting recognition")
+            try:
+                self._htr = MedicalHTREngine(
+                    self._trocr_processor,
+                    self._trocr_model,
+                    device="cuda" if self.use_gpu else "cpu",
+                    **load_vocabularies(vocab_dir)
+                )
+                logger.info(f"Medical HTR engine ready (lexicon terms: {len(self._htr.corrector or [])})")
+            except Exception as ex:
+                logger.warning(f"Medical HTR engine unavailable, using legacy TrOCR decoding: {ex}")
         except Exception as e:
             logger.warning(f"TrOCR not loaded: {e}")
 
@@ -262,6 +276,11 @@ class MedIntelOCREngine:
         """
         if self._trocr_processor is None or self._trocr_model is None or crop is None or crop.size == 0:
             return "", 0.0
+        if self._htr is not None:
+            try:
+                return self._htr.recognize(crop)
+            except Exception as e:
+                logger.warning(f"Medical HTR engine failed, falling back to legacy TrOCR decoding: {e}")
         try:
             import torch
             import torch.nn.functional as F

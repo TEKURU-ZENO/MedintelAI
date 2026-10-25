@@ -42,3 +42,8 @@ datasets/__MACOSX/
 app/ai/models/
 *.safetensors
 *.bin
+
+# Downloaded HTR training corpora (scripts/download_htr_datasets.py)
+datasets/htr_corpora/
+datasets/gnhk_dataset/
+datasets/*Prescription BD dataset*/
