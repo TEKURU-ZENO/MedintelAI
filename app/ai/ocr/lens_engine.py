@@ -435,8 +435,8 @@ class SnippetOCREngine:
         self.postprocessor = MedicalVocabularyPostProcessor()
         if self._rapid_ocr is None:
             try:
-                from rapidocr_onnxruntime import RapidOCR
-                self._rapid_ocr = RapidOCR()
+                from app.ai.ocr.rapid_adapter import create_rapid_ocr
+                self._rapid_ocr = create_rapid_ocr(logger=logger)
             except Exception as e:
                 logger.warning(f"Could not initialize RapidOCR in SnippetOCREngine: {e}")
 
@@ -576,8 +576,8 @@ class GoogleLensOCREngine:
         self._rapid_ocr = rapid_ocr
         if self._rapid_ocr is None:
             try:
-                from rapidocr_onnxruntime import RapidOCR
-                self._rapid_ocr = RapidOCR()
+                from app.ai.ocr.rapid_adapter import create_rapid_ocr
+                self._rapid_ocr = create_rapid_ocr(logger=logger)
             except Exception as e:
                 logger.warning(f"Could not initialize RapidOCR in GoogleLensOCREngine: {e}")
 

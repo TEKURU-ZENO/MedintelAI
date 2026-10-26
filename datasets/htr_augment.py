@@ -149,6 +149,19 @@ class HTRAugmenter:
         cv2.line(out, (0, y), (w, y), color, 1)
         return out
 
+    def bleed_through(self, img: np.ndarray) -> np.ndarray:
+        """Faint mirrored, blurred copy of the writing, as when ink shows through from the reverse side."""
+        h, w = img.shape[:2]
+        ghost = cv2.flip(img, self.rng.choice([0, 1, -1]))
+        dx, dy = self.rng.randint(-w // 4, w // 4), self.rng.randint(-h // 3, h // 3)
+        ghost = cv2.warpAffine(ghost, np.float32([[1, 0, dx], [0, 1, dy]]), (w, h), borderMode=cv2.BORDER_REPLICATE)
+        ghost = cv2.GaussianBlur(ghost, (5, 5), self.rng.uniform(0.8, 2.0)).astype(np.float32)
+        base = img.astype(np.float32)
+        strength = self.rng.uniform(0.15, 0.35)
+        # The ghost only darkens the paper (min), never lightens the real strokes
+        mixed = np.minimum(base, 255 - (255 - ghost) * strength)
+        return np.clip(mixed, 0, 255).astype(np.uint8)
+
     def jpeg(self, img: np.ndarray) -> np.ndarray:
         ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, self.rng.randint(30, 80)])
         return cv2.imdecode(buf, cv2.IMREAD_COLOR) if ok else img
@@ -166,7 +179,7 @@ class HTRAugmenter:
         ops = [
             (0.35, self.shear), (0.30, self.rotate), (0.25, self.baseline_wave), (0.25, self.pen_width),
             (0.35, self.scale), (0.25, self.blur), (0.70, self.photometric), (0.15, self.faded_ink),
-            (0.12, self.ruled_line), (0.25, self.jpeg), (0.30, self.pad),
+            (0.12, self.ruled_line), (0.15, self.bleed_through), (0.25, self.jpeg), (0.30, self.pad),
         ]
         for p, op in ops:
             if self.rng.random() < p * min(1.0, self.s):
@@ -202,14 +215,21 @@ class SyntheticMedicalLines:
         drug_names: Sequence[str],
         medication_lines: Optional[Sequence[str]] = None,
         fonts: Optional[Sequence[str]] = None,
-        seed: Optional[int] = None
+        seed: Optional[int] = None,
+        general_lines: Optional[Sequence[str]] = None,
+        general_share: float = 0.25
     ):
         self.rng = random.Random(seed)
         self.drugs = [d for d in drug_names if d] or ["Paracetamol", "Amoxicillin", "Metformin"]
         self.med_lines = list(medication_lines or [])
         self.fonts = list(fonts or discover_handwriting_fonts())
+        # Everyday English sentences (training transcripts only) keep the decoder robust on free-text notes
+        self.general_lines = list(general_lines or [])
+        self.general_share = general_share
 
     def sample_text(self) -> str:
+        if self.general_lines and self.rng.random() < self.general_share:
+            return self.rng.choice(self.general_lines)
         r = self.rng.random()
         drug = self.rng.choice(self.drugs)
         if r < 0.30 and self.med_lines:

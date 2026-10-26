@@ -1,17 +1,18 @@
 {
-  "base_model": "microsoft/trocr-base-handwritten",
-  "finished_at": "2026-10-25 11:38:41",
-  "epochs": 10,
-  "best_epoch": 9,
+  "base_model": "microsoft/trocr-large-handwritten",
+  "epochs": 8,
+  "best_epoch": 8,
   "hyperparameters": {
-    "batch_size": 16,
-    "lr": 3e-05,
+    "batch_size": 8,
+    "lr": 2e-05,
     "encoder_lr_scale": 0.5,
     "warmup_ratio": 0.06,
     "label_smoothing": 0.1,
     "samples_per_epoch": 16000,
-    "mix": "iam_line=0.18,gnhk_line=0.17,gnhk_word=0.07,rxhandbd=0.25,kaggle_rx_bd=0.13,synthetic=0.20",
-    "seed": 42
+    "mix": "iam_line=0.20,gnhk_line=0.22,gnhk_word=0.06,rxhandbd=0.20,kaggle_rx_bd=0.10,synthetic=0.22",
+    "seed": 42,
+    "grad_accum": 2,
+    "optimizer": "adamw8bit"
   },
   "corpora_summary": {
     "iam_line": {
@@ -40,375 +41,375 @@
       "test": 2085
     }
   },
-  "lexicon_terms": 10856,
-  "common_words": 6994,
+  "lexicon_terms": 10855,
+  "common_words": 9995,
   "decoding": {
-    "rescore_weight": 0.05,
+    "rescore_weight": 0.0,
     "lexicon_conf_gate": 0.0
   },
   "decoding_grid": [
     {
       "rescore_weight": 0.0,
       "lexicon_conf_gate": 0.0,
-      "score": 0.04196,
+      "score": 0.03776,
       "cer_ci": {
-        "iam_line:val": 0.0416,
-        "rxhandbd:val": 0.0638,
-        "kaggle_rx_bd:val": 0.0204,
-        "gnhk_word:val": 0.1394,
-        "gnhk_line:val": 0.1048,
-        "synthetic:val": 0.0015
+        "iam_line:val": 0.0216,
+        "rxhandbd:val": 0.0687,
+        "kaggle_rx_bd:val": 0.023,
+        "gnhk_word:val": 0.1136,
+        "gnhk_line:val": 0.0844,
+        "synthetic:val": 0.002
       }
     },
     {
       "rescore_weight": 0.0,
       "lexicon_conf_gate": 0.5,
-      "score": 0.04238,
+      "score": 0.03796,
       "cer_ci": {
-        "iam_line:val": 0.044,
-        "rxhandbd:val": 0.0623,
-        "kaggle_rx_bd:val": 0.0194,
-        "gnhk_word:val": 0.1455,
-        "gnhk_line:val": 0.1102,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0232,
+        "rxhandbd:val": 0.0677,
+        "kaggle_rx_bd:val": 0.0225,
+        "gnhk_word:val": 0.1152,
+        "gnhk_line:val": 0.0866,
+        "synthetic:val": 0.0019
       }
     },
     {
       "rescore_weight": 0.0,
       "lexicon_conf_gate": 0.7,
-      "score": 0.0425,
+      "score": 0.03808,
       "cer_ci": {
-        "iam_line:val": 0.0443,
-        "rxhandbd:val": 0.0623,
-        "kaggle_rx_bd:val": 0.0194,
-        "gnhk_word:val": 0.1455,
-        "gnhk_line:val": 0.1107,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0239,
+        "rxhandbd:val": 0.0672,
+        "kaggle_rx_bd:val": 0.0225,
+        "gnhk_word:val": 0.1167,
+        "gnhk_line:val": 0.0873,
+        "synthetic:val": 0.002
       }
     },
     {
       "rescore_weight": 0.0,
       "lexicon_conf_gate": 0.85,
-      "score": 0.04257,
+      "score": 0.03807,
       "cer_ci": {
-        "iam_line:val": 0.0447,
-        "rxhandbd:val": 0.0619,
+        "iam_line:val": 0.0239,
+        "rxhandbd:val": 0.0672,
+        "kaggle_rx_bd:val": 0.0225,
+        "gnhk_word:val": 0.1167,
+        "gnhk_line:val": 0.0874,
+        "synthetic:val": 0.0019
+      }
+    },
+    {
+      "rescore_weight": 0.05,
+      "lexicon_conf_gate": 0.0,
+      "score": 0.03901,
+      "cer_ci": {
+        "iam_line:val": 0.0218,
+        "rxhandbd:val": 0.0736,
+        "kaggle_rx_bd:val": 0.0199,
+        "gnhk_word:val": 0.1121,
+        "gnhk_line:val": 0.0858,
+        "synthetic:val": 0.0045
+      }
+    },
+    {
+      "rescore_weight": 0.05,
+      "lexicon_conf_gate": 0.5,
+      "score": 0.0392,
+      "cer_ci": {
+        "iam_line:val": 0.0233,
+        "rxhandbd:val": 0.0726,
         "kaggle_rx_bd:val": 0.0194,
-        "gnhk_word:val": 0.1455,
-        "gnhk_line:val": 0.1114,
-        "synthetic:val": 0.0008
-      }
-    },
-    {
-      "rescore_weight": 0.05,
-      "lexicon_conf_gate": 0.0,
-      "score": 0.04186,
-      "cer_ci": {
-        "iam_line:val": 0.0422,
-        "rxhandbd:val": 0.0638,
-        "kaggle_rx_bd:val": 0.0183,
-        "gnhk_word:val": 0.1402,
-        "gnhk_line:val": 0.1068,
-        "synthetic:val": 0.0015
-      }
-    },
-    {
-      "rescore_weight": 0.05,
-      "lexicon_conf_gate": 0.5,
-      "score": 0.04266,
-      "cer_ci": {
-        "iam_line:val": 0.0446,
-        "rxhandbd:val": 0.0628,
-        "kaggle_rx_bd:val": 0.0183,
-        "gnhk_word:val": 0.1455,
-        "gnhk_line:val": 0.1124,
-        "synthetic:val": 0.0008
+        "gnhk_word:val": 0.1136,
+        "gnhk_line:val": 0.0879,
+        "synthetic:val": 0.0045
       }
     },
     {
       "rescore_weight": 0.05,
       "lexicon_conf_gate": 0.7,
-      "score": 0.04278,
+      "score": 0.03931,
       "cer_ci": {
-        "iam_line:val": 0.0449,
-        "rxhandbd:val": 0.0628,
-        "kaggle_rx_bd:val": 0.0183,
-        "gnhk_word:val": 0.1455,
-        "gnhk_line:val": 0.1129,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.024,
+        "rxhandbd:val": 0.0721,
+        "kaggle_rx_bd:val": 0.0194,
+        "gnhk_word:val": 0.1152,
+        "gnhk_line:val": 0.0886,
+        "synthetic:val": 0.0046
       }
     },
     {
       "rescore_weight": 0.05,
       "lexicon_conf_gate": 0.85,
-      "score": 0.04281,
+      "score": 0.03933,
       "cer_ci": {
-        "iam_line:val": 0.0453,
-        "rxhandbd:val": 0.0623,
-        "kaggle_rx_bd:val": 0.0183,
-        "gnhk_word:val": 0.1455,
-        "gnhk_line:val": 0.1135,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0241,
+        "rxhandbd:val": 0.0721,
+        "kaggle_rx_bd:val": 0.0194,
+        "gnhk_word:val": 0.1152,
+        "gnhk_line:val": 0.0888,
+        "synthetic:val": 0.0045
       }
     },
     {
       "rescore_weight": 0.1,
       "lexicon_conf_gate": 0.0,
-      "score": 0.04192,
+      "score": 0.03898,
       "cer_ci": {
-        "iam_line:val": 0.0426,
-        "rxhandbd:val": 0.0638,
-        "kaggle_rx_bd:val": 0.0183,
-        "gnhk_word:val": 0.1402,
-        "gnhk_line:val": 0.1068,
-        "synthetic:val": 0.0015
+        "iam_line:val": 0.0223,
+        "rxhandbd:val": 0.0731,
+        "kaggle_rx_bd:val": 0.0199,
+        "gnhk_word:val": 0.1098,
+        "gnhk_line:val": 0.0859,
+        "synthetic:val": 0.0045
       }
     },
     {
       "rescore_weight": 0.1,
       "lexicon_conf_gate": 0.5,
-      "score": 0.04273,
+      "score": 0.03907,
       "cer_ci": {
-        "iam_line:val": 0.0451,
-        "rxhandbd:val": 0.0628,
-        "kaggle_rx_bd:val": 0.0183,
-        "gnhk_word:val": 0.1455,
-        "gnhk_line:val": 0.1124,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0238,
+        "rxhandbd:val": 0.0716,
+        "kaggle_rx_bd:val": 0.0194,
+        "gnhk_word:val": 0.1114,
+        "gnhk_line:val": 0.0881,
+        "synthetic:val": 0.0045
       }
     },
     {
       "rescore_weight": 0.1,
       "lexicon_conf_gate": 0.7,
-      "score": 0.04285,
+      "score": 0.03918,
       "cer_ci": {
-        "iam_line:val": 0.0454,
-        "rxhandbd:val": 0.0628,
-        "kaggle_rx_bd:val": 0.0183,
-        "gnhk_word:val": 0.1455,
-        "gnhk_line:val": 0.1129,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0245,
+        "rxhandbd:val": 0.0711,
+        "kaggle_rx_bd:val": 0.0194,
+        "gnhk_word:val": 0.1129,
+        "gnhk_line:val": 0.0888,
+        "synthetic:val": 0.0046
       }
     },
     {
       "rescore_weight": 0.1,
       "lexicon_conf_gate": 0.85,
-      "score": 0.04289,
+      "score": 0.03919,
       "cer_ci": {
-        "iam_line:val": 0.0458,
-        "rxhandbd:val": 0.0623,
+        "iam_line:val": 0.0246,
+        "rxhandbd:val": 0.0711,
+        "kaggle_rx_bd:val": 0.0194,
+        "gnhk_word:val": 0.1129,
+        "gnhk_line:val": 0.0889,
+        "synthetic:val": 0.0045
+      }
+    },
+    {
+      "rescore_weight": 0.2,
+      "lexicon_conf_gate": 0.0,
+      "score": 0.03884,
+      "cer_ci": {
+        "iam_line:val": 0.0225,
+        "rxhandbd:val": 0.0721,
+        "kaggle_rx_bd:val": 0.0199,
+        "gnhk_word:val": 0.1098,
+        "gnhk_line:val": 0.0868,
+        "synthetic:val": 0.0042
+      }
+    },
+    {
+      "rescore_weight": 0.2,
+      "lexicon_conf_gate": 0.5,
+      "score": 0.03891,
+      "cer_ci": {
+        "iam_line:val": 0.024,
+        "rxhandbd:val": 0.0706,
+        "kaggle_rx_bd:val": 0.0194,
+        "gnhk_word:val": 0.1114,
+        "gnhk_line:val": 0.0889,
+        "synthetic:val": 0.0042
+      }
+    },
+    {
+      "rescore_weight": 0.2,
+      "lexicon_conf_gate": 0.7,
+      "score": 0.03905,
+      "cer_ci": {
+        "iam_line:val": 0.0247,
+        "rxhandbd:val": 0.0701,
+        "kaggle_rx_bd:val": 0.0194,
+        "gnhk_word:val": 0.1129,
+        "gnhk_line:val": 0.0896,
+        "synthetic:val": 0.0044
+      }
+    },
+    {
+      "rescore_weight": 0.2,
+      "lexicon_conf_gate": 0.85,
+      "score": 0.03905,
+      "cer_ci": {
+        "iam_line:val": 0.0248,
+        "rxhandbd:val": 0.0701,
+        "kaggle_rx_bd:val": 0.0194,
+        "gnhk_word:val": 0.1129,
+        "gnhk_line:val": 0.0898,
+        "synthetic:val": 0.0042
+      }
+    },
+    {
+      "rescore_weight": 0.35,
+      "lexicon_conf_gate": 0.0,
+      "score": 0.03892,
+      "cer_ci": {
+        "iam_line:val": 0.023,
+        "rxhandbd:val": 0.0726,
+        "kaggle_rx_bd:val": 0.0194,
+        "gnhk_word:val": 0.1098,
+        "gnhk_line:val": 0.0868,
+        "synthetic:val": 0.0042
+      }
+    },
+    {
+      "rescore_weight": 0.35,
+      "lexicon_conf_gate": 0.5,
+      "score": 0.03897,
+      "cer_ci": {
+        "iam_line:val": 0.0245,
+        "rxhandbd:val": 0.0711,
+        "kaggle_rx_bd:val": 0.0188,
+        "gnhk_word:val": 0.1106,
+        "gnhk_line:val": 0.0889,
+        "synthetic:val": 0.0042
+      }
+    },
+    {
+      "rescore_weight": 0.35,
+      "lexicon_conf_gate": 0.7,
+      "score": 0.03911,
+      "cer_ci": {
+        "iam_line:val": 0.0252,
+        "rxhandbd:val": 0.0706,
+        "kaggle_rx_bd:val": 0.0188,
+        "gnhk_word:val": 0.1121,
+        "gnhk_line:val": 0.0896,
+        "synthetic:val": 0.0044
+      }
+    },
+    {
+      "rescore_weight": 0.35,
+      "lexicon_conf_gate": 0.85,
+      "score": 0.03909,
+      "cer_ci": {
+        "iam_line:val": 0.0252,
+        "rxhandbd:val": 0.0706,
+        "kaggle_rx_bd:val": 0.0188,
+        "gnhk_word:val": 0.1121,
+        "gnhk_line:val": 0.0898,
+        "synthetic:val": 0.0042
+      }
+    },
+    {
+      "rescore_weight": 0.5,
+      "lexicon_conf_gate": 0.0,
+      "score": 0.03889,
+      "cer_ci": {
+        "iam_line:val": 0.0238,
+        "rxhandbd:val": 0.0721,
         "kaggle_rx_bd:val": 0.0183,
-        "gnhk_word:val": 0.1455,
-        "gnhk_line:val": 0.1135,
-        "synthetic:val": 0.0008
-      }
-    },
-    {
-      "rescore_weight": 0.2,
-      "lexicon_conf_gate": 0.0,
-      "score": 0.0421,
-      "cer_ci": {
-        "iam_line:val": 0.0431,
-        "rxhandbd:val": 0.0643,
-        "kaggle_rx_bd:val": 0.0178,
-        "gnhk_word:val": 0.1371,
-        "gnhk_line:val": 0.1077,
-        "synthetic:val": 0.0014
-      }
-    },
-    {
-      "rescore_weight": 0.2,
-      "lexicon_conf_gate": 0.5,
-      "score": 0.04278,
-      "cer_ci": {
-        "iam_line:val": 0.0454,
-        "rxhandbd:val": 0.0633,
-        "kaggle_rx_bd:val": 0.0178,
-        "gnhk_word:val": 0.1424,
-        "gnhk_line:val": 0.1124,
-        "synthetic:val": 0.0008
-      }
-    },
-    {
-      "rescore_weight": 0.2,
-      "lexicon_conf_gate": 0.7,
-      "score": 0.04291,
-      "cer_ci": {
-        "iam_line:val": 0.0458,
-        "rxhandbd:val": 0.0633,
-        "kaggle_rx_bd:val": 0.0178,
-        "gnhk_word:val": 0.1424,
-        "gnhk_line:val": 0.1129,
-        "synthetic:val": 0.0008
-      }
-    },
-    {
-      "rescore_weight": 0.2,
-      "lexicon_conf_gate": 0.85,
-      "score": 0.04293,
-      "cer_ci": {
-        "iam_line:val": 0.0461,
-        "rxhandbd:val": 0.0628,
-        "kaggle_rx_bd:val": 0.0178,
-        "gnhk_word:val": 0.1424,
-        "gnhk_line:val": 0.1135,
-        "synthetic:val": 0.0008
-      }
-    },
-    {
-      "rescore_weight": 0.35,
-      "lexicon_conf_gate": 0.0,
-      "score": 0.04189,
-      "cer_ci": {
-        "iam_line:val": 0.0432,
-        "rxhandbd:val": 0.0628,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1333,
-        "gnhk_line:val": 0.1093,
-        "synthetic:val": 0.0014
-      }
-    },
-    {
-      "rescore_weight": 0.35,
-      "lexicon_conf_gate": 0.5,
-      "score": 0.0424,
-      "cer_ci": {
-        "iam_line:val": 0.0455,
-        "rxhandbd:val": 0.0614,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1379,
-        "gnhk_line:val": 0.1135,
-        "synthetic:val": 0.0008
-      }
-    },
-    {
-      "rescore_weight": 0.35,
-      "lexicon_conf_gate": 0.7,
-      "score": 0.04252,
-      "cer_ci": {
-        "iam_line:val": 0.0458,
-        "rxhandbd:val": 0.0614,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1379,
-        "gnhk_line:val": 0.114,
-        "synthetic:val": 0.0008
-      }
-    },
-    {
-      "rescore_weight": 0.35,
-      "lexicon_conf_gate": 0.85,
-      "score": 0.04257,
-      "cer_ci": {
-        "iam_line:val": 0.0462,
-        "rxhandbd:val": 0.0609,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1379,
-        "gnhk_line:val": 0.1147,
-        "synthetic:val": 0.0008
-      }
-    },
-    {
-      "rescore_weight": 0.5,
-      "lexicon_conf_gate": 0.0,
-      "score": 0.04227,
-      "cer_ci": {
-        "iam_line:val": 0.0438,
-        "rxhandbd:val": 0.0638,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1326,
-        "gnhk_line:val": 0.1097,
-        "synthetic:val": 0.0014
+        "gnhk_word:val": 0.1106,
+        "gnhk_line:val": 0.0883,
+        "synthetic:val": 0.0042
       }
     },
     {
       "rescore_weight": 0.5,
       "lexicon_conf_gate": 0.5,
-      "score": 0.04279,
+      "score": 0.03902,
       "cer_ci": {
-        "iam_line:val": 0.0463,
-        "rxhandbd:val": 0.0623,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1371,
-        "gnhk_line:val": 0.1139,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0252,
+        "rxhandbd:val": 0.0711,
+        "kaggle_rx_bd:val": 0.0178,
+        "gnhk_word:val": 0.1114,
+        "gnhk_line:val": 0.0901,
+        "synthetic:val": 0.0042
       }
     },
     {
       "rescore_weight": 0.5,
       "lexicon_conf_gate": 0.7,
-      "score": 0.04291,
+      "score": 0.03916,
       "cer_ci": {
-        "iam_line:val": 0.0466,
-        "rxhandbd:val": 0.0623,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1371,
-        "gnhk_line:val": 0.1144,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0259,
+        "rxhandbd:val": 0.0706,
+        "kaggle_rx_bd:val": 0.0178,
+        "gnhk_word:val": 0.1129,
+        "gnhk_line:val": 0.0908,
+        "synthetic:val": 0.0044
       }
     },
     {
       "rescore_weight": 0.5,
       "lexicon_conf_gate": 0.85,
-      "score": 0.04297,
+      "score": 0.03916,
       "cer_ci": {
-        "iam_line:val": 0.047,
-        "rxhandbd:val": 0.0619,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1371,
-        "gnhk_line:val": 0.115,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.026,
+        "rxhandbd:val": 0.0706,
+        "kaggle_rx_bd:val": 0.0178,
+        "gnhk_word:val": 0.1129,
+        "gnhk_line:val": 0.091,
+        "synthetic:val": 0.0042
       }
     },
     {
       "rescore_weight": 0.8,
       "lexicon_conf_gate": 0.0,
-      "score": 0.04289,
+      "score": 0.0385,
       "cer_ci": {
-        "iam_line:val": 0.0451,
-        "rxhandbd:val": 0.0653,
+        "iam_line:val": 0.0254,
+        "rxhandbd:val": 0.0701,
         "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1371,
-        "gnhk_line:val": 0.1102,
-        "synthetic:val": 0.0014
+        "gnhk_word:val": 0.1068,
+        "gnhk_line:val": 0.0888,
+        "synthetic:val": 0.0042
       }
     },
     {
       "rescore_weight": 0.8,
       "lexicon_conf_gate": 0.5,
-      "score": 0.04332,
+      "score": 0.03857,
       "cer_ci": {
-        "iam_line:val": 0.0475,
-        "rxhandbd:val": 0.0638,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1424,
-        "gnhk_line:val": 0.1139,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0267,
+        "rxhandbd:val": 0.0692,
+        "kaggle_rx_bd:val": 0.0167,
+        "gnhk_word:val": 0.1068,
+        "gnhk_line:val": 0.0903,
+        "synthetic:val": 0.0042
       }
     },
     {
       "rescore_weight": 0.8,
       "lexicon_conf_gate": 0.7,
-      "score": 0.04344,
+      "score": 0.03883,
       "cer_ci": {
-        "iam_line:val": 0.0478,
-        "rxhandbd:val": 0.0638,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1424,
-        "gnhk_line:val": 0.1144,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0274,
+        "rxhandbd:val": 0.0692,
+        "kaggle_rx_bd:val": 0.0167,
+        "gnhk_word:val": 0.1083,
+        "gnhk_line:val": 0.091,
+        "synthetic:val": 0.0044
       }
     },
     {
       "rescore_weight": 0.8,
       "lexicon_conf_gate": 0.85,
-      "score": 0.04347,
+      "score": 0.03881,
       "cer_ci": {
-        "iam_line:val": 0.0482,
-        "rxhandbd:val": 0.0633,
-        "kaggle_rx_bd:val": 0.0173,
-        "gnhk_word:val": 0.1424,
-        "gnhk_line:val": 0.115,
-        "synthetic:val": 0.0008
+        "iam_line:val": 0.0275,
+        "rxhandbd:val": 0.0692,
+        "kaggle_rx_bd:val": 0.0167,
+        "gnhk_word:val": 0.1083,
+        "gnhk_line:val": 0.0911,
+        "synthetic:val": 0.0042
       }
     }
   ],
@@ -417,630 +418,521 @@
       "epoch": 0,
       "val": {
         "iam_line:val": {
-          "cer": 0.0139,
-          "cer_case_insensitive": 0.0134,
-          "wer": 0.0408,
-          "exact_match": 0.7667,
-          "exact_match_case_insensitive": 0.7767,
+          "cer": 0.0087,
+          "cer_case_insensitive": 0.0086,
+          "wer": 0.027,
+          "exact_match": 0.8467,
+          "exact_match_case_insensitive": 0.85,
           "samples": 300
         },
         "rxhandbd:val": {
-          "cer": 0.7199,
-          "cer_case_insensitive": 0.6108,
-          "wer": 1.9382,
-          "exact_match": 0.0233,
-          "exact_match_case_insensitive": 0.06,
+          "cer": 0.6288,
+          "cer_case_insensitive": 0.5553,
+          "wer": 1.7824,
+          "exact_match": 0.01,
+          "exact_match_case_insensitive": 0.0167,
           "samples": 300
         },
         "kaggle_rx_bd:val": {
-          "cer": 0.806,
-          "cer_case_insensitive": 0.704,
-          "wer": 1.8393,
-          "exact_match": 0.0133,
-          "exact_match_case_insensitive": 0.0433,
+          "cer": 0.7406,
+          "cer_case_insensitive": 0.6543,
+          "wer": 1.9279,
+          "exact_match": 0.01,
+          "exact_match_case_insensitive": 0.02,
           "samples": 300
         },
         "gnhk_word:val": {
-          "cer": 0.7689,
-          "cer_case_insensitive": 0.6917,
-          "wer": 1.4267,
-          "exact_match": 0.1467,
-          "exact_match_case_insensitive": 0.1667,
+          "cer": 0.6697,
+          "cer_case_insensitive": 0.5955,
+          "wer": 1.4533,
+          "exact_match": 0.1267,
+          "exact_match_case_insensitive": 0.14,
           "samples": 300
         },
         "gnhk_line:val": {
-          "cer": 0.3642,
-          "cer_case_insensitive": 0.3083,
-          "wer": 0.7782,
-          "exact_match": 0.0567,
-          "exact_match_case_insensitive": 0.08,
+          "cer": 0.2491,
+          "cer_case_insensitive": 0.1978,
+          "wer": 0.6709,
+          "exact_match": 0.0633,
+          "exact_match_case_insensitive": 0.09,
           "samples": 300
         },
         "synthetic:val": {
-          "cer": 0.0814,
-          "cer_case_insensitive": 0.0675,
-          "wer": 0.2627,
-          "exact_match": 0.3033,
-          "exact_match_case_insensitive": 0.3733,
+          "cer": 0.0505,
+          "cer_case_insensitive": 0.0431,
+          "wer": 0.176,
+          "exact_match": 0.46,
+          "exact_match_case_insensitive": 0.4867,
           "samples": 300
         }
       },
-      "score": 0.3707916666666666
+      "score": 0.32325666666666664
     },
     {
       "epoch": 1,
-      "train_loss": 2.463401596665382,
+      "train_loss": 2.3163650315403936,
       "val": {
         "iam_line:val": {
-          "cer": 0.1015,
-          "cer_case_insensitive": 0.0995,
-          "wer": 0.2019,
-          "exact_match": 0.3233,
-          "exact_match_case_insensitive": 0.3333,
+          "cer": 0.0234,
+          "cer_case_insensitive": 0.0229,
+          "wer": 0.0791,
+          "exact_match": 0.5867,
+          "exact_match_case_insensitive": 0.6033,
           "samples": 300
         },
         "rxhandbd:val": {
-          "cer": 0.1607,
-          "cer_case_insensitive": 0.1106,
-          "wer": 0.4735,
-          "exact_match": 0.5067,
-          "exact_match_case_insensitive": 0.67,
+          "cer": 0.1632,
+          "cer_case_insensitive": 0.1033,
+          "wer": 0.5294,
+          "exact_match": 0.4367,
+          "exact_match_case_insensitive": 0.6767,
           "samples": 300
         },
         "kaggle_rx_bd:val": {
-          "cer": 0.0858,
-          "cer_case_insensitive": 0.08,
-          "wer": 0.2098,
-          "exact_match": 0.7933,
-          "exact_match_case_insensitive": 0.8067,
+          "cer": 0.1004,
+          "cer_case_insensitive": 0.0889,
+          "wer": 0.282,
+          "exact_match": 0.7233,
+          "exact_match_case_insensitive": 0.7667,
           "samples": 300
         },
         "gnhk_word:val": {
-          "cer": 0.3212,
-          "cer_case_insensitive": 0.2705,
-          "wer": 0.62,
-          "exact_match": 0.4267,
-          "exact_match_case_insensitive": 0.5333,
+          "cer": 0.2515,
+          "cer_case_insensitive": 0.2121,
+          "wer": 0.5167,
+          "exact_match": 0.53,
+          "exact_match_case_insensitive": 0.5933,
           "samples": 300
         },
         "gnhk_line:val": {
-          "cer": 0.2011,
-          "cer_case_insensitive": 0.1779,
-          "wer": 0.505,
-          "exact_match": 0.2433,
-          "exact_match_case_insensitive": 0.3167,
+          "cer": 0.1376,
+          "cer_case_insensitive": 0.1127,
+          "wer": 0.3795,
+          "exact_match": 0.3433,
+          "exact_match_case_insensitive": 0.41,
           "samples": 300
         },
         "synthetic:val": {
-          "cer": 0.0117,
-          "cer_case_insensitive": 0.0114,
-          "wer": 0.0328,
-          "exact_match": 0.86,
-          "exact_match_case_insensitive": 0.8667,
+          "cer": 0.0075,
+          "cer_case_insensitive": 0.0067,
+          "wer": 0.0275,
+          "exact_match": 0.8767,
+          "exact_match_case_insensitive": 0.9,
           "samples": 300
         }
       },
-      "score": 0.08874333333333331
+      "score": 0.06675
     },
     {
       "epoch": 2,
-      "train_loss": 2.133946899175644,
+      "train_loss": 1.9990039103031159,
       "val": {
         "iam_line:val": {
-          "cer": 0.0631,
-          "cer_case_insensitive": 0.0613,
-          "wer": 0.1542,
-          "exact_match": 0.3633,
-          "exact_match_case_insensitive": 0.3733,
+          "cer": 0.0366,
+          "cer_case_insensitive": 0.0362,
+          "wer": 0.0969,
+          "exact_match": 0.55,
+          "exact_match_case_insensitive": 0.56,
           "samples": 300
         },
         "rxhandbd:val": {
-          "cer": 0.1408,
-          "cer_case_insensitive": 0.0911,
-          "wer": 0.4206,
-          "exact_match": 0.5667,
-          "exact_match_case_insensitive": 0.73,
+          "cer": 0.133,
+          "cer_case_insensitive": 0.0848,
+          "wer": 0.45,
+          "exact_match": 0.5333,
+          "exact_match_case_insensitive": 0.7033,
           "samples": 300
         },
         "kaggle_rx_bd:val": {
-          "cer": 0.0497,
-          "cer_case_insensitive": 0.0476,
-          "wer": 0.0984,
-          "exact_match": 0.9067,
-          "exact_match_case_insensitive": 0.9067,
+          "cer": 0.0507,
+          "cer_case_insensitive": 0.0486,
+          "wer": 0.1344,
+          "exact_match": 0.87,
+          "exact_match_case_insensitive": 0.8767,
           "samples": 300
         },
         "gnhk_word:val": {
-          "cer": 0.2386,
-          "cer_case_insensitive": 0.1856,
-          "wer": 0.46,
-          "exact_match": 0.5733,
-          "exact_match_case_insensitive": 0.65,
+          "cer": 0.2114,
+          "cer_case_insensitive": 0.1758,
+          "wer": 0.4733,
+          "exact_match": 0.56,
+          "exact_match_case_insensitive": 0.6367,
           "samples": 300
         },
         "gnhk_line:val": {
-          "cer": 0.1879,
-          "cer_case_insensitive": 0.1625,
-          "wer": 0.4317,
-          "exact_match": 0.3133,
-          "exact_match_case_insensitive": 0.37,
+          "cer": 0.1396,
+          "cer_case_insensitive": 0.1177,
+          "wer": 0.3731,
+          "exact_match": 0.3567,
+          "exact_match_case_insensitive": 0.4067,
           "samples": 300
         },
         "synthetic:val": {
-          "cer": 0.0106,
-          "cer_case_insensitive": 0.0106,
-          "wer": 0.0286,
-          "exact_match": 0.8733,
-          "exact_match_case_insensitive": 0.8733,
+          "cer": 0.0059,
+          "cer_case_insensitive": 0.0058,
+          "wer": 0.0237,
+          "exact_match": 0.9,
+          "exact_match_case_insensitive": 0.9033,
           "samples": 300
         }
       },
-      "score": 0.06840666666666666
+      "score": 0.055564999999999996
     },
     {
       "epoch": 3,
-      "train_loss": 2.0072784460783004,
+      "train_loss": 1.8993343952298165,
       "val": {
         "iam_line:val": {
-          "cer": 0.0807,
-          "cer_case_insensitive": 0.0786,
-          "wer": 0.1731,
-          "exact_match": 0.3067,
-          "exact_match_case_insensitive": 0.3167,
+          "cer": 0.0265,
+          "cer_case_insensitive": 0.0259,
+          "wer": 0.0827,
+          "exact_match": 0.57,
+          "exact_match_case_insensitive": 0.58,
           "samples": 300
         },
         "rxhandbd:val": {
-          "cer": 0.1374,
-          "cer_case_insensitive": 0.0925,
-          "wer": 0.4118,
-          "exact_match": 0.59,
-          "exact_match_case_insensitive": 0.75,
-          "samples": 300
-        },
-        "kaggle_rx_bd:val": {
-          "cer": 0.0272,
-          "cer_case_insensitive": 0.0272,
-          "wer": 0.0459,
-          "exact_match": 0.9567,
-          "exact_match_case_insensitive": 0.9567,
-          "samples": 300
-        },
-        "gnhk_word:val": {
-          "cer": 0.2311,
-          "cer_case_insensitive": 0.1902,
-          "wer": 0.48,
-          "exact_match": 0.5433,
-          "exact_match_case_insensitive": 0.6133,
-          "samples": 300
-        },
-        "gnhk_line:val": {
-          "cer": 0.1707,
-          "cer_case_insensitive": 0.153,
-          "wer": 0.4216,
-          "exact_match": 0.3267,
-          "exact_match_case_insensitive": 0.38,
-          "samples": 300
-        },
-        "synthetic:val": {
-          "cer": 0.0084,
-          "cer_case_insensitive": 0.0081,
-          "wer": 0.0237,
-          "exact_match": 0.9033,
-          "exact_match_case_insensitive": 0.91,
-          "samples": 300
-        }
-      },
-      "score": 0.06455999999999999
-    },
-    {
-      "epoch": 4,
-      "train_loss": 1.8881468213796615,
-      "val": {
-        "iam_line:val": {
-          "cer": 0.0689,
-          "cer_case_insensitive": 0.067,
-          "wer": 0.1655,
-          "exact_match": 0.29,
-          "exact_match_case_insensitive": 0.3067,
-          "samples": 300
-        },
-        "rxhandbd:val": {
-          "cer": 0.1208,
+          "cer": 0.1184,
           "cer_case_insensitive": 0.0784,
-          "wer": 0.3853,
-          "exact_match": 0.5933,
-          "exact_match_case_insensitive": 0.7567,
+          "wer": 0.3706,
+          "exact_match": 0.62,
+          "exact_match_case_insensitive": 0.74,
           "samples": 300
         },
         "kaggle_rx_bd:val": {
-          "cer": 0.0293,
-          "cer_case_insensitive": 0.0288,
-          "wer": 0.0393,
-          "exact_match": 0.9633,
-          "exact_match_case_insensitive": 0.9633,
-          "samples": 300
-        },
-        "gnhk_word:val": {
-          "cer": 0.2212,
-          "cer_case_insensitive": 0.1773,
-          "wer": 0.4533,
-          "exact_match": 0.5767,
-          "exact_match_case_insensitive": 0.6567,
-          "samples": 300
-        },
-        "gnhk_line:val": {
-          "cer": 0.1667,
-          "cer_case_insensitive": 0.1431,
-          "wer": 0.4024,
-          "exact_match": 0.3333,
-          "exact_match_case_insensitive": 0.4,
-          "samples": 300
-        },
-        "synthetic:val": {
-          "cer": 0.0087,
-          "cer_case_insensitive": 0.0085,
-          "wer": 0.0258,
-          "exact_match": 0.8867,
+          "cer": 0.0539,
+          "cer_case_insensitive": 0.0445,
+          "wer": 0.1246,
+          "exact_match": 0.88,
           "exact_match_case_insensitive": 0.89,
           "samples": 300
-        }
-      },
-      "score": 0.05851166666666667
-    },
-    {
-      "epoch": 5,
-      "train_loss": 1.8237559380531312,
-      "val": {
-        "iam_line:val": {
-          "cer": 0.0609,
-          "cer_case_insensitive": 0.0588,
-          "wer": 0.1578,
-          "exact_match": 0.33,
-          "exact_match_case_insensitive": 0.35,
-          "samples": 300
-        },
-        "rxhandbd:val": {
-          "cer": 0.1106,
-          "cer_case_insensitive": 0.0701,
-          "wer": 0.3676,
-          "exact_match": 0.6067,
-          "exact_match_case_insensitive": 0.7733,
-          "samples": 300
-        },
-        "kaggle_rx_bd:val": {
-          "cer": 0.0256,
-          "cer_case_insensitive": 0.0256,
-          "wer": 0.0393,
-          "exact_match": 0.9633,
-          "exact_match_case_insensitive": 0.9633,
-          "samples": 300
         },
         "gnhk_word:val": {
-          "cer": 0.2106,
-          "cer_case_insensitive": 0.1712,
-          "wer": 0.45,
-          "exact_match": 0.5633,
-          "exact_match_case_insensitive": 0.6433,
-          "samples": 300
-        },
-        "gnhk_line:val": {
-          "cer": 0.1513,
-          "cer_case_insensitive": 0.1321,
-          "wer": 0.3776,
-          "exact_match": 0.33,
-          "exact_match_case_insensitive": 0.39,
-          "samples": 300
-        },
-        "synthetic:val": {
-          "cer": 0.0052,
-          "cer_case_insensitive": 0.0052,
-          "wer": 0.0153,
-          "exact_match": 0.9333,
-          "exact_match_case_insensitive": 0.9333,
-          "samples": 300
-        }
-      },
-      "score": 0.05217833333333333
-    },
-    {
-      "epoch": 6,
-      "train_loss": 1.7589311246871948,
-      "val": {
-        "iam_line:val": {
-          "cer": 0.0546,
-          "cer_case_insensitive": 0.0528,
-          "wer": 0.145,
-          "exact_match": 0.3533,
-          "exact_match_case_insensitive": 0.3667,
-          "samples": 300
-        },
-        "rxhandbd:val": {
-          "cer": 0.1018,
-          "cer_case_insensitive": 0.0628,
-          "wer": 0.3353,
-          "exact_match": 0.64,
-          "exact_match_case_insensitive": 0.8067,
-          "samples": 300
-        },
-        "kaggle_rx_bd:val": {
-          "cer": 0.023,
-          "cer_case_insensitive": 0.0225,
-          "wer": 0.0361,
-          "exact_match": 0.9667,
-          "exact_match_case_insensitive": 0.9667,
-          "samples": 300
-        },
-        "gnhk_word:val": {
-          "cer": 0.2,
-          "cer_case_insensitive": 0.1652,
-          "wer": 0.44,
-          "exact_match": 0.5767,
-          "exact_match_case_insensitive": 0.6567,
-          "samples": 300
-        },
-        "gnhk_line:val": {
-          "cer": 0.1423,
-          "cer_case_insensitive": 0.1205,
-          "wer": 0.3556,
-          "exact_match": 0.35,
-          "exact_match_case_insensitive": 0.4233,
-          "samples": 300
-        },
-        "synthetic:val": {
-          "cer": 0.0022,
-          "cer_case_insensitive": 0.0022,
-          "wer": 0.0063,
-          "exact_match": 0.97,
-          "exact_match_case_insensitive": 0.97,
-          "samples": 300
-        }
-      },
-      "score": 0.04641166666666666
-    },
-    {
-      "epoch": 7,
-      "train_loss": 1.7033222193717956,
-      "val": {
-        "iam_line:val": {
-          "cer": 0.0519,
-          "cer_case_insensitive": 0.0501,
-          "wer": 0.1425,
-          "exact_match": 0.3533,
-          "exact_match_case_insensitive": 0.37,
-          "samples": 300
-        },
-        "rxhandbd:val": {
-          "cer": 0.1072,
-          "cer_case_insensitive": 0.0672,
-          "wer": 0.35,
-          "exact_match": 0.6267,
-          "exact_match_case_insensitive": 0.7967,
-          "samples": 300
-        },
-        "kaggle_rx_bd:val": {
-          "cer": 0.022,
-          "cer_case_insensitive": 0.022,
-          "wer": 0.0328,
-          "exact_match": 0.97,
-          "exact_match_case_insensitive": 0.97,
-          "samples": 300
-        },
-        "gnhk_word:val": {
-          "cer": 0.1992,
-          "cer_case_insensitive": 0.1583,
-          "wer": 0.42,
-          "exact_match": 0.6067,
+          "cer": 0.1621,
+          "cer_case_insensitive": 0.1386,
+          "wer": 0.39,
+          "exact_match": 0.63,
           "exact_match_case_insensitive": 0.6867,
           "samples": 300
         },
         "gnhk_line:val": {
-          "cer": 0.1466,
-          "cer_case_insensitive": 0.1244,
-          "wer": 0.3767,
-          "exact_match": 0.3467,
-          "exact_match_case_insensitive": 0.4067,
+          "cer": 0.1294,
+          "cer_case_insensitive": 0.1119,
+          "wer": 0.3501,
+          "exact_match": 0.3633,
+          "exact_match_case_insensitive": 0.4233,
           "samples": 300
         },
         "synthetic:val": {
-          "cer": 0.0022,
-          "cer_case_insensitive": 0.0022,
-          "wer": 0.0077,
-          "exact_match": 0.9667,
-          "exact_match_case_insensitive": 0.9667,
+          "cer": 0.0041,
+          "cer_case_insensitive": 0.004,
+          "wer": 0.0187,
+          "exact_match": 0.93,
+          "exact_match_case_insensitive": 0.9333,
           "samples": 300
         }
       },
-      "score": 0.047501666666666664
+      "score": 0.05028
+    },
+    {
+      "epoch": 4,
+      "train_loss": 1.8088862720131873,
+      "val": {
+        "iam_line:val": {
+          "cer": 0.0276,
+          "cer_case_insensitive": 0.0263,
+          "wer": 0.0842,
+          "exact_match": 0.56,
+          "exact_match_case_insensitive": 0.58,
+          "samples": 300
+        },
+        "rxhandbd:val": {
+          "cer": 0.1111,
+          "cer_case_insensitive": 0.0677,
+          "wer": 0.3706,
+          "exact_match": 0.6167,
+          "exact_match_case_insensitive": 0.7733,
+          "samples": 300
+        },
+        "kaggle_rx_bd:val": {
+          "cer": 0.034,
+          "cer_case_insensitive": 0.0272,
+          "wer": 0.0852,
+          "exact_match": 0.9233,
+          "exact_match_case_insensitive": 0.9367,
+          "samples": 300
+        },
+        "gnhk_word:val": {
+          "cer": 0.175,
+          "cer_case_insensitive": 0.1447,
+          "wer": 0.4033,
+          "exact_match": 0.6167,
+          "exact_match_case_insensitive": 0.6967,
+          "samples": 300
+        },
+        "gnhk_line:val": {
+          "cer": 0.1192,
+          "cer_case_insensitive": 0.0996,
+          "wer": 0.3236,
+          "exact_match": 0.4033,
+          "exact_match_case_insensitive": 0.4767,
+          "samples": 300
+        },
+        "synthetic:val": {
+          "cer": 0.0052,
+          "cer_case_insensitive": 0.0051,
+          "wer": 0.0187,
+          "exact_match": 0.9233,
+          "exact_match_case_insensitive": 0.9267,
+          "samples": 300
+        }
+      },
+      "score": 0.04221833333333333
+    },
+    {
+      "epoch": 5,
+      "train_loss": 1.7377243964076041,
+      "val": {
+        "iam_line:val": {
+          "cer": 0.0248,
+          "cer_case_insensitive": 0.0239,
+          "wer": 0.0725,
+          "exact_match": 0.58,
+          "exact_match_case_insensitive": 0.6067,
+          "samples": 300
+        },
+        "rxhandbd:val": {
+          "cer": 0.1081,
+          "cer_case_insensitive": 0.0658,
+          "wer": 0.3676,
+          "exact_match": 0.61,
+          "exact_match_case_insensitive": 0.7933,
+          "samples": 300
+        },
+        "kaggle_rx_bd:val": {
+          "cer": 0.0235,
+          "cer_case_insensitive": 0.0225,
+          "wer": 0.0557,
+          "exact_match": 0.95,
+          "exact_match_case_insensitive": 0.9567,
+          "samples": 300
+        },
+        "gnhk_word:val": {
+          "cer": 0.1485,
+          "cer_case_insensitive": 0.1174,
+          "wer": 0.37,
+          "exact_match": 0.6567,
+          "exact_match_case_insensitive": 0.73,
+          "samples": 300
+        },
+        "gnhk_line:val": {
+          "cer": 0.1192,
+          "cer_case_insensitive": 0.1012,
+          "wer": 0.3355,
+          "exact_match": 0.3867,
+          "exact_match_case_insensitive": 0.46,
+          "samples": 300
+        },
+        "synthetic:val": {
+          "cer": 0.0041,
+          "cer_case_insensitive": 0.004,
+          "wer": 0.0181,
+          "exact_match": 0.9233,
+          "exact_match_case_insensitive": 0.9267,
+          "samples": 300
+        }
+      },
+      "score": 0.04030166666666666
+    },
+    {
+      "epoch": 6,
+      "train_loss": 1.6944379727244376,
+      "val": {
+        "iam_line:val": {
+          "cer": 0.0239,
+          "cer_case_insensitive": 0.0233,
+          "wer": 0.0714,
+          "exact_match": 0.61,
+          "exact_match_case_insensitive": 0.6233,
+          "samples": 300
+        },
+        "rxhandbd:val": {
+          "cer": 0.1081,
+          "cer_case_insensitive": 0.0692,
+          "wer": 0.3647,
+          "exact_match": 0.6167,
+          "exact_match_case_insensitive": 0.7867,
+          "samples": 300
+        },
+        "kaggle_rx_bd:val": {
+          "cer": 0.0288,
+          "cer_case_insensitive": 0.0288,
+          "wer": 0.0557,
+          "exact_match": 0.95,
+          "exact_match_case_insensitive": 0.95,
+          "samples": 300
+        },
+        "gnhk_word:val": {
+          "cer": 0.153,
+          "cer_case_insensitive": 0.1258,
+          "wer": 0.3733,
+          "exact_match": 0.6533,
+          "exact_match_case_insensitive": 0.7267,
+          "samples": 300
+        },
+        "gnhk_line:val": {
+          "cer": 0.1078,
+          "cer_case_insensitive": 0.0921,
+          "wer": 0.3181,
+          "exact_match": 0.4233,
+          "exact_match_case_insensitive": 0.4767,
+          "samples": 300
+        },
+        "synthetic:val": {
+          "cer": 0.0031,
+          "cer_case_insensitive": 0.0029,
+          "wer": 0.0137,
+          "exact_match": 0.9433,
+          "exact_match_case_insensitive": 0.9467,
+          "samples": 300
+        }
+      },
+      "score": 0.04085333333333333
+    },
+    {
+      "epoch": 7,
+      "train_loss": 1.6704862250685693,
+      "val": {
+        "iam_line:val": {
+          "cer": 0.0246,
+          "cer_case_insensitive": 0.0239,
+          "wer": 0.0696,
+          "exact_match": 0.5933,
+          "exact_match_case_insensitive": 0.61,
+          "samples": 300
+        },
+        "rxhandbd:val": {
+          "cer": 0.0984,
+          "cer_case_insensitive": 0.0653,
+          "wer": 0.3206,
+          "exact_match": 0.6733,
+          "exact_match_case_insensitive": 0.7933,
+          "samples": 300
+        },
+        "kaggle_rx_bd:val": {
+          "cer": 0.0246,
+          "cer_case_insensitive": 0.0246,
+          "wer": 0.0525,
+          "exact_match": 0.9533,
+          "exact_match_case_insensitive": 0.9533,
+          "samples": 300
+        },
+        "gnhk_word:val": {
+          "cer": 0.1561,
+          "cer_case_insensitive": 0.1295,
+          "wer": 0.3667,
+          "exact_match": 0.6533,
+          "exact_match_case_insensitive": 0.72,
+          "samples": 300
+        },
+        "gnhk_line:val": {
+          "cer": 0.1072,
+          "cer_case_insensitive": 0.0901,
+          "wer": 0.3116,
+          "exact_match": 0.4267,
+          "exact_match_case_insensitive": 0.4933,
+          "samples": 300
+        },
+        "synthetic:val": {
+          "cer": 0.0028,
+          "cer_case_insensitive": 0.0027,
+          "wer": 0.0119,
+          "exact_match": 0.95,
+          "exact_match_case_insensitive": 0.9533,
+          "samples": 300
+        }
+      },
+      "score": 0.03870666666666667
     },
     {
       "epoch": 8,
-      "train_loss": 1.654026171565056,
+      "train_loss": 1.6492211221456528,
       "val": {
         "iam_line:val": {
-          "cer": 0.0483,
-          "cer_case_insensitive": 0.0464,
-          "wer": 0.1312,
-          "exact_match": 0.37,
-          "exact_match_case_insensitive": 0.3867,
+          "cer": 0.0235,
+          "cer_case_insensitive": 0.023,
+          "wer": 0.0678,
+          "exact_match": 0.61,
+          "exact_match_case_insensitive": 0.6267,
           "samples": 300
         },
         "rxhandbd:val": {
-          "cer": 0.1062,
-          "cer_case_insensitive": 0.0682,
-          "wer": 0.3265,
-          "exact_match": 0.6567,
-          "exact_match_case_insensitive": 0.8033,
-          "samples": 300
-        },
-        "kaggle_rx_bd:val": {
-          "cer": 0.0178,
-          "cer_case_insensitive": 0.0178,
-          "wer": 0.0295,
-          "exact_match": 0.9733,
-          "exact_match_case_insensitive": 0.9733,
-          "samples": 300
-        },
-        "gnhk_word:val": {
-          "cer": 0.1947,
-          "cer_case_insensitive": 0.1697,
-          "wer": 0.4133,
-          "exact_match": 0.6133,
-          "exact_match_case_insensitive": 0.6667,
-          "samples": 300
-        },
-        "gnhk_line:val": {
-          "cer": 0.1331,
-          "cer_case_insensitive": 0.1159,
-          "wer": 0.3474,
-          "exact_match": 0.3833,
-          "exact_match_case_insensitive": 0.4333,
-          "samples": 300
-        },
-        "synthetic:val": {
-          "cer": 0.0015,
-          "cer_case_insensitive": 0.0015,
-          "wer": 0.0042,
-          "exact_match": 0.98,
-          "exact_match_case_insensitive": 0.98,
-          "samples": 300
-        }
-      },
-      "score": 0.04476166666666666
-    },
-    {
-      "epoch": 9,
-      "train_loss": 1.6328715883493423,
-      "val": {
-        "iam_line:val": {
-          "cer": 0.046,
-          "cer_case_insensitive": 0.0446,
-          "wer": 0.1254,
-          "exact_match": 0.39,
-          "exact_match_case_insensitive": 0.4067,
-          "samples": 300
-        },
-        "rxhandbd:val": {
-          "cer": 0.0925,
-          "cer_case_insensitive": 0.0594,
-          "wer": 0.3029,
-          "exact_match": 0.6733,
-          "exact_match_case_insensitive": 0.8033,
-          "samples": 300
-        },
-        "kaggle_rx_bd:val": {
-          "cer": 0.0178,
-          "cer_case_insensitive": 0.0178,
-          "wer": 0.0295,
-          "exact_match": 0.9733,
-          "exact_match_case_insensitive": 0.9733,
-          "samples": 300
-        },
-        "gnhk_word:val": {
-          "cer": 0.1697,
-          "cer_case_insensitive": 0.1432,
-          "wer": 0.3967,
-          "exact_match": 0.6333,
-          "exact_match_case_insensitive": 0.7067,
-          "samples": 300
-        },
-        "gnhk_line:val": {
-          "cer": 0.1371,
-          "cer_case_insensitive": 0.117,
-          "wer": 0.3501,
-          "exact_match": 0.3767,
-          "exact_match_case_insensitive": 0.4433,
-          "samples": 300
-        },
-        "synthetic:val": {
-          "cer": 0.0015,
-          "cer_case_insensitive": 0.0015,
-          "wer": 0.0042,
-          "exact_match": 0.98,
-          "exact_match_case_insensitive": 0.98,
-          "samples": 300
-        }
-      },
-      "score": 0.04260333333333333
-    },
-    {
-      "epoch": 10,
-      "train_loss": 1.6260543098449707,
-      "val": {
-        "iam_line:val": {
-          "cer": 0.0454,
-          "cer_case_insensitive": 0.0441,
-          "wer": 0.1272,
-          "exact_match": 0.4133,
-          "exact_match_case_insensitive": 0.4333,
-          "samples": 300
-        },
-        "rxhandbd:val": {
-          "cer": 0.0974,
+          "cer": 0.096,
           "cer_case_insensitive": 0.0633,
-          "wer": 0.3088,
+          "wer": 0.3206,
           "exact_match": 0.6667,
           "exact_match_case_insensitive": 0.7933,
           "samples": 300
         },
         "kaggle_rx_bd:val": {
-          "cer": 0.0162,
-          "cer_case_insensitive": 0.0162,
-          "wer": 0.023,
-          "exact_match": 0.98,
-          "exact_match_case_insensitive": 0.98,
+          "cer": 0.0225,
+          "cer_case_insensitive": 0.0225,
+          "wer": 0.0492,
+          "exact_match": 0.9567,
+          "exact_match_case_insensitive": 0.9567,
           "samples": 300
         },
         "gnhk_word:val": {
-          "cer": 0.1795,
-          "cer_case_insensitive": 0.1508,
-          "wer": 0.4033,
-          "exact_match": 0.6167,
-          "exact_match_case_insensitive": 0.6933,
+          "cer": 0.15,
+          "cer_case_insensitive": 0.1265,
+          "wer": 0.3533,
+          "exact_match": 0.6667,
+          "exact_match_case_insensitive": 0.7333,
           "samples": 300
         },
         "gnhk_line:val": {
-          "cer": 0.1358,
-          "cer_case_insensitive": 0.1175,
-          "wer": 0.3474,
-          "exact_match": 0.37,
-          "exact_match_case_insensitive": 0.4367,
+          "cer": 0.105,
+          "cer_case_insensitive": 0.0884,
+          "wer": 0.3034,
+          "exact_match": 0.43,
+          "exact_match_case_insensitive": 0.4933,
           "samples": 300
         },
         "synthetic:val": {
-          "cer": 0.0015,
-          "cer_case_insensitive": 0.0015,
-          "wer": 0.0042,
-          "exact_match": 0.98,
-          "exact_match_case_insensitive": 0.98,
+          "cer": 0.0026,
+          "cer_case_insensitive": 0.0025,
+          "wer": 0.01,
+          "exact_match": 0.9567,
+          "exact_match_case_insensitive": 0.96,
           "samples": 300
         }
       },
-      "score": 0.04314
+      "score": 0.03731333333333332
     }
   ],
+  "finished_at": "2026-10-26 00:48:47",
   "test_report": {
     "iam_line:test": {
       "decoder_only": {
-        "cer": 0.0647,
-        "cer_case_insensitive": 0.0616,
-        "wer": 0.1518,
-        "exact_match": 0.312,
-        "exact_match_case_insensitive": 0.3327,
+        "cer": 0.049,
+        "cer_case_insensitive": 0.0457,
+        "wer": 0.1242,
+        "exact_match": 0.3907,
+        "exact_match_case_insensitive": 0.4147,
         "samples": 1500
       },
       "with_lexicon": {
-        "cer": 0.0647,
-        "cer_case_insensitive": 0.0616,
-        "wer": 0.1518,
-        "exact_match": 0.312,
-        "exact_match_case_insensitive": 0.3327,
+        "cer": 0.049,
+        "cer_case_insensitive": 0.0457,
+        "wer": 0.1242,
+        "exact_match": 0.3907,
+        "exact_match_case_insensitive": 0.4147,
         "samples": 1500
       },
-      "ms_per_crop": 429.7,
+      "ms_per_crop": 621.4,
       "examples": [
         {
           "gt": "the progress of civilisation which allows a dish",
-          "pred": "the program of civilisation which allows a click"
+          "pred": "the program of civilisation which allows a disk"
         },
         {
           "gt": "shoot the craft in under the outer",
@@ -1048,19 +940,19 @@
         },
         {
           "gt": "kisses she had seen him giving Elaine .",
-          "pred": "wisses due had seen him giving Eaine"
+          "pred": "Wisses she had been him giving Elaine"
         },
         {
           "gt": "and scour the countryside between here and The Traveller's Joy .",
-          "pred": "and near the country's between love and the traveller's gay ."
+          "pred": "and secure the country side between here and the Smaller's joy ."
         },
         {
           "gt": "obvious morals for those who are judges long",
-          "pred": "obvious words for those who are judges long"
+          "pred": "obvious marals for those who are judged long"
         },
         {
           "gt": "The housewife would find life far less tiring",
-          "pred": "The housing would find his for the living"
+          "pred": "The housewije would find life for her thing"
         },
         {
           "gt": "suitable for such occasions .",
@@ -1074,22 +966,22 @@
     },
     "rxhandbd:test": {
       "decoder_only": {
-        "cer": 0.2687,
-        "cer_case_insensitive": 0.2192,
-        "wer": 0.6346,
-        "exact_match": 0.3919,
-        "exact_match_case_insensitive": 0.5964,
+        "cer": 0.2326,
+        "cer_case_insensitive": 0.1865,
+        "wer": 0.5736,
+        "exact_match": 0.4484,
+        "exact_match_case_insensitive": 0.6341,
         "samples": 1115
       },
       "with_lexicon": {
-        "cer": 0.2687,
-        "cer_case_insensitive": 0.2192,
-        "wer": 0.6346,
-        "exact_match": 0.3919,
-        "exact_match_case_insensitive": 0.5964,
+        "cer": 0.2326,
+        "cer_case_insensitive": 0.1865,
+        "wer": 0.5736,
+        "exact_match": 0.4484,
+        "exact_match_case_insensitive": 0.6341,
         "samples": 1115
       },
-      "ms_per_crop": 157.1,
+      "ms_per_crop": 299.6,
       "examples": [
         {
           "gt": "Nexemig",
@@ -1104,7 +996,7 @@
           "pred": "Coragu-D"
         },
         {
-          "gt": "VASCO",
+          "gt": "CORTAN",
           "pred": "Cortan"
         },
         {
@@ -1117,32 +1009,32 @@
         },
         {
           "gt": "Nervion",
-          "pred": "Nerrion"
+          "pred": "Nervion"
         },
         {
           "gt": "neuroxen",
-          "pred": "Neuroxen"
+          "pred": "Nemoxew"
         }
       ]
     },
     "kaggle_rx_bd:test": {
       "decoder_only": {
-        "cer": 0.0391,
-        "cer_case_insensitive": 0.0366,
-        "wer": 0.0658,
-        "exact_match": 0.9436,
-        "exact_match_case_insensitive": 0.95,
+        "cer": 0.0377,
+        "cer_case_insensitive": 0.0354,
+        "wer": 0.0684,
+        "exact_match": 0.9372,
+        "exact_match_case_insensitive": 0.9423,
         "samples": 780
       },
       "with_lexicon": {
-        "cer": 0.0391,
-        "cer_case_insensitive": 0.0366,
-        "wer": 0.0658,
-        "exact_match": 0.9436,
-        "exact_match_case_insensitive": 0.95,
+        "cer": 0.0377,
+        "cer_case_insensitive": 0.0354,
+        "wer": 0.0684,
+        "exact_match": 0.9372,
+        "exact_match_case_insensitive": 0.9423,
         "samples": 780
       },
-      "ms_per_crop": 129.0,
+      "ms_per_crop": 205.3,
       "examples": [
         {
           "gt": "Diflu",
@@ -1180,22 +1072,22 @@
     },
     "gnhk_word:test": {
       "decoder_only": {
-        "cer": 0.1498,
-        "cer_case_insensitive": 0.1313,
-        "wer": 0.3367,
-        "exact_match": 0.686,
-        "exact_match_case_insensitive": 0.7367,
+        "cer": 0.1354,
+        "cer_case_insensitive": 0.1168,
+        "wer": 0.3153,
+        "exact_match": 0.71,
+        "exact_match_case_insensitive": 0.7553,
         "samples": 1500
       },
       "with_lexicon": {
-        "cer": 0.1498,
-        "cer_case_insensitive": 0.1313,
-        "wer": 0.3367,
-        "exact_match": 0.686,
-        "exact_match_case_insensitive": 0.7367,
+        "cer": 0.1354,
+        "cer_case_insensitive": 0.1168,
+        "wer": 0.3153,
+        "exact_match": 0.71,
+        "exact_match_case_insensitive": 0.7553,
         "samples": 1500
       },
-      "ms_per_crop": 124.2,
+      "ms_per_crop": 189.4,
       "examples": [
         {
           "gt": "the",
@@ -1233,26 +1125,347 @@
     },
     "gnhk_line:test": {
       "decoder_only": {
-        "cer": 0.1159,
-        "cer_case_insensitive": 0.1028,
-        "wer": 0.3359,
-        "exact_match": 0.3413,
-        "exact_match_case_insensitive": 0.4047,
+        "cer": 0.0906,
+        "cer_case_insensitive": 0.0794,
+        "wer": 0.2829,
+        "exact_match": 0.418,
+        "exact_match_case_insensitive": 0.4787,
         "samples": 1500
       },
       "with_lexicon": {
-        "cer": 0.1159,
-        "cer_case_insensitive": 0.1028,
-        "wer": 0.3359,
-        "exact_match": 0.3413,
-        "exact_match_case_insensitive": 0.4047,
+        "cer": 0.0906,
+        "cer_case_insensitive": 0.0794,
+        "wer": 0.2829,
+        "exact_match": 0.418,
+        "exact_match_case_insensitive": 0.4787,
         "samples": 1500
       },
-      "ms_per_crop": 356.9,
+      "ms_per_crop": 446.6,
       "examples": [
         {
           "gt": "Lighting Control - Zen Could - Qutoed",
-          "pred": "Lighting Central - Zen Contra - Every 12 hours"
+          "pred": "Lishing control - Zen Central - General."
+        },
+        {
+          "gt": "- creative words",
+          "pred": "- creative words"
+        },
+        {
+          "gt": "them in a central repository or \"Form Library",
+          "pred": "them in a Central repository or \" Form Library\""
+        },
+        {
+          "gt": "generosity to me during",
+          "pred": "generosily to me during"
+        },
+        {
+          "gt": "star wars",
+          "pred": "star wars"
+        },
+        {
+          "gt": "my heart for your absolute",
+          "pred": "my heart for your absolute"
+        },
+        {
+          "gt": "Problem 2",
+          "pred": "Problem 2"
+        },
+        {
+          "gt": "Deferred income tax liability",
+          "pred": "Deferred income tax liability"
+        }
+      ]
+    },
+    "synthetic:test": {
+      "decoder_only": {
+        "cer": 0.0024,
+        "cer_case_insensitive": 0.0023,
+        "wer": 0.0125,
+        "exact_match": 0.9633,
+        "exact_match_case_insensitive": 0.9633,
+        "samples": 300
+      },
+      "with_lexicon": {
+        "cer": 0.0024,
+        "cer_case_insensitive": 0.0023,
+        "wer": 0.0125,
+        "exact_match": 0.9633,
+        "exact_match_case_insensitive": 0.9633,
+        "samples": 300
+      },
+      "ms_per_crop": 504.3,
+      "examples": [
+        {
+          "gt": "Revtorpyk",
+          "pred": "Revtorpyk"
+        },
+        {
+          "gt": "Konsyl 1000 IU",
+          "pred": "Konsyl 1000 IU"
+        },
+        {
+          "gt": "share is shares 12,100,000.",
+          "pred": "share is shares 12,100,000."
+        },
+        {
+          "gt": "Ciprofloxacin 25 mg - With food",
+          "pred": "Ciprofloxacin 25 mg - With food"
+        },
+        {
+          "gt": "Amoxicillin 50 mg - Every 8 hours",
+          "pred": "Amoxicillin 50 mg - Every 8 hours"
+        },
+        {
+          "gt": "Lisinopril 250 mg - As directed",
+          "pred": "Lisinopril 250 mg - As directed"
+        },
+        {
+          "gt": "Sir Roy's United Federal Party is boycotting",
+          "pred": "Sir Roy's United Federal Party is boycotting"
+        },
+        {
+          "gt": "Drops Hemabate 650 mg 1/2-0-1/2 after food",
+          "pred": "Drops Hemabate 650 mg 1/2-0-1/2 after food"
+        }
+      ]
+    }
+  },
+  "test_selection_score": 0.07107833333333333,
+  "installed_model_test_report": {
+    "iam_line:test": {
+      "decoder_only": {
+        "cer": 0.0675,
+        "cer_case_insensitive": 0.0644,
+        "wer": 0.1554,
+        "exact_match": 0.2953,
+        "exact_match_case_insensitive": 0.316,
+        "samples": 1500
+      },
+      "with_lexicon": {
+        "cer": 0.0695,
+        "cer_case_insensitive": 0.0659,
+        "wer": 0.159,
+        "exact_match": 0.2827,
+        "exact_match_case_insensitive": 0.3027,
+        "samples": 1500
+      },
+      "ms_per_crop": 422.9,
+      "examples": [
+        {
+          "gt": "the progress of civilisation which allows a dish",
+          "pred": "the program of civilisation which allows a click"
+        },
+        {
+          "gt": "shoot the craft in under the outer",
+          "pred": "shoot the craft in under the outer"
+        },
+        {
+          "gt": "kisses she had seen him giving Elaine .",
+          "pred": "wisses due had seen him giving Caine"
+        },
+        {
+          "gt": "and scour the countryside between here and The Traveller's Joy .",
+          "pred": "and near the country's between love and the traveller's gay ."
+        },
+        {
+          "gt": "obvious morals for those who are judges long",
+          "pred": "obvious words for those who are judges long"
+        },
+        {
+          "gt": "The housewife would find life far less tiring",
+          "pred": "The housing would find his for the living"
+        },
+        {
+          "gt": "suitable for such occasions .",
+          "pred": "suitable for such occasions ."
+        },
+        {
+          "gt": "I suggested to the congregation that it needed",
+          "pred": "I suggested to the congregation that it needed"
+        }
+      ]
+    },
+    "rxhandbd:test": {
+      "decoder_only": {
+        "cer": 0.2385,
+        "cer_case_insensitive": 0.1862,
+        "wer": 0.6133,
+        "exact_match": 0.4117,
+        "exact_match_case_insensitive": 0.6287,
+        "samples": 1115
+      },
+      "with_lexicon": {
+        "cer": 0.2331,
+        "cer_case_insensitive": 0.1813,
+        "wer": 0.5922,
+        "exact_match": 0.4323,
+        "exact_match_case_insensitive": 0.6511,
+        "samples": 1115
+      },
+      "ms_per_crop": 151.3,
+      "examples": [
+        {
+          "gt": "Nexemig",
+          "pred": "Suppository"
+        },
+        {
+          "gt": "Lecor",
+          "pred": "Lecor"
+        },
+        {
+          "gt": "Coragen-D",
+          "pred": "Coragu-D"
+        },
+        {
+          "gt": "CORTAN",
+          "pred": "Cortan"
+        },
+        {
+          "gt": "Emlidus",
+          "pred": "Emlidus"
+        },
+        {
+          "gt": "Fenadin",
+          "pred": "Fenafir"
+        },
+        {
+          "gt": "Nervion",
+          "pred": "Nerrion"
+        },
+        {
+          "gt": "neuroxen",
+          "pred": "Neuroxen"
+        }
+      ]
+    },
+    "kaggle_rx_bd:test": {
+      "decoder_only": {
+        "cer": 0.0366,
+        "cer_case_insensitive": 0.0342,
+        "wer": 0.057,
+        "exact_match": 0.9526,
+        "exact_match_case_insensitive": 0.959,
+        "samples": 780
+      },
+      "with_lexicon": {
+        "cer": 0.0366,
+        "cer_case_insensitive": 0.0342,
+        "wer": 0.057,
+        "exact_match": 0.9526,
+        "exact_match_case_insensitive": 0.959,
+        "samples": 780
+      },
+      "ms_per_crop": 127.4,
+      "examples": [
+        {
+          "gt": "Diflu",
+          "pred": "Diflu"
+        },
+        {
+          "gt": "Nizoder",
+          "pred": "Nizoder"
+        },
+        {
+          "gt": "Dancel",
+          "pred": "Dancel"
+        },
+        {
+          "gt": "Sergel",
+          "pred": "Sergel"
+        },
+        {
+          "gt": "Nizoder",
+          "pred": "Nizoder"
+        },
+        {
+          "gt": "Napa Extend",
+          "pred": "Napa Extend"
+        },
+        {
+          "gt": "Progut",
+          "pred": "Progut"
+        },
+        {
+          "gt": "Tamen",
+          "pred": "Tamen"
+        }
+      ]
+    },
+    "gnhk_word:test": {
+      "decoder_only": {
+        "cer": 0.1499,
+        "cer_case_insensitive": 0.131,
+        "wer": 0.3353,
+        "exact_match": 0.6887,
+        "exact_match_case_insensitive": 0.7407,
+        "samples": 1500
+      },
+      "with_lexicon": {
+        "cer": 0.154,
+        "cer_case_insensitive": 0.1346,
+        "wer": 0.3367,
+        "exact_match": 0.6873,
+        "exact_match_case_insensitive": 0.7387,
+        "samples": 1500
+      },
+      "ms_per_crop": 121.0,
+      "examples": [
+        {
+          "gt": "the",
+          "pred": "the"
+        },
+        {
+          "gt": "be",
+          "pred": "be"
+        },
+        {
+          "gt": "meant",
+          "pred": "meant"
+        },
+        {
+          "gt": "you",
+          "pred": "you"
+        },
+        {
+          "gt": "Even",
+          "pred": "Even"
+        },
+        {
+          "gt": "also",
+          "pred": "also"
+        },
+        {
+          "gt": "you",
+          "pred": "you"
+        },
+        {
+          "gt": "=",
+          "pred": "-"
+        }
+      ]
+    },
+    "gnhk_line:test": {
+      "decoder_only": {
+        "cer": 0.1168,
+        "cer_case_insensitive": 0.1031,
+        "wer": 0.3355,
+        "exact_match": 0.34,
+        "exact_match_case_insensitive": 0.4067,
+        "samples": 1500
+      },
+      "with_lexicon": {
+        "cer": 0.1189,
+        "cer_case_insensitive": 0.1048,
+        "wer": 0.3374,
+        "exact_match": 0.3373,
+        "exact_match_case_insensitive": 0.402,
+        "samples": 1500
+      },
+      "ms_per_crop": 329.8,
+      "examples": [
+        {
+          "gt": "Lighting Control - Zen Could - Qutoed",
+          "pred": "Lighting Central - Zen EContra - Every 12 hours"
         },
         {
           "gt": "- creative words",
@@ -1286,378 +1499,57 @@
     },
     "synthetic:test": {
       "decoder_only": {
-        "cer": 0.0022,
-        "cer_case_insensitive": 0.0022,
-        "wer": 0.0055,
-        "exact_match": 0.98,
-        "exact_match_case_insensitive": 0.98,
+        "cer": 0.0041,
+        "cer_case_insensitive": 0.0037,
+        "wer": 0.0262,
+        "exact_match": 0.9333,
+        "exact_match_case_insensitive": 0.9333,
         "samples": 300
       },
       "with_lexicon": {
-        "cer": 0.0022,
-        "cer_case_insensitive": 0.0022,
-        "wer": 0.0055,
-        "exact_match": 0.98,
-        "exact_match_case_insensitive": 0.98,
+        "cer": 0.0041,
+        "cer_case_insensitive": 0.0037,
+        "wer": 0.0262,
+        "exact_match": 0.9333,
+        "exact_match_case_insensitive": 0.9333,
         "samples": 300
       },
-      "ms_per_crop": 370.0,
+      "ms_per_crop": 376.1,
       "examples": [
         {
-          "gt": "Inj. Cancidas SOS",
-          "pred": "Inj. Cancidas SOS"
+          "gt": "Revtorpyk",
+          "pred": "Revtorpyk"
         },
         {
-          "gt": "Syp. Clinidine 1 tab",
-          "pred": "Syp. Clinidine 1 tab"
+          "gt": "Konsyl 1000 IU",
+          "pred": "Konsyl 1000 IU"
         },
         {
-          "gt": "Cap Depen 1 g PRN 1 month",
-          "pred": "Cap Depen 1 g PRN 1 month"
+          "gt": "share is shares 12,100,000.",
+          "pred": "share is shares 12,100,000."
         },
         {
-          "gt": "Inj Dotti 250mg x 7d",
-          "pred": "Inj Dotti 250mg x 7d"
+          "gt": "Ciprofloxacin 25 mg - With food",
+          "pred": "Ciprofloxacin 25 mg - With food"
         },
         {
-          "gt": "Levothyroxine 5 mg - Take twice daily",
-          "pred": "Levothyroxine 5 mg - Take twice daily"
+          "gt": "Amoxicillin 50 mg - Every 8 hours",
+          "pred": "Amoxicillin 50 mg - Every 8 hours"
         },
         {
-          "gt": "Baicalin",
-          "pred": "Baicalin"
+          "gt": "Lisinopril 250 mg - As directed",
+          "pred": "Lisinopril 250 mg - As directed"
         },
         {
-          "gt": "Hydrochlorothiazide 20 mg - Before meals",
-          "pred": "Hydrochlorothiazide 20 mg - Before meals"
+          "gt": "Sir Roy's United Federal Party is boycotting",
+          "pred": "Sir Roy's United Federal Party is boycotting"
         },
         {
-          "gt": "Amoxicillin 25 mg - As needed for pain",
-          "pred": "Amoxicillin 25 mg - As needed for pain"
+          "gt": "Drops Hemabate 650 mg 1/2-0-1/2 after food",
+          "pred": "Drops Hemabate 650 mg 1/2-0-1/2 after food"
         }
       ]
     }
   },
-  "test_selection_score": 0.08486,
-  "installed_model_test_report": {
-    "iam_line:test": {
-      "decoder_only": {
-        "cer": 0.096,
-        "cer_case_insensitive": 0.0933,
-        "wer": 0.1947,
-        "exact_match": 0.206,
-        "exact_match_case_insensitive": 0.2207,
-        "samples": 1500
-      },
-      "with_lexicon": {
-        "cer": 0.0998,
-        "cer_case_insensitive": 0.0961,
-        "wer": 0.201,
-        "exact_match": 0.192,
-        "exact_match_case_insensitive": 0.2053,
-        "samples": 1500
-      },
-      "ms_per_crop": 95.4,
-      "examples": [
-        {
-          "gt": "the progress of civilisation which allows a dish",
-          "pred": "the progest of civilisation which alleurs a clash"
-        },
-        {
-          "gt": "shoot the craft in under the outer",
-          "pred": "shoot the calf in under the outer"
-        },
-        {
-          "gt": "kisses she had seen him giving Elaine .",
-          "pred": "Misses due had seen him growing Plaine"
-        },
-        {
-          "gt": "and scour the countryside between here and The Traveller's Joy .",
-          "pred": "and never the country's balance . For and the travellers say . '"
-        },
-        {
-          "gt": "obvious morals for those who are judges long",
-          "pred": "obvious morals for those who are judged long"
-        },
-        {
-          "gt": "The housewife would find life far less tiring",
-          "pred": "The honours would find his far him being"
-        },
-        {
-          "gt": "suitable for such occasions .",
-          "pred": "suitable for such occasions ."
-        },
-        {
-          "gt": "I suggested to the congregation that it needed",
-          "pred": "I suggested to the congregation that it needed"
-        }
-      ]
-    },
-    "rxhandbd:test": {
-      "decoder_only": {
-        "cer": 0.2698,
-        "cer_case_insensitive": 0.2209,
-        "wer": 0.6209,
-        "exact_match": 0.4152,
-        "exact_match_case_insensitive": 0.6045,
-        "samples": 1115
-      },
-      "with_lexicon": {
-        "cer": 0.2665,
-        "cer_case_insensitive": 0.2169,
-        "wer": 0.6031,
-        "exact_match": 0.4332,
-        "exact_match_case_insensitive": 0.626,
-        "samples": 1115
-      },
-      "ms_per_crop": 37.9,
-      "examples": [
-        {
-          "gt": "Nexemig",
-          "pred": "Suppository"
-        },
-        {
-          "gt": "Lecor",
-          "pred": "Lecor"
-        },
-        {
-          "gt": "Coragen-D",
-          "pred": "Coragen-D"
-        },
-        {
-          "gt": "VASCO",
-          "pred": "Cortan"
-        },
-        {
-          "gt": "Emlidus",
-          "pred": "emlidus"
-        },
-        {
-          "gt": "Fenadin",
-          "pred": "fevaliv"
-        },
-        {
-          "gt": "Nervion",
-          "pred": "Nervion"
-        },
-        {
-          "gt": "neuroxen",
-          "pred": "Neuroxen"
-        }
-      ]
-    },
-    "kaggle_rx_bd:test": {
-      "decoder_only": {
-        "cer": 0.2415,
-        "cer_case_insensitive": 0.2211,
-        "wer": 0.6544,
-        "exact_match": 0.3872,
-        "exact_match_case_insensitive": 0.4359,
-        "samples": 780
-      },
-      "with_lexicon": {
-        "cer": 0.2553,
-        "cer_case_insensitive": 0.2336,
-        "wer": 0.643,
-        "exact_match": 0.3987,
-        "exact_match_case_insensitive": 0.4474,
-        "samples": 780
-      },
-      "ms_per_crop": 40.4,
-      "examples": [
-        {
-          "gt": "Diflu",
-          "pred": "pifln"
-        },
-        {
-          "gt": "Nizoder",
-          "pred": "niziden"
-        },
-        {
-          "gt": "Dancel",
-          "pred": "fancel"
-        },
-        {
-          "gt": "Sergel",
-          "pred": "Injection"
-        },
-        {
-          "gt": "Nizoder",
-          "pred": "Nizota"
-        },
-        {
-          "gt": "Napa Extend",
-          "pred": "Napa Extend"
-        },
-        {
-          "gt": "Progut",
-          "pred": "Progut"
-        },
-        {
-          "gt": "Tamen",
-          "pred": "Tawem"
-        }
-      ]
-    },
-    "gnhk_word:test": {
-      "decoder_only": {
-        "cer": 0.8413,
-        "cer_case_insensitive": 0.7934,
-        "wer": 1.0407,
-        "exact_match": 0.174,
-        "exact_match_case_insensitive": 0.21,
-        "samples": 1500
-      },
-      "with_lexicon": {
-        "cer": 0.855,
-        "cer_case_insensitive": 0.8048,
-        "wer": 1.0573,
-        "exact_match": 0.1613,
-        "exact_match_case_insensitive": 0.1953,
-        "samples": 1500
-      },
-      "ms_per_crop": 49.8,
-      "examples": [
-        {
-          "gt": "the",
-          "pred": "Inj. Omeprazole"
-        },
-        {
-          "gt": "be",
-          "pred": "t-a"
-        },
-        {
-          "gt": "meant",
-          "pred": "meant ."
-        },
-        {
-          "gt": "you",
-          "pred": "Gavis"
-        },
-        {
-          "gt": "Even",
-          "pred": "Even"
-        },
-        {
-          "gt": "also",
-          "pred": "otso"
-        },
-        {
-          "gt": "you",
-          "pred": "g/O x 1"
-        },
-        {
-          "gt": "=",
-          "pred": "Injection"
-        }
-      ]
-    },
-    "gnhk_line:test": {
-      "decoder_only": {
-        "cer": 0.3826,
-        "cer_case_insensitive": 0.3572,
-        "wer": 0.7458,
-        "exact_match": 0.054,
-        "exact_match_case_insensitive": 0.078,
-        "samples": 1500
-      },
-      "with_lexicon": {
-        "cer": 0.3886,
-        "cer_case_insensitive": 0.3617,
-        "wer": 0.7531,
-        "exact_match": 0.0527,
-        "exact_match_case_insensitive": 0.074,
-        "samples": 1500
-      },
-      "ms_per_crop": 101.8,
-      "examples": [
-        {
-          "gt": "Lighting Control - Zen Could - Qutoed",
-          "pred": "Tab. Central-Zen Campaign before"
-        },
-        {
-          "gt": "- creative words",
-          "pred": "- creative words"
-        },
-        {
-          "gt": "them in a central repository or \"Form Library",
-          "pred": "them in a Central repository or \" Farm Liban ,"
-        },
-        {
-          "gt": "generosity to me during",
-          "pred": "Personally to me during"
-        },
-        {
-          "gt": "star wars",
-          "pred": "star wars ."
-        },
-        {
-          "gt": "my heart for your absolute",
-          "pred": "my heart for your absolutely"
-        },
-        {
-          "gt": "Problem 2",
-          "pred": "Polem 2"
-        },
-        {
-          "gt": "Deferred income tax liability",
-          "pred": "Defifred income for liability"
-        }
-      ]
-    },
-    "synthetic:test": {
-      "decoder_only": {
-        "cer": 0.0343,
-        "cer_case_insensitive": 0.0335,
-        "wer": 0.0803,
-        "exact_match": 0.6767,
-        "exact_match_case_insensitive": 0.6833,
-        "samples": 300
-      },
-      "with_lexicon": {
-        "cer": 0.0353,
-        "cer_case_insensitive": 0.0343,
-        "wer": 0.0817,
-        "exact_match": 0.6733,
-        "exact_match_case_insensitive": 0.68,
-        "samples": 300
-      },
-      "ms_per_crop": 78.8,
-      "examples": [
-        {
-          "gt": "Inj. Cancidas SOS",
-          "pred": "Inj. Cancidas SOS"
-        },
-        {
-          "gt": "Syp. Clinidine 1 tab",
-          "pred": "Syp. Ulinidine 1 tab"
-        },
-        {
-          "gt": "Cap Depen 1 g PRN 1 month",
-          "pred": "Cap. Defen 1 g PRN 1 month"
-        },
-        {
-          "gt": "Inj Dotti 250mg x 7d",
-          "pred": "Inj Doti 250mg x 7d"
-        },
-        {
-          "gt": "Levothyroxine 5 mg - Take twice daily",
-          "pred": "Levothyroxine 5 mg - Take twice daily"
-        },
-        {
-          "gt": "Baicalin",
-          "pred": "baccalin"
-        },
-        {
-          "gt": "Hydrochlorothiazide 20 mg - Before meals",
-          "pred": "Hydrochlorothiazide 20 mg - Before meals"
-        },
-        {
-          "gt": "Amoxicillin 25 mg - As needed for pain",
-          "pred": "Amoxicillin 25 mg - As needed for pain"
-        }
-      ]
-    }
-  },
-  "installed_model_selection_score": 0.18179
+  "installed_model_selection_score": 0.07675166666666666
 }

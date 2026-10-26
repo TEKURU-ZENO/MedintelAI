@@ -386,8 +386,13 @@ def build_resources(corpora_dir: str, seed: int):
     corpus_drugs = build_medical_lexicon(corpora, extra_terms=MedicalVocabularyPostProcessor.KNOWN_MEDICINES + generic_names)
     rx_single = [n.title() for n in rxnorm_names if n.replace("-", "").isalpha() and len(n) >= 4]
     drug_names = [t for t in corpus_drugs if t[0].isupper()] + rx_single
-    synthetic = SyntheticMedicalLines(drug_names, med_lines, fonts=discover_handwriting_fonts(), seed=seed)
-    info = {"med_lines": len(med_lines), "rxnorm": len(rxnorm_names), "drug_names": len(drug_names)}
+    # General English sentences for synthetic rendering: TRAIN-split transcripts only (no test leakage)
+    general_lines = sorted({s.text for name, items in corpora.items() if name in ("iam_line", "gnhk_line")
+                            for s in items if s.split == "train" and 10 <= len(s.text) <= 70})
+    synthetic = SyntheticMedicalLines(drug_names, med_lines, fonts=discover_handwriting_fonts(), seed=seed,
+                                      general_lines=general_lines)
+    info = {"med_lines": len(med_lines), "rxnorm": len(rxnorm_names), "drug_names": len(drug_names),
+            "general_lines": len(general_lines)}
     return corpora, lexicon, common_words, synthetic, info
 
 
@@ -420,6 +425,7 @@ def train_trocr(
     synthetic_eval: int = 300,
     gradient_checkpointing: bool = False,
     resume: bool = False,
+    optimizer_name: str = "adamw",
     output_dir: Optional[str] = None,
     promote: bool = False,
     force_promote: bool = False,
@@ -489,7 +495,13 @@ def train_trocr(
             (enc_nodecay if nodecay else enc_decay).append(p)
         else:
             (dec_nodecay if nodecay else dec_decay).append(p)
-    optimizer = torch.optim.AdamW([
+    if optimizer_name == "adamw8bit":
+        # 8-bit optimiser state (bitsandbytes) lets trocr-large fit an 8 GB GPU with Adam semantics
+        import bitsandbytes as bnb
+        optim_cls = bnb.optim.AdamW8bit
+    else:
+        optim_cls = torch.optim.AdamW
+    optimizer = optim_cls([
         {"params": enc_decay, "lr": lr * encoder_lr_scale, "weight_decay": weight_decay},
         {"params": enc_nodecay, "lr": lr * encoder_lr_scale, "weight_decay": 0.0},
         {"params": dec_decay, "lr": lr, "weight_decay": weight_decay},
@@ -611,6 +623,7 @@ def train_trocr(
         "hyperparameters": {
             "batch_size": batch_size, "lr": lr, "encoder_lr_scale": encoder_lr_scale, "warmup_ratio": warmup_ratio,
             "label_smoothing": label_smoothing, "samples_per_epoch": samples_per_epoch, "mix": mix, "seed": seed,
+            "grad_accum": grad_accum, "optimizer": optimizer_name,
         },
         "corpora_summary": summarize(corpora),
         "lexicon_terms": len(lexicon),
@@ -778,6 +791,8 @@ if __name__ == "__main__":
     parser.add_argument("--test_max_per_source", type=int, default=1500, help="0 = full test split")
     parser.add_argument("--gradient_checkpointing", action="store_true", help="trade compute for memory (base/large models)")
     parser.add_argument("--resume", action="store_true", help="continue an interrupted run in --output_dir")
+    parser.add_argument("--optimizer", choices=["adamw", "adamw8bit"], default="adamw",
+                        help="adamw8bit (bitsandbytes) cuts optimiser memory ~4x; needed for trocr-large on 8 GB")
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument("--promote", action="store_true", help="install the best checkpoint if it beats the current one")
     parser.add_argument("--force_promote", action="store_true")
@@ -807,5 +822,5 @@ if __name__ == "__main__":
             grad_accum=args.grad_accum, num_workers=args.num_workers,
             val_max_per_source=args.val_max_per_source, test_max_per_source=args.test_max_per_source,
             output_dir=args.output_dir, promote=args.promote, force_promote=args.force_promote, seed=args.seed,
-            gradient_checkpointing=args.gradient_checkpointing, resume=args.resume,
+            gradient_checkpointing=args.gradient_checkpointing, resume=args.resume, optimizer_name=args.optimizer,
         )

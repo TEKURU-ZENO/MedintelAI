@@ -71,7 +71,9 @@ class PipelineController:
             )
             
             # 2. General-Purpose OCR Engine Execution
-            page_result = self.ocr_engine.process_document(clean_page, doc_name=doc_name, page_num=page_num, input_mode=input_mode)
+            page_result = self.ocr_engine.process_document(
+                clean_page, doc_name=doc_name, page_num=page_num, input_mode=input_mode, original_image=page_img
+            )
             
             # Tag blocks with page number
             for b in page_result.get('blocks', []):

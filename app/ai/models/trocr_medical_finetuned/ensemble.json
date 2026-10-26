@@ -1,0 +1,185 @@
+{
+  "printed_conf_threshold": 0.97,
+  "params": {
+    "trocr_conf_scale": 2.5,
+    "conf_weight": 0.6,
+    "validity_weight": 0.4,
+    "rapid_bias": 0.0
+  },
+  "cpu": {
+    "printed_conf_threshold": 0.97,
+    "params": {
+      "trocr_conf_scale": 2.5,
+      "conf_weight": 0.6,
+      "validity_weight": 0.4,
+      "rapid_bias": 0.0
+    }
+  },
+  "calibration": {
+    "rapid": {
+      "x": [
+        0.5727,
+        0.8074,
+        0.893,
+        0.9419,
+        0.9651,
+        0.9819,
+        0.9925,
+        0.9983,
+        0.9998,
+        1.0
+      ],
+      "y": [
+        0.4309,
+        0.6674,
+        0.7912,
+        0.8837,
+        0.9199,
+        0.9439,
+        0.9571,
+        0.9618,
+        0.9805,
+        0.9952
+      ]
+    },
+    "trocr": {
+      "x": [
+        0.3326,
+        0.5118,
+        0.6137,
+        0.702,
+        0.7914,
+        0.8596,
+        0.8973,
+        0.9194,
+        0.9358,
+        0.9569
+      ],
+      "y": [
+        0.8006,
+        0.9168,
+        0.9518,
+        0.962,
+        0.962,
+        0.9768,
+        0.9981,
+        0.9981,
+        0.9993,
+        0.9997
+      ]
+    }
+  },
+  "report": {
+    "val:rapid_only": {
+      "macro_cer": 0.1626,
+      "by_source": {
+        "gnhk_line": 0.1918,
+        "iam_line": 0.1127,
+        "rxhandbd": 0.4253,
+        "kaggle_rx_bd": 0.2024,
+        "funsd_word": 0.0317,
+        "printed_synth": 0.0118
+      }
+    },
+    "val:trocr_only": {
+      "macro_cer": 0.0427,
+      "by_source": {
+        "gnhk_line": 0.0927,
+        "iam_line": 0.0205,
+        "rxhandbd": 0.0598,
+        "kaggle_rx_bd": 0.034,
+        "funsd_word": 0.0475,
+        "printed_synth": 0.0019
+      }
+    },
+    "val:routed_ensemble": {
+      "macro_cer": 0.0394,
+      "by_source": {
+        "gnhk_line": 0.0842,
+        "iam_line": 0.0213,
+        "rxhandbd": 0.0598,
+        "kaggle_rx_bd": 0.0308,
+        "funsd_word": 0.0384,
+        "printed_synth": 0.0019
+      }
+    },
+    "val:ensemble_all": {
+      "macro_cer": 0.0394,
+      "by_source": {
+        "gnhk_line": 0.0842,
+        "iam_line": 0.0213,
+        "rxhandbd": 0.0598,
+        "kaggle_rx_bd": 0.0308,
+        "funsd_word": 0.0384,
+        "printed_synth": 0.0019
+      }
+    },
+    "val:oracle": {
+      "macro_cer": 0.032,
+      "by_source": {
+        "gnhk_line": 0.066,
+        "iam_line": 0.018,
+        "rxhandbd": 0.0538,
+        "kaggle_rx_bd": 0.0285,
+        "funsd_word": 0.025,
+        "printed_synth": 0.0007
+      }
+    },
+    "test:rapid_only": {
+      "macro_cer": 0.1603,
+      "by_source": {
+        "gnhk_line": 0.1556,
+        "iam_line": 0.1887,
+        "rxhandbd": 0.4131,
+        "kaggle_rx_bd": 0.1684,
+        "funsd_word": 0.0207,
+        "printed_synth": 0.0155
+      }
+    },
+    "test:trocr_only": {
+      "macro_cer": 0.0664,
+      "by_source": {
+        "gnhk_line": 0.0843,
+        "iam_line": 0.0447,
+        "rxhandbd": 0.1839,
+        "kaggle_rx_bd": 0.0295,
+        "funsd_word": 0.0532,
+        "printed_synth": 0.0028
+      }
+    },
+    "test:routed_ensemble": {
+      "macro_cer": 0.0583,
+      "by_source": {
+        "gnhk_line": 0.0701,
+        "iam_line": 0.0447,
+        "rxhandbd": 0.1839,
+        "kaggle_rx_bd": 0.0239,
+        "funsd_word": 0.0243,
+        "printed_synth": 0.0028
+      }
+    },
+    "test:ensemble_all": {
+      "macro_cer": 0.0583,
+      "by_source": {
+        "gnhk_line": 0.0701,
+        "iam_line": 0.0447,
+        "rxhandbd": 0.1839,
+        "kaggle_rx_bd": 0.0239,
+        "funsd_word": 0.0243,
+        "printed_synth": 0.0028
+      }
+    },
+    "test:oracle": {
+      "macro_cer": 0.0488,
+      "by_source": {
+        "gnhk_line": 0.0568,
+        "iam_line": 0.0398,
+        "rxhandbd": 0.1543,
+        "kaggle_rx_bd": 0.0239,
+        "funsd_word": 0.0171,
+        "printed_synth": 0.001
+      }
+    }
+  },
+  "note": "GPU profile pinned to the 0.97 fit: on real scanned print (mvd_medical_report) 0.99 degraded output and latency"
+}

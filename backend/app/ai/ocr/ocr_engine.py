@@ -83,6 +83,10 @@ class ReadingOrderRebuilder:
         processed = []
         for b in blocks:
             xmin, ymin, xmax, ymax = b['bbox']
+            # Slanted handwritten lines carry their true vertical band; their axis-aligned boxes overlap
+            # neighbouring lines and would merge them into one reading row.
+            if '_line_band' in b:
+                ymin, ymax = b['_line_band']
             h = max(1, ymax - ymin)
             cy = (ymin + ymax) / 2.0
             processed.append({**b, '_h': h, '_cy': cy, '_ymin': ymin, '_xmin': xmin, '_ymax': ymax, '_xmax': xmax})
@@ -132,6 +136,14 @@ class ReadingOrderRebuilder:
         return sorted_blocks, raw_text
 
 
+def _bbox_iou(a: List[int], b: List[int]) -> float:
+    ix = max(0, min(a[2], b[2]) - max(a[0], b[0]))
+    iy = max(0, min(a[3], b[3]) - max(a[1], b[1]))
+    inter = ix * iy
+    union = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter
+    return inter / union if union > 0 else 0.0
+
+
 class MedIntelOCREngine:
     """
     True Hybrid Medical OCR Engine:
@@ -140,7 +152,20 @@ class MedIntelOCREngine:
     - MedicalVocabularyPostProcessor for medicine & dosage normalization
     - ReadingOrderRebuilder for 2D layout reading-order recovery
     """
-    def __init__(self, use_gpu: bool = False):
+    def __init__(self, use_gpu: Optional[bool] = None):
+        # None = auto: use CUDA when available (TrOCR-large is ~10x faster on a GPU). OCR_USE_GPU=0/1 forces it.
+        if use_gpu is None:
+            env = os.getenv("OCR_USE_GPU", "auto").strip().lower()
+            if env in ("0", "false", "no"):
+                use_gpu = False
+            elif env in ("1", "true", "yes"):
+                use_gpu = True
+            else:
+                try:
+                    import torch
+                    use_gpu = bool(torch.cuda.is_available())
+                except Exception:
+                    use_gpu = False
         self.use_gpu = use_gpu
         self.classifier = RegionClassifier()
         self.rebuilder = ReadingOrderRebuilder()
@@ -165,8 +190,8 @@ class MedIntelOCREngine:
     def _init_models(self):
         # 1. RapidOCR for printed text and fast text line detection
         try:
-            from rapidocr_onnxruntime import RapidOCR
-            self._rapid_ocr = RapidOCR()
+            from app.ai.ocr.rapid_adapter import create_rapid_ocr
+            self._rapid_ocr = create_rapid_ocr(logger=logger)
             logger.info('RapidOCR (ONNX) initialized successfully')
         except Exception as e:
             logger.warning(f'RapidOCR not loaded: {e}')
@@ -189,6 +214,9 @@ class MedIntelOCREngine:
                     self._trocr_processor = TrOCRProcessor.from_pretrained(str(finetuned_path))
                     self._trocr_model = VisionEncoderDecoderModel.from_pretrained(str(finetuned_path))
                     vocab_dir = str(finetuned_path)
+                    from app.ai.ocr.htr_ensemble import configure_from
+                    if configure_from(finetuned_path, device="cuda" if self.use_gpu else "cpu"):
+                        logger.info("Loaded recogniser-ensemble rule fitted for this checkpoint")
                 except Exception as ex:
                     logger.warning(f"Could not load fine-tuned TrOCR from {finetuned_path} ({ex}); using base model")
                     self._trocr_processor = None
@@ -519,22 +547,8 @@ class MedIntelOCREngine:
         consolidated_blocks.sort(key=lambda b: (b['bbox'][1], b['bbox'][0]))
         return consolidated_blocks
 
-    def process_document(
-        self,
-        image: np.ndarray,
-        doc_name: str = 'document',
-        page_num: int = 1,
-        input_mode: str = 'auto',
-        debug: bool = False
-    ) -> Dict[str, Any]:
-        """
-        True Hybrid Processing Pipeline:
-        1. High-resolution text detection.
-        2. Spatial grouping into complete line candidates.
-        3. Line-level crop recognition (RapidOCR / TrOCR).
-        4. Medical lexicon normalization.
-        5. Reading-order reconstruction.
-        """
+    def _detect_items(self, image: np.ndarray, input_mode: str) -> List[Dict[str, Any]]:
+        """Text detection: RapidOCR (with quads) and a morphological contour fallback."""
         h_img, w_img = image.shape[:2]
         raw_items = []
 
@@ -559,7 +573,8 @@ class MedIntelOCREngine:
                             'id': f'raw_{idx + 1}',
                             'text': rapid_text_clean,
                             'confidence': round(rapid_score, 4),
-                            'bbox': [xmin, ymin, xmax, ymax]
+                            'bbox': [xmin, ymin, xmax, ymax],
+                            'quad': box
                         })
             except Exception as e:
                 logger.error(f'RapidOCR execution failed: {e}')
@@ -575,9 +590,179 @@ class MedIntelOCREngine:
                     'confidence': 0.70,
                     'bbox': [xmin, ymin, xmax, ymax]
                 })
+        return raw_items
+
+    def _partition_handwriting(
+        self,
+        items: List[Dict[str, Any]],
+        image: np.ndarray,
+        input_mode: str,
+        ink_image: Optional[np.ndarray] = None
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], bool]:
+        """
+        Splits detections into a confident printed path (PP-OCR score >= PRINTED_CONF_THRESHOLD) and an
+        uncertain path that gets the handwriting layout + recogniser ensemble. Detections whose ink is far fainter than the page's writing and that
+        the recogniser is unsure about are dropped as bleed-through from the reverse side of the sheet.
+        """
+        if (self._trocr_model is None or input_mode in ('screen', 'digital')
+                or not items or any('quad' not in it for it in items)):
+            return items, [], False
+        from app.ai.ocr.htr_layout import _ink_level, order_quad
+
+        if len(items) >= 3:
+            # Ink darkness is judged on the original pixels: contrast enhancement lightens or darkens strokes
+            # unevenly and would make real writing look like show-through
+            ink_src = ink_image if ink_image is not None and ink_image.shape[:2] == image.shape[:2] else image
+            inks = [_ink_level(ink_src, order_quad(it['quad'])) for it in items]
+            page_ink = float(np.median(inks))
+            items = [it for it, ink in zip(items, inks) if not (ink > page_ink + 45 and it['confidence'] < 0.9)]
+        from app.ai.ocr.htr_ensemble import PRINTED_CONF_THRESHOLD
+        printed = [it for it in items if it['confidence'] >= PRINTED_CONF_THRESHOLD]
+        uncertain = [it for it in items if it['confidence'] < PRINTED_CONF_THRESHOLD]
+        # "Handwritten page" (read from original pixels, missed-line recovery) needs genuinely unsure
+        # readings; print scoring just under the routing threshold must not trip it.
+        unsure = [it for it in items if it['confidence'] < 0.85]
+        page_handwritten = len(items) >= 3 and len(unsure) >= 0.5 * len(items)
+        return printed, uncertain, page_handwritten
+
+    def _recognize_handwritten_lines(
+        self,
+        items: List[Dict[str, Any]],
+        image: np.ndarray,
+        page_handwritten: bool,
+        mask_items: Optional[List[Dict[str, Any]]] = None,
+        recovery_image: Optional[np.ndarray] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Handwriting layout path: rectified + merged + split + recovered line crops, then a recogniser
+        ensemble per line (PP-OCR vs medical TrOCR, long lines recognised in chunks by TrOCR) keeping the
+        reading that is more confident and made of real words.
+        """
+        from app.ai.ocr.htr_ensemble import choose
+        from app.ai.ocr.htr_layout import HandwritingLineBuilder, quad_geometry, split_long_line
+
+        h_img, w_img = image.shape[:2]
+        builder = HandwritingLineBuilder(detector=self._rapid_ocr)
+        lines = builder.build(image, [it['quad'] for it in items],
+                              mask_quads=[it['quad'] for it in (mask_items or []) if 'quad' in it],
+                              recovery_image=recovery_image)
+        if not lines:
+            return []
+
+        # 1. TrOCR readings (chunked for out-of-distribution wide strips)
+        chunks, owner = [], []
+        for li, ln in enumerate(lines):
+            for part in split_long_line(ln['crop']):
+                chunks.append(part)
+                owner.append(li)
+        if self._htr is not None:
+            try:
+                results = self._htr.recognize_batch(chunks)
+                recognized = [(r['text'], r['confidence']) for r in results]
+            except Exception as e:
+                logger.warning(f"Batched HTR failed, recognising chunks one by one: {e}")
+                recognized = [self._trocr_recognize(c) for c in chunks]
+        else:
+            recognized = [self._trocr_recognize(c) for c in chunks]
+
+        # 2. PP-OCR readings of the same rectified lines
+        rapid_readings = [("", 0.0)] * len(lines)
+        if self._rapid_ocr is not None and hasattr(self._rapid_ocr, 'text_recognizer'):
+            try:
+                # Small rectified crops are upscaled exactly as on the printed path before re-reading
+                enhanced = [enhance_small_or_lowres_text(ln['crop'], target_min_height=36)[0] for ln in lines]
+                rec_res, _ = self._rapid_ocr.text_recognizer(enhanced)
+                rapid_readings = [(str(t).strip(), float(c)) for t, c in rec_res]
+            except Exception as e:
+                logger.warning(f"RapidOCR line recognition failed: {e}")
+        # A line that is exactly one first-pass detection also keeps the detector's own reading
+        for li, ln in enumerate(lines):
+            if ln['members'] != 1 or ln.get('recovered'):
+                continue
+            match = max(items, key=lambda it: _bbox_iou(it['bbox'], ln['bbox']))
+            if _bbox_iou(match['bbox'], ln['bbox']) >= 0.6 and match.get('text', '').strip() \
+                    and match['confidence'] > rapid_readings[li][1]:
+                rapid_readings[li] = (match['text'].strip(), float(match['confidence']))
+        validity = self._htr.word_validity if self._htr is not None else (lambda _t: 0.0)
+
+        blocks = []
+        for li, ln in enumerate(lines):
+            parts = [(recognized[k], chunks[k].shape[1]) for k in range(len(chunks)) if owner[k] == li]
+            trocr_text = " ".join(t for (t, _), _ in parts if t).strip()
+            total_w = sum(w for _, w in parts) or 1
+            trocr_conf = sum(c * w for (_, c), w in parts) / total_w
+            if trocr_text and self._is_hallucination(trocr_text, crop_w=ln['crop'].shape[1]):
+                trocr_text, trocr_conf = "", 0.0
+            text, conf, engine = choose(rapid_readings[li], (trocr_text, trocr_conf), validity)
+            if engine == 'trocr':
+                model_used, source = 'trocr-handwritten', 'handwritten'
+            elif page_handwritten:
+                model_used, source = 'rapidocr-handwritten', 'handwritten'
+            else:
+                model_used, source = 'rapidocr-printed', 'printed'
+            text = self.postprocessor.clean_text(text)
+            if not text:
+                continue
+            xmin, ymin, xmax, ymax = ln['bbox']
+            center, _, _, line_h = quad_geometry(ln['quad'])
+            blocks.append({
+                '_line_band': [float(center[1] - line_h / 2.0), float(center[1] + line_h / 2.0)],
+                'text': text,
+                'confidence': round(float(conf), 4),
+                'source': source,
+                'model_used': model_used,
+                'bbox': [xmin, ymin, xmax, ymax],
+                'normalized_bbox': [
+                    round(float(xmin) / max(1, w_img), 5),
+                    round(float(ymin) / max(1, h_img), 5),
+                    round(float(xmax) / max(1, w_img), 5),
+                    round(float(ymax) / max(1, h_img), 5)
+                ],
+                'width': max(1, xmax - xmin),
+                'height': max(1, ymax - ymin),
+                'status': self._get_status(conf)
+            })
+        return blocks
+
+    def process_document(
+        self,
+        image: np.ndarray,
+        doc_name: str = 'document',
+        page_num: int = 1,
+        input_mode: str = 'auto',
+        debug: bool = False,
+        original_image: Optional[np.ndarray] = None
+    ) -> Dict[str, Any]:
+        """
+        True Hybrid Processing Pipeline:
+        1. High-resolution text detection.
+        2. Spatial grouping into complete line candidates.
+        3. Line-level crop recognition (RapidOCR / TrOCR).
+        4. Medical lexicon normalization.
+        5. Reading-order reconstruction.
+        """
+        raw_items = self._detect_items(image, input_mode)
 
         # 3. Spatial Line Grouping & Complete Line Crop Recognition
-        consolidated_blocks = self.group_and_merge_lines(raw_items, image)
+        #    Handwritten detections take the handwriting layout path (rectified, merged, recovered lines)
+        printed_items, handwritten_items, page_handwritten = self._partition_handwriting(
+            raw_items, image, input_mode, ink_image=original_image
+        )
+        if page_handwritten and original_image is not None and original_image is not image:
+            # Handwriting is read from the original pixels: contrast boosting and smoothing tuned for print
+            # amplify bleed-through and soften pen strokes. Re-detect so coordinates match those pixels.
+            image = original_image if original_image.ndim == 3 else cv2.cvtColor(original_image, cv2.COLOR_GRAY2BGR)
+            raw_items = self._detect_items(image, input_mode)
+            printed_items, handwritten_items, page_handwritten = self._partition_handwriting(raw_items, image, input_mode)
+        h_img, w_img = image.shape[:2]
+        consolidated_blocks = self.group_and_merge_lines(printed_items, image) if printed_items else []
+        if handwritten_items or (input_mode not in ('screen', 'digital') and self._trocr_model is not None
+                                 and any('quad' in it for it in printed_items)):
+            # Also runs with no uncertain detections: missed-line recovery searches the original pixels
+            consolidated_blocks += self._recognize_handwritten_lines(
+                handwritten_items, image, page_handwritten, mask_items=printed_items,
+                recovery_image=original_image
+            )
 
         # 4. Reconstruct 2D reading order and clean text
         sorted_blocks, raw_text = self.rebuilder.rebuild_order(consolidated_blocks)
@@ -644,7 +829,7 @@ class MedIntelOCREngine:
             upscaled_snippet = snippet_crop
 
         preproc_snippet = run_preprocessing_pipeline(upscaled_snippet, input_mode=input_mode, preprocessing_mode=preprocessing_mode)
-        res = self.process_document(preproc_snippet, doc_name=doc_name, input_mode=input_mode)
+        res = self.process_document(preproc_snippet, doc_name=doc_name, input_mode=input_mode, original_image=upscaled_snippet)
 
         # Unscale coordinates back to snippet space, then offset to global document coordinates
         for b in res.get('blocks', []):

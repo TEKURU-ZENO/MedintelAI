@@ -90,7 +90,7 @@ def run_handwriting_evaluation():
     finetuned_dir = root_dir / "app" / "ai" / "models" / "trocr_medical_finetuned"
     print(f"\n[2/2] Loading Fine-Tuned Production Checkpoint from {finetuned_dir}...")
     
-    if finetuned_dir.exists() and (finetuned_dir / "model.safetensors").exists():
+    if finetuned_dir.exists() and ((finetuned_dir / "model.safetensors").exists() or (finetuned_dir / "model.safetensors.index.json").exists()):
         ft_processor = TrOCRProcessor.from_pretrained(str(finetuned_dir))
         ft_model = VisionEncoderDecoderModel.from_pretrained(str(finetuned_dir)).to(device)
 

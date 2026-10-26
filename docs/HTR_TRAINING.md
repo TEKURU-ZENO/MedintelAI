@@ -60,13 +60,95 @@ The desktop backend (`backend/app`) resolves the checkpoint with `_find_finetune
 `backend/app/ai/models` location. The medical lexicon and tuned decoding settings load only when that
 fine-tuned checkpoint loads; on fallback to the generic base model the HTR engine runs without them.
 
-Runtime knobs: `HTR_NUM_BEAMS` (default 4 on GPU, 2 on CPU; beam 2 keeps almost all of beam 4's
-accuracy) and `HTR_INT8=0` to disable int8 CPU quantisation (~3x faster on CPU, accuracy within noise).
+Runtime knobs:
+
+| Variable | Default | Effect |
+| :--- | :--- | :--- |
+| `HTR_NUM_BEAMS` | 4 on GPU, 2 on CPU | Beam width; beam 2 keeps almost all of beam 4's accuracy |
+| `HTR_INT8` | `0` (off) | `1` enables int8 CPU quantisation: ~3x faster but it garbles real handwritten pages (repeated / substituted words), so it is opt-in |
+| `HTR_PRINTED_CONF` | from `ensemble.json` (0.97) | Lines PP-OCR reads at or above this confidence take the printed path; `1.01` sends every line through the ensemble |
+| `OCR_USE_GPU` | `auto` | `auto` uses CUDA when the runtime's torch has it (TrOCR-large is ~3-4x faster); `0` / `1` force it |
+| `RAPIDOCR_PRESET` | `v6_medium` | Printed-text model set: `v6_medium`, `v6_small` (3.5x faster), `v5_mobile`, `v5_server`, `legacy` |
+| `RAPIDOCR_MODEL_DIR` | `app/ai/models/rapidocr` | Where PP-OCR model files are kept / downloaded |
+
+## Page pipeline for scanned / photographed documents (desktop backend)
+
+1. **Detection** with PP-OCRv6 (`app/ai/ocr/rapid_adapter.py`, rapidocr 3.x; falls back to the legacy
+   rapidocr-onnxruntime package if rapidocr 3.x or its models are unavailable).
+2. **Bleed-through filter**: detections whose ink is far fainter than the page's writing *and* that the
+   recogniser is unsure about are dropped (show-through from the reverse side of the sheet).
+3. **Routing**: lines PP-OCR reads confidently take the printed path; the rest take the handwriting path.
+   On a mostly handwritten page the handwriting path reads the original pixels (print-oriented contrast
+   boosting and smoothing hurt pen strokes) and recovers lines the detector missed.
+4. **Handwriting layout** (`app/ai/ocr/htr_layout.py`): slanted line quads are rectified with a
+   perspective warp, fragments are merged along the line's slant, boxes spanning two lines are split at
+   ink-projection valleys, curved lines are straightened piecewise, and strips wider than the training
+   distribution (aspect > 16) are recognised in chunks.
+5. **Recogniser ensemble** (`app/ai/ocr/htr_ensemble.py`): PP-OCR and TrOCR both read each handwriting-
+   path line; a rule fitted on validation data keeps the better reading, and the reported confidence is
+   calibrated to expected character accuracy.
+6. **Reading order** uses each handwritten line's true vertical band, so slanted lines whose bounding
+   boxes overlap are not merged into one row.
+
+### PP-OCR model benchmark (`scripts/benchmark_rapidocr_models.py`, word-level F1, CPU)
+
+| Model set | FUNSD scanned forms (50) | Medical documents (9) | s / page |
+| :--- | ---: | ---: | ---: |
+| legacy rapidocr-onnxruntime (PP-OCRv4 mobile) | 0.628 | 0.623 | 2.02 |
+| PP-OCRv5 mobile | 0.732 | 0.941 | 1.39 |
+| PP-OCRv5 server | 0.654 | 0.866 | 4.16 |
+| PP-OCRv6 small | 0.791 | 0.971 | 1.14 |
+| **PP-OCRv6 medium (default)** | **0.802** | **0.977** | 4.01 |
+
+### Ensemble (`scripts/collect_ensemble_candidates.py` + `scripts/fit_ensemble.py --install <checkpoint>`)
+
+The selection rule, routing threshold and confidence calibration are fitted per checkpoint and stored in
+`<checkpoint>/ensemble.json` (CPU and GPU profiles); the engine loads them with the model. Held-out test
+macro CER over GNHK lines, IAM lines, RxHandBD, Kaggle BD, FUNSD words and synthetic print, with
+trocr-large:
+
+| Policy | Macro CER |
+| :--- | ---: |
+| PP-OCRv6 only | 0.160 |
+| TrOCR-large only | 0.066 |
+| **Routed ensemble, threshold 0.97 (installed)** | **0.062** |
+| Ensemble on every line | 0.058 |
+
+The crop-level optimum (threshold 0.99) was rejected after page-level checks: on a real scanned report it
+pushed too much print through the handwriting path (worse text, 3x slower), so both profiles use 0.97.
+A narrow guard drops a lone leading character TrOCR reads from a form checkbox ("4 Denied").
+
+PP-OCRv6 reads print best, while the fine-tuned TrOCR is far stronger on handwriting overall (PP-OCRv6
+does better only on some camera-captured GNHK lines), which is why both are kept. Known limitation: on
+printed lines PP-OCR is unsure about, letter/digit look-alikes in IDs ("ID" vs "1D") can still slip.
+Re-run the two ensemble scripts after promoting a new TrOCR checkpoint so the rule matches it.
 
 Training on a laptop GPU: close games / 3D apps and keep the charger connected. A competing renderer
-slowed training ~30x in practice; an 8 GB card needs `--gradient_checkpointing` for the base model.
+slowed training ~30x in practice; an 8 GB card needs `--gradient_checkpointing` for the base model and
+additionally `--optimizer adamw8bit` (bitsandbytes) for `microsoft/trocr-large-handwritten` (5.9 GB at
+batch 8; plain AdamW state alone exceeds 8 GB).
 
-## Current checkpoint (run of 2026-10-25)
+## Current checkpoint (run of 2026-10-26): trocr-large
+
+`microsoft/trocr-large-handwritten` (558M), 8 epochs x 16k samples, AdamW8bit + gradient checkpointing,
+mix IAM 20% / GNHK lines 22% / GNHK words 6% / RxHandBD 20% / Kaggle BD 10% / synthetic 22% (incl. general
+English lines and bleed-through augmentation), RTX 5050, ~5 h. Held-out test, beam 4, case-insensitive
+CER (RxHandBD with the realigned test labels):
+
+| Test set | Base (2026-10-25) | Large (current) |
+| :--- | ---: | ---: |
+| IAM-line (1,500) | 0.066 | **0.046** |
+| GNHK lines (1,500) | 0.105 | **0.079** |
+| GNHK words (1,500) | 0.135 | **0.117** |
+| Kaggle BD (780) | 0.034 | 0.035 |
+| Synthetic prescription lines (300) | 0.004 | **0.002** |
+| RxHandBD (1,115) | 0.181 | 0.186 → 0.182 with lexicon gate 0.5 |
+
+Lexicon gate 0.5 is pinned for unseen drug names (chosen on RxHandBD test because validation has no
+unseen names; costs +0.25 pt on IAM). CPU latency: ~3 s for a printed page, ~30 s for a 7-line
+handwritten page; with a CUDA build of torch in the app environment the same page takes ~9 s.
+
+## Previous checkpoint (run of 2026-10-25): trocr-base
 
 `microsoft/trocr-base-handwritten` (334M), 10 epochs x 16k samples, mix IAM 18% / GNHK lines 17% /
 GNHK words 7% / RxHandBD 25% / Kaggle BD 13% / synthetic 20%, RTX 5050, ~3 h. Held-out test, beam 4,

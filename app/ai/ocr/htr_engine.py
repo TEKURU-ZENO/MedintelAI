@@ -232,6 +232,8 @@ class MedicalLexiconCorrector:
         key = word.lower()
         if len(key) < self.min_len or not key.isalpha() or key in self.exact or key in self.common:
             return None
+        if word.isupper():
+            return None  # acronyms (SCAN, CBC, HTN) are never snapped onto a drug name
         limit = self._max_dist(len(key))
         best, best_d, tie = None, limit + 1, False
         for n in range(len(key) - limit, len(key) + limit + 1):
@@ -281,9 +283,10 @@ class MedicalHTREngine:
             num_beams = int(env_beams) if env_beams.isdigit() else (4 if self.device.type == "cuda" else CPU_DEFAULT_BEAMS)
         self.num_beams = max(1, num_beams)
 
-        # Dynamic int8 quantisation of Linear layers roughly halves CPU latency. Opt out with HTR_INT8=0.
+        # Dynamic int8 quantisation of Linear layers is ~3x faster on CPU but measurably degrades
+        # recognition on real handwritten pages (repeated / substituted words), so it is opt-in: HTR_INT8=1.
         if quantize_cpu is None:
-            quantize_cpu = os.getenv("HTR_INT8", "1") != "0"
+            quantize_cpu = os.getenv("HTR_INT8", "0") == "1"
         self.quantized = False
         if quantize_cpu and self.device.type == "cpu":
             try:

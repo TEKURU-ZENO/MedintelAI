@@ -339,8 +339,8 @@ class OCRDocumentReadingEngine:
     def _init_models(self):
         # 1. RapidOCR for printed text and fast text line detection
         try:
-            from rapidocr_onnxruntime import RapidOCR
-            self._rapid_ocr = RapidOCR()
+            from app.ai.ocr.rapid_adapter import create_rapid_ocr
+            self._rapid_ocr = create_rapid_ocr(logger=logger)
             logger.info('RapidOCR (ONNX) initialized successfully')
         except Exception as e:
             logger.warning(f'RapidOCR not loaded: {e}')
