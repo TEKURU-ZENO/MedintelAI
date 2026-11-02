@@ -1,0 +1,45 @@
+{
+ "image": "images/public/gnhk_eng_AF_046.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "Sweet is the",
+   "role": "body"
+  },
+  {
+   "text": "Memory",
+   "role": "body"
+  },
+  {
+   "text": "How to stast a matred line of the",
+   "role": "body"
+  },
+  {
+   "text": "first of all, note that at resources Righteous",
+   "role": "body"
+  },
+  {
+   "text": "huge capital to be able to establish",
+   "role": "body"
+  },
+  {
+   "text": "a make at line.",
+   "role": "body"
+  },
+  {
+   "text": "Steps to false",
+   "role": "body"
+  },
+  {
+   "text": "likely business name",
+   "role": "body"
+  },
+  {
+   "text": "diamond colors",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

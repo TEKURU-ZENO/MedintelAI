@@ -27,6 +27,12 @@ class OCRResponse(BaseModel):
     processing_time: float = Field(ge=0)
     blocks: List[OCRBlock]
     raw_text: str
+    # The document laid out for reading (sections, numbered medicines, paragraphs); raw_text keeps the as-read order
+    formatted_text: Optional[str] = None
+    # Counts of the per-block `review` flags (words to check, with suggestions) and low-confidence lines
+    review_summary: Optional[Dict[str, int]] = None
+    # Clinical pages in the hospital template's section order: {template, letterhead, sections: [{key, title, lines}]}
+    sections: Optional[Dict[str, Any]] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
     region_bbox: Optional[List[int]] = None
     document_metadata: Optional[DocumentMetadata] = None

@@ -1,0 +1,77 @@
+{
+ "image": "images/public/gnhk_eng_AF_041.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "2 No great man ever complains of want of oppor-",
+   "role": "body"
+  },
+  {
+   "text": "Tunity",
+   "role": "body"
+  },
+  {
+   "text": "3 There never was a truly great man that",
+   "role": "body"
+  },
+  {
+   "text": "was not at the same time truly virtuous.",
+   "role": "body"
+  },
+  {
+   "text": "4 is great artist is a great man in a gre-",
+   "role": "body"
+  },
+  {
+   "text": "at child.",
+   "role": "body"
+  },
+  {
+   "text": "5 Smallnes in a great man seems smaller by",
+   "role": "body"
+  },
+  {
+   "text": "its disproportion with all the b rest.",
+   "role": "body"
+  },
+  {
+   "text": "6 The bravest sight in the world is to see a gr-",
+   "role": "body"
+  },
+  {
+   "text": "eat man struggling against adversity",
+   "role": "body"
+  },
+  {
+   "text": "7 Sometimes you can't see your self clearly untill",
+   "role": "body"
+  },
+  {
+   "text": "you see your self through the eyes of others",
+   "role": "body"
+  },
+  {
+   "text": "8 All our dreams can come true if we have the",
+   "role": "body"
+  },
+  {
+   "text": "9 it does not matter how slowly you go, so, long",
+   "role": "body"
+  },
+  {
+   "text": "you do not stop.",
+   "role": "body"
+  },
+  {
+   "text": "10 Success is sitting in 16 shade today because",
+   "role": "body"
+  },
+  {
+   "text": "someone planted a tree a long time ago.",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

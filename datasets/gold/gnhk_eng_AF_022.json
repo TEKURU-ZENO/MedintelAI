@@ -1,0 +1,41 @@
+{
+ "image": "images/public/gnhk_eng_AF_022.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "to non-citizens in relative terms",
+   "role": "body"
+  },
+  {
+   "text": "1 Right to Life : section 33 (1):",
+   "role": "body"
+  },
+  {
+   "text": "2 Right to diginity of human person: section 34(1)",
+   "role": "body"
+  },
+  {
+   "text": "3 Right to personal liberty : section 36 (1)",
+   "role": "body"
+  },
+  {
+   "text": "4 Right to fair hearing",
+   "role": "body"
+  },
+  {
+   "text": "5 Right to private and family life 37 (1)",
+   "role": "body"
+  },
+  {
+   "text": "6 Right to Freedom of thought",
+   "role": "body"
+  },
+  {
+   "text": "7 Right to Freedom of movement",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

@@ -1,0 +1,85 @@
+{
+ "image": "images/public/gnhk_eng_NA_088.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "8,000",
+   "role": "body"
+  },
+  {
+   "text": "Depreciated Expense",
+   "role": "body"
+  },
+  {
+   "text": "8,000",
+   "role": "body"
+  },
+  {
+   "text": "Accum. Depreciation",
+   "role": "body"
+  },
+  {
+   "text": "Accum Dep",
+   "role": "body"
+  },
+  {
+   "text": "year 1",
+   "role": "body"
+  },
+  {
+   "text": "8,000",
+   "role": "body"
+  },
+  {
+   "text": "8,000",
+   "role": "body"
+  },
+  {
+   "text": "year 2",
+   "role": "body"
+  },
+  {
+   "text": "8,000",
+   "role": "body"
+  },
+  {
+   "text": "year 3",
+   "role": "body"
+  },
+  {
+   "text": "SCF - statement of cash flow",
+   "role": "body"
+  },
+  {
+   "text": "Operating",
+   "role": "body"
+  },
+  {
+   "text": "Investing - cash transactions related to",
+   "role": "body"
+  },
+  {
+   "text": "long - term assets - PPE services uses",
+   "role": "body"
+  },
+  {
+   "text": "Lease an Asset - right to use the asset",
+   "role": "body"
+  },
+  {
+   "text": "Leases",
+   "role": "body"
+  },
+  {
+   "text": "Accumlated Depreciation",
+   "role": "body"
+  },
+  {
+   "text": "Everyone leases lmao",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

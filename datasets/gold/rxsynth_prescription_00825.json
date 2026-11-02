@@ -1,0 +1,80 @@
+{
+ "image": "images/public/rxsynth_prescription_00825.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Greenwood Medical Center",
+   "role": "body"
+  },
+  {
+   "text": "789 Pine Rd.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. C. Rossi",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: John Doe, Age: 27",
+   "role": "body"
+  },
+  {
+   "text": "Atorvastatin 5 mg - Every 12 hours",
+   "role": "body"
+  },
+  {
+   "text": "Ibuprofen 25 mg - Before meals",
+   "role": "body"
+  },
+  {
+   "text": "Amoxicillin 500 mg - Take twice daily",
+   "role": "body"
+  },
+  {
+   "text": "Lisinopril 250 mg - Take twice daily",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. C. Rossi",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "John Doe",
+  "age": "27",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Atorvastatin",
+    "strength": "5mg",
+    "timing": "Every 12 hours"
+   },
+   {
+    "drug": "Ibuprofen",
+    "strength": "25mg",
+    "timing": "Before meals"
+   },
+   {
+    "drug": "Amoxicillin",
+    "strength": "500mg",
+    "timing": "Take twice daily"
+   },
+   {
+    "drug": "Lisinopril",
+    "strength": "250mg",
+    "timing": "Take twice daily"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

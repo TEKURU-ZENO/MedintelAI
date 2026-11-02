@@ -1,0 +1,53 @@
+{
+ "image": "images/public/rxsynth_prescription_00643.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Meadowview Health",
+   "role": "body"
+  },
+  {
+   "text": "45 Oak Ave.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. R. Patel",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Wei Li, Age: 60",
+   "role": "body"
+  },
+  {
+   "text": "Levothyroxine 500 mg - Every 12 hours",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. R. Patel",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Wei Li",
+  "age": "60",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Levothyroxine",
+    "strength": "500mg",
+    "timing": "Every 12 hours"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

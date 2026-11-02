@@ -1,0 +1,71 @@
+{
+ "image": "images/public/rxsynth_prescription_00906.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Oakview Hospital",
+   "role": "body"
+  },
+  {
+   "text": "678 Orchard Ln.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. M. Lee",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Maria Garcia, Age: 29",
+   "role": "body"
+  },
+  {
+   "text": "Amlodipine 100 mg - As needed for pain",
+   "role": "body"
+  },
+  {
+   "text": "Atorvastatin 500 mg - As directed",
+   "role": "body"
+  },
+  {
+   "text": "Losartan 5 mg - At bedtime",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. M. Lee",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Maria Garcia",
+  "age": "29",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Amlodipine",
+    "strength": "100mg",
+    "timing": "As needed for pain"
+   },
+   {
+    "drug": "Atorvastatin",
+    "strength": "500mg",
+    "timing": "As directed"
+   },
+   {
+    "drug": "Losartan",
+    "strength": "5mg",
+    "timing": "At bedtime"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

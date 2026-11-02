@@ -1,0 +1,33 @@
+{
+ "image": "images/printed_clinical_notes.png",
+ "doc_type": "clinical_note",
+ "handwritten": false,
+ "source": "synthetic printed sample (datasets/clinical_notes/sample_1)",
+ "lines": [
+  {
+   "text": "PROGRESS NOTE - WARD 4B",
+   "role": "body"
+  },
+  {
+   "text": "Date: 04/09/2026 Time: 10:30 AM",
+   "role": "body"
+  },
+  {
+   "text": "Pt c/o dull aching epigastric pain postprandial",
+   "role": "body"
+  },
+  {
+   "text": "O/E: Abdomen soft, mild epigastric tenderness, no guarding",
+   "role": "body"
+  },
+  {
+   "text": "Vitals: BP 120/80, HR 76/min regular, SpO2 98% on RA",
+   "role": "body"
+  },
+  {
+   "text": "Plan: Ultrasound abdomen, avoid NSAIDs, review tomorrow",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

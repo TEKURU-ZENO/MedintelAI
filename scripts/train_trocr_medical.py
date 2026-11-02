@@ -50,9 +50,9 @@ from app.ai.ocr.htr_engine import LEXICON_FILENAME, MedicalHTREngine, prepare_ht
 from app.ai.ocr.medical_postprocessor import MedicalVocabularyPostProcessor  # noqa: E402
 
 INSTALLED_MODEL_DIR = ROOT / "app" / "ai" / "models" / "trocr_medical_finetuned"
-MEDICAL_SOURCES = ("rxhandbd", "kaggle_rx_bd", "synthetic")
+MEDICAL_SOURCES = ("rxhandbd", "kaggle_rx_bd", "synthetic", "feedback")
 DEFAULT_MIX = (
-    "iam_line=0.18,gnhk_line=0.17,gnhk_word=0.07,rxhandbd=0.25,kaggle_rx_bd=0.13,synthetic=0.20"
+    "iam_line=0.18,gnhk_line=0.17,gnhk_word=0.07,rxhandbd=0.25,kaggle_rx_bd=0.13,synthetic=0.20,feedback=0.15"
 )
 
 
@@ -527,13 +527,18 @@ def train_trocr(
 
     if resume and last_state.exists():
         # Resume an interrupted run (laptop sleep, power loss) from the last completed epoch
-        state = torch.load(last_state, map_location=device, weights_only=False)
+        # Loaded on the CPU: load_state_dict copies onto the device, and a second GPU copy of the model and
+        # optimiser state does not fit next to the live ones on an 8 GB card
+        state = torch.load(last_state, map_location="cpu", weights_only=False)
         model.load_state_dict(state["model"])
         optimizer.load_state_dict(state["optimizer"])
         scheduler.load_state_dict(state["scheduler"])
         start_epoch, global_step = state["epoch"] + 1, state["global_step"]
         best_score, best_epoch, history = state["best_score"], state["best_epoch"], state["history"]
         print(f"Resumed from epoch {state['epoch']} (best {best_score:.4f} @ epoch {best_epoch})", flush=True)
+        del state
+        if device.type == "cuda":
+            torch.cuda.empty_cache()
     else:
         # Baseline validation before any update
         base_val = evaluate_engine(engine, val_sets)

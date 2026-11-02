@@ -98,6 +98,11 @@ class RapidOCRAdapter:
         ]
         return results, time.time() - t0
 
+    def detect(self, image: np.ndarray) -> List[Any]:
+        """Text-line quads only (no recognition)."""
+        out = self._engine.text_det(image)
+        return [] if out.boxes is None else [np.asarray(b).tolist() for b in out.boxes]
+
     def text_recognizer(self, crops: Sequence[np.ndarray]) -> Tuple[List[Tuple[str, float]], float]:
         from rapidocr.ch_ppocr_rec.typings import TextRecInput
 

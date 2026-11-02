@@ -1,0 +1,110 @@
+{
+ "image": "images/public/funsd_87086073.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "DECISION TREE ESTIMATION OF TOXIC RISK",
+   "role": "body"
+  },
+  {
+   "text": "August 14, 1990",
+   "role": "body"
+  },
+  {
+   "text": "DATE",
+   "role": "body"
+  },
+  {
+   "text": "J. D. Ergle and R. F. Dufresne",
+   "role": "body"
+  },
+  {
+   "text": "COMPOUND NAME",
+   "role": "body"
+  },
+  {
+   "text": "Vanitrope",
+   "role": "body"
+  },
+  {
+   "text": "CH3CH2O OH",
+   "role": "body"
+  },
+  {
+   "text": "STRUCTURE",
+   "role": "body"
+  },
+  {
+   "text": "LORILLARO COMPOUND CODE NUMBER",
+   "role": "body"
+  },
+  {
+   "text": "ESTIMATED TOXICITY CLASS",
+   "role": "body"
+  },
+  {
+   "text": "B134",
+   "role": "body"
+  },
+  {
+   "text": "III",
+   "role": "body"
+  },
+  {
+   "text": "COMMENTS",
+   "role": "body"
+  },
+  {
+   "text": "This ethoxy substitued aromatic falls into class III.",
+   "role": "body"
+  },
+  {
+   "text": "Engle",
+   "role": "body"
+  },
+  {
+   "text": "D.",
+   "role": "body"
+  },
+  {
+   "text": "J.",
+   "role": "body"
+  },
+  {
+   "text": "Research Chemist",
+   "role": "body"
+  },
+  {
+   "text": "F.",
+   "role": "body"
+  },
+  {
+   "text": "R.",
+   "role": "body"
+  },
+  {
+   "text": "Dufresne",
+   "role": "body"
+  },
+  {
+   "text": "Research Chemist",
+   "role": "body"
+  },
+  {
+   "text": "87086073",
+   "role": "body"
+  },
+  {
+   "text": "FORM",
+   "role": "body"
+  },
+  {
+   "text": "LORILLARD RESEARCH CENTER",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

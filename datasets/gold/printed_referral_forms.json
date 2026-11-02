@@ -1,0 +1,33 @@
+{
+ "image": "images/printed_referral_forms.png",
+ "doc_type": "referral_form",
+ "handwritten": false,
+ "source": "synthetic printed sample (datasets/referral_forms/sample_1)",
+ "lines": [
+  {
+   "text": "SPECIALIST REFERRAL FORM",
+   "role": "body"
+  },
+  {
+   "text": "Referring Doctor: Dr. Anita Rao (Family Clinic)",
+   "role": "body"
+  },
+  {
+   "text": "To: Department of Cardiology, Apex Hospital",
+   "role": "body"
+  },
+  {
+   "text": "Patient Name: Ramesh Patel  Age: 56",
+   "role": "body"
+  },
+  {
+   "text": "Reason for Referral: Exertional chest tightness, ECG shows T-wave inversion",
+   "role": "body"
+  },
+  {
+   "text": "Attached: Baseline ECG and lipid profile",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

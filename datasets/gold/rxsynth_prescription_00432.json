@@ -1,0 +1,62 @@
+{
+ "image": "images/public/rxsynth_prescription_00432.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Meadowview Health",
+   "role": "body"
+  },
+  {
+   "text": "678 Orchard Ln.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. H. Johnson",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Wei Li, Age: 26",
+   "role": "body"
+  },
+  {
+   "text": "Amoxicillin 50 mg - With food",
+   "role": "body"
+  },
+  {
+   "text": "Ibuprofen 25 mg - Before meals",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. H. Johnson",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Wei Li",
+  "age": "26",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Amoxicillin",
+    "strength": "50mg",
+    "timing": "With food"
+   },
+   {
+    "drug": "Ibuprofen",
+    "strength": "25mg",
+    "timing": "Before meals"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

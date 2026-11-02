@@ -1,0 +1,178 @@
+{
+ "image": "images/public/funsd_82252956_2958.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "SUBMISSION DATE",
+   "role": "body"
+  },
+  {
+   "text": "K. A. Sparrow",
+   "role": "body"
+  },
+  {
+   "text": "TO:",
+   "role": "body"
+  },
+  {
+   "text": "D. J. Landro",
+   "role": "body"
+  },
+  {
+   "text": "AUG 4",
+   "role": "body"
+  },
+  {
+   "text": "MAY 12",
+   "role": "body"
+  },
+  {
+   "text": "FROM:",
+   "role": "body"
+  },
+  {
+   "text": "SEP 15",
+   "role": "body"
+  },
+  {
+   "text": "JUN 23",
+   "role": "body"
+  },
+  {
+   "text": "OLD GOLD MENTHOL LIGHTS & ULTRA LIGHTS 100'S PROGRESS REPORT",
+   "role": "body"
+  },
+  {
+   "text": "SUBJECT:",
+   "role": "body"
+  },
+  {
+   "text": "GEOGRAPHY",
+   "role": "body"
+  },
+  {
+   "text": "REGION:",
+   "role": "body"
+  },
+  {
+   "text": "(ONLY IF PARTIAL REGION CONTINUE WITH DIVISION (S) SCOPE)",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION:",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "Milw. South",
+   "role": "body"
+  },
+  {
+   "text": "# REP",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "7",
+   "role": "body"
+  },
+  {
+   "text": "Milw. North",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "# REP",
+   "role": "body"
+  },
+  {
+   "text": "7",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "# REPS",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "DISTRIBUTION",
+   "role": "body"
+  },
+  {
+   "text": "DIRECT ACCOUNTS AND CHAINS HEADQUARTERED WITHIN THE REGION (15 + STORES) STOCKING NO OLD GOLD MENTHOL LIGHTS OR ULTRA LIGHTS 100'S",
+   "role": "body"
+  },
+  {
+   "text": "NO. OF STORES",
+   "role": "body"
+  },
+  {
+   "text": "IND/LOR VOLUME",
+   "role": "body"
+  },
+  {
+   "text": "NO. OF TORES",
+   "role": "body"
+  },
+  {
+   "text": "IND/LOR VOLUME",
+   "role": "body"
+  },
+  {
+   "text": "NAME OF ACCOUNT",
+   "role": "body"
+  },
+  {
+   "text": "NAME OF ACCOUNT",
+   "role": "body"
+  },
+  {
+   "text": "144/14",
+   "role": "body"
+  },
+  {
+   "text": "Walgreen Drug",
+   "role": "body"
+  },
+  {
+   "text": "93",
+   "role": "body"
+  },
+  {
+   "text": "82252956",
+   "role": "body"
+  },
+  {
+   "text": "Page1 of 3 Pages",
+   "role": "body"
+  },
+  {
+   "text": "OLOGOLD.XLS",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

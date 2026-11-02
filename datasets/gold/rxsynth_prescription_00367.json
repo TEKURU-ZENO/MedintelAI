@@ -1,0 +1,80 @@
+{
+ "image": "images/public/rxsynth_prescription_00367.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Greenwood Medical Center",
+   "role": "body"
+  },
+  {
+   "text": "123 Main St.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. C. Rossi",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Aisha Khan, Age: 78",
+   "role": "body"
+  },
+  {
+   "text": "Ciprofloxacin 500 mg - After meals",
+   "role": "body"
+  },
+  {
+   "text": "Atorvastatin 10 mg - Every 8 hours",
+   "role": "body"
+  },
+  {
+   "text": "Amlodipine 25 mg - After meals",
+   "role": "body"
+  },
+  {
+   "text": "Levothyroxine 10 mg - Before meals",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. C. Rossi",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Aisha Khan",
+  "age": "78",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Ciprofloxacin",
+    "strength": "500mg",
+    "timing": "After meals"
+   },
+   {
+    "drug": "Atorvastatin",
+    "strength": "10mg",
+    "timing": "Every 8 hours"
+   },
+   {
+    "drug": "Amlodipine",
+    "strength": "25mg",
+    "timing": "After meals"
+   },
+   {
+    "drug": "Levothyroxine",
+    "strength": "10mg",
+    "timing": "Before meals"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

@@ -34,7 +34,8 @@ class OCRService:
         elapsed = time.perf_counter() - start
         confidence = float(result.get("overall_confidence", 0.0) or 0.0)
         result.update({"success": True, "confidence": confidence, "processing_time": round(elapsed, 6),
-                       "metadata": {"file_type": filename.rsplit(".", 1)[-1].lower(), "page_count": result.get("pages", 0)}})
+                       "metadata": {"file_type": filename.rsplit(".", 1)[-1].lower(), "page_count": result.get("pages", 0),
+                                    "structured": result.pop("structured", None)}})
         return result
 
     def extract_region(self, data: bytes, filename: str, box: List[int], input_mode: str | None = None,
@@ -59,5 +60,6 @@ class OCRService:
             raise HTTPException(400, result.get("message", "Selected region could not be processed."))
         confidence = float(result.get("overall_confidence", 0.0) or 0.0)
         result.update({"success": True, "confidence": confidence, "processing_time": round(time.perf_counter() - start, 6),
-                       "metadata": {"file_type": filename.rsplit(".", 1)[-1].lower(), "page_count": result.get("pages", 1)}})
+                       "metadata": {"file_type": filename.rsplit(".", 1)[-1].lower(), "page_count": result.get("pages", 1),
+                                    "structured": result.pop("structured", None)}})
         return result

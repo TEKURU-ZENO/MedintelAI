@@ -1,0 +1,33 @@
+{
+ "image": "images/printed_mixed_documents.png",
+ "doc_type": "mixed",
+ "handwritten": false,
+ "source": "synthetic printed sample (datasets/mixed_documents/sample_1)",
+ "lines": [
+  {
+   "text": "COMMUNITY CLINIC - HEALTH CHECKUP FORM",
+   "role": "body"
+  },
+  {
+   "text": "Hospital Header: St. Luke Health Center",
+   "role": "body"
+  },
+  {
+   "text": "Patient Name: Rajesh Gupta",
+   "role": "body"
+  },
+  {
+   "text": "Doctor Observation: Throat congestion noted, mild lymphadenopathy",
+   "role": "body"
+  },
+  {
+   "text": "Blood Pressure: 130/84 mmHg  Pulse: 82 bpm",
+   "role": "body"
+  },
+  {
+   "text": "Advised: Warm saline gargles, rest for 3 days",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

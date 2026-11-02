@@ -1,0 +1,178 @@
+{
+ "image": "images/public/funsd_83996357.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "COUPON CODE REGISTRATION FORM",
+   "role": "body"
+  },
+  {
+   "text": "KELLI SCRUGGS",
+   "role": "body"
+  },
+  {
+   "text": "TO:",
+   "role": "body"
+  },
+  {
+   "text": "LEONARD JONES",
+   "role": "body"
+  },
+  {
+   "text": "FROM:",
+   "role": "body"
+  },
+  {
+   "text": "V. LOSITO M. TAHMASEB G. BAROODY L. STEVENS B. VON DER LIPPE D. Risling",
+   "role": "body"
+  },
+  {
+   "text": "CC:",
+   "role": "body"
+  },
+  {
+   "text": "BRAND(S) APPLICABLE",
+   "role": "body"
+  },
+  {
+   "text": "OLD GOLD",
+   "role": "body"
+  },
+  {
+   "text": "DIRECT MAIL",
+   "role": "body"
+  },
+  {
+   "text": "MEDIA TYPE",
+   "role": "body"
+  },
+  {
+   "text": "MEDIA NAME",
+   "role": "body"
+  },
+  {
+   "text": "ISSUE FREQUENCY YEAR",
+   "role": "body"
+  },
+  {
+   "text": "SPACE/ COLOR",
+   "role": "body"
+  },
+  {
+   "text": "COUPON ISSUE DATE",
+   "role": "body"
+  },
+  {
+   "text": "10/ 4/ 99",
+   "role": "body"
+  },
+  {
+   "text": "COUPON EXPIRATION DATE",
+   "role": "body"
+  },
+  {
+   "text": "3/ 31/ 00",
+   "role": "body"
+  },
+  {
+   "text": "CIRCULATION(#)",
+   "role": "body"
+  },
+  {
+   "text": "201, 500",
+   "role": "body"
+  },
+  {
+   "text": "OCTOBER 1999",
+   "role": "body"
+  },
+  {
+   "text": "CIRCULATION DATES",
+   "role": "body"
+  },
+  {
+   "text": "DISCOUNT SMOKERS OG GROUPS IANDII",
+   "role": "body"
+  },
+  {
+   "text": "GEOGRAPHICAL AREA(S)",
+   "role": "body"
+  },
+  {
+   "text": "$1 00 OFF PACK",
+   "role": "body"
+  },
+  {
+   "text": "COUPON VALUE",
+   "role": "body"
+  },
+  {
+   "text": "PACK/CARTON",
+   "role": "body"
+  },
+  {
+   "text": "PACK",
+   "role": "body"
+  },
+  {
+   "text": "ADVERTISING CREATIVE TITLE",
+   "role": "body"
+  },
+  {
+   "text": "SIGNATURE OF INITIATOR",
+   "role": "body"
+  },
+  {
+   "text": "DATE INITIATED",
+   "role": "body"
+  },
+  {
+   "text": "4/ 14/ 99",
+   "role": "body"
+  },
+  {
+   "text": "REDEMPTION RESULTS",
+   "role": "body"
+  },
+  {
+   "text": "REQUIREMENTS",
+   "role": "body"
+  },
+  {
+   "text": "83996357",
+   "role": "body"
+  },
+  {
+   "text": "30165",
+   "role": "body"
+  },
+  {
+   "text": "CODE ASSIGNED",
+   "role": "body"
+  },
+  {
+   "text": "07809",
+   "role": "body"
+  },
+  {
+   "text": "JOB#",
+   "role": "body"
+  },
+  {
+   "text": "594",
+   "role": "body"
+  },
+  {
+   "text": "EST. REDEMPTION",
+   "role": "body"
+  },
+  {
+   "text": "14%",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

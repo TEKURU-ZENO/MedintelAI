@@ -1,0 +1,97 @@
+{
+ "image": "images/public/gnhk_eng_AF_036.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "MARY OBAJE",
+   "role": "body"
+  },
+  {
+   "text": "Tro",
+   "role": "body"
+  },
+  {
+   "text": "Bust 89cm Hip",
+   "role": "body"
+  },
+  {
+   "text": "WAIST 68cm knee",
+   "role": "body"
+  },
+  {
+   "text": "HIP$ 95cm Trouse",
+   "role": "body"
+  },
+  {
+   "text": "BWL",
+   "role": "body"
+  },
+  {
+   "text": "39cm Crotcl",
+   "role": "body"
+  },
+  {
+   "text": "BW 37cm waist",
+   "role": "body"
+  },
+  {
+   "text": "CW 32cm Hip",
+   "role": "body"
+  },
+  {
+   "text": "Sh 11-5cm Inch knee",
+   "role": "body"
+  },
+  {
+   "text": "Top of arm 27/34 Ankl",
+   "role": "body"
+  },
+  {
+   "text": "Sleeve length 54/18",
+   "role": "body"
+  },
+  {
+   "text": "short 21/26",
+   "role": "body"
+  },
+  {
+   "text": "long",
+   "role": "body"
+  },
+  {
+   "text": "Elbow 29/25",
+   "role": "body"
+  },
+  {
+   "text": "width",
+   "role": "body"
+  },
+  {
+   "text": "Dress Length 97/134",
+   "role": "body"
+  },
+  {
+   "text": "short c' 97 43",
+   "role": "body"
+  },
+  {
+   "text": "Long 134",
+   "role": "body"
+  },
+  {
+   "text": "Blouse length 68 /",
+   "role": "body"
+  },
+  {
+   "text": "width 75",
+   "role": "body"
+  },
+  {
+   "text": "wrist skirt leng",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

@@ -1,0 +1,37 @@
+{
+ "image": "images/public/gnhk_eng_EU_283.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "Happy Christmas",
+   "role": "body"
+  },
+  {
+   "text": "Jenni fer.",
+   "role": "body"
+  },
+  {
+   "text": "we hope you enjo",
+   "role": "body"
+  },
+  {
+   "text": "your stay in",
+   "role": "body"
+  },
+  {
+   "text": "Ireland.",
+   "role": "body"
+  },
+  {
+   "text": "Season's Greetings",
+   "role": "body"
+  },
+  {
+   "text": "Brid & Kevin",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

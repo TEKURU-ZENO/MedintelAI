@@ -1,0 +1,430 @@
+{
+ "image": "images/public/funsd_82253362_3364.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "TO:",
+   "role": "body"
+  },
+  {
+   "text": "K. A. Sparrow",
+   "role": "body"
+  },
+  {
+   "text": "SUBMISSION DATE",
+   "role": "body"
+  },
+  {
+   "text": "J. L. McGinnis",
+   "role": "body"
+  },
+  {
+   "text": "FROM:",
+   "role": "body"
+  },
+  {
+   "text": "MAY 19 ☐",
+   "role": "body"
+  },
+  {
+   "text": "AUG 11 ☐",
+   "role": "body"
+  },
+  {
+   "text": "JUN 30 ☐",
+   "role": "body"
+  },
+  {
+   "text": "SEP 22",
+   "role": "body"
+  },
+  {
+   "text": "☑",
+   "role": "body"
+  },
+  {
+   "text": "SUBJECT:",
+   "role": "body"
+  },
+  {
+   "text": "MAVERICK SPECIALS MENTHOL - PROGRESS REPORT",
+   "role": "body"
+  },
+  {
+   "text": "GEOGRAPHY",
+   "role": "body"
+  },
+  {
+   "text": "PARTIAL",
+   "role": "body"
+  },
+  {
+   "text": "FULL",
+   "role": "body"
+  },
+  {
+   "text": "X",
+   "role": "body"
+  },
+  {
+   "text": "REGION:",
+   "role": "body"
+  },
+  {
+   "text": "(ONLY IF PARTIAL REGION CONTINUE WITH DIVISION (S) SCOPE)",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION:",
+   "role": "body"
+  },
+  {
+   "text": "PARTIAL",
+   "role": "body"
+  },
+  {
+   "text": "FULL",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "# REPS",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "# REPS",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "# REPS",
+   "role": "body"
+  },
+  {
+   "text": "DIVISION NAME:",
+   "role": "body"
+  },
+  {
+   "text": "DISTRIBUTION",
+   "role": "body"
+  },
+  {
+   "text": "DIRECT ACCOUNTS AND CHAINS HEADQUARTERED WITHIN THE REGION (15+ STORES) STOCKING NO MAVERICK SPECIALS MENTHOL",
+   "role": "body"
+  },
+  {
+   "text": "IND/ LOR VOLUME",
+   "role": "body"
+  },
+  {
+   "text": "NO. OF STORES",
+   "role": "body"
+  },
+  {
+   "text": "IND/ LOR VOLUME",
+   "role": "body"
+  },
+  {
+   "text": "NO. OF STORES",
+   "role": "body"
+  },
+  {
+   "text": "NAME OF ACCOUNT",
+   "role": "body"
+  },
+  {
+   "text": "NAME OF ACCOUNT",
+   "role": "body"
+  },
+  {
+   "text": "Don & Bens",
+   "role": "body"
+  },
+  {
+   "text": "75/ 2",
+   "role": "body"
+  },
+  {
+   "text": "27",
+   "role": "body"
+  },
+  {
+   "text": "26/ 2",
+   "role": "body"
+  },
+  {
+   "text": "20",
+   "role": "body"
+  },
+  {
+   "text": "Sac N Pac",
+   "role": "body"
+  },
+  {
+   "text": "Western Beverage",
+   "role": "body"
+  },
+  {
+   "text": "ACO Texaco",
+   "role": "body"
+  },
+  {
+   "text": "42/ 2",
+   "role": "body"
+  },
+  {
+   "text": "95/ 3",
+   "role": "body"
+  },
+  {
+   "text": "15",
+   "role": "body"
+  },
+  {
+   "text": "15",
+   "role": "body"
+  },
+  {
+   "text": "Speedy Stop",
+   "role": "body"
+  },
+  {
+   "text": "106 /4",
+   "role": "body"
+  },
+  {
+   "text": "29",
+   "role": "body"
+  },
+  {
+   "text": "Lone Star",
+   "role": "body"
+  },
+  {
+   "text": "76/ 3",
+   "role": "body"
+  },
+  {
+   "text": "37",
+   "role": "body"
+  },
+  {
+   "text": "Get Go",
+   "role": "body"
+  },
+  {
+   "text": "62/ 2",
+   "role": "body"
+  },
+  {
+   "text": "44",
+   "role": "body"
+  },
+  {
+   "text": "Valley Shamrock",
+   "role": "body"
+  },
+  {
+   "text": "78/ 4",
+   "role": "body"
+  },
+  {
+   "text": "17",
+   "role": "body"
+  },
+  {
+   "text": "Albertson's -Houston",
+   "role": "body"
+  },
+  {
+   "text": "319/ 16",
+   "role": "body"
+  },
+  {
+   "text": "34",
+   "role": "body"
+  },
+  {
+   "text": "Mini Mart",
+   "role": "body"
+  },
+  {
+   "text": "65/ 3",
+   "role": "body"
+  },
+  {
+   "text": "15",
+   "role": "body"
+  },
+  {
+   "text": "20",
+   "role": "body"
+  },
+  {
+   "text": "Neal One Stop",
+   "role": "body"
+  },
+  {
+   "text": "69/ 3",
+   "role": "body"
+  },
+  {
+   "text": "Shopper Mart",
+   "role": "body"
+  },
+  {
+   "text": "80/ 4",
+   "role": "body"
+  },
+  {
+   "text": "22",
+   "role": "body"
+  },
+  {
+   "text": "DIRECT ACCOUNTS AND CHAINS HEADQUARTERED OUTSIDE THE REGION (15+ STORES) STOCKING NO MAVERICK SPECIALS MENTHOL",
+   "role": "body"
+  },
+  {
+   "text": "IND/ LOR VOLUME",
+   "role": "body"
+  },
+  {
+   "text": "IND/ LOR VOLUME",
+   "role": "body"
+  },
+  {
+   "text": "NO. OF STORES",
+   "role": "body"
+  },
+  {
+   "text": "NO. OF STORES",
+   "role": "body"
+  },
+  {
+   "text": "NAME OF ACCOUNTS",
+   "role": "body"
+  },
+  {
+   "text": "NAME OF ACCOUNT",
+   "role": "body"
+  },
+  {
+   "text": "Chevron",
+   "role": "body"
+  },
+  {
+   "text": "?",
+   "role": "body"
+  },
+  {
+   "text": "115",
+   "role": "body"
+  },
+  {
+   "text": "?",
+   "role": "body"
+  },
+  {
+   "text": "Brookshire Bro's",
+   "role": "body"
+  },
+  {
+   "text": "38",
+   "role": "body"
+  },
+  {
+   "text": "?",
+   "role": "body"
+  },
+  {
+   "text": "Eckerd Drugs S. Texas",
+   "role": "body"
+  },
+  {
+   "text": "217",
+   "role": "body"
+  },
+  {
+   "text": "Exxon",
+   "role": "body"
+  },
+  {
+   "text": "?",
+   "role": "body"
+  },
+  {
+   "text": "38",
+   "role": "body"
+  },
+  {
+   "text": "Philip's 66",
+   "role": "body"
+  },
+  {
+   "text": "?",
+   "role": "body"
+  },
+  {
+   "text": "27",
+   "role": "body"
+  },
+  {
+   "text": "Star Enterprise",
+   "role": "body"
+  },
+  {
+   "text": "?",
+   "role": "body"
+  },
+  {
+   "text": "70",
+   "role": "body"
+  },
+  {
+   "text": "Walgreen's",
+   "role": "body"
+  },
+  {
+   "text": "177",
+   "role": "body"
+  },
+  {
+   "text": "?",
+   "role": "body"
+  },
+  {
+   "text": "82253362",
+   "role": "body"
+  },
+  {
+   "text": "Page 1 of 3 Pages",
+   "role": "body"
+  },
+  {
+   "text": "MAVPROGO",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

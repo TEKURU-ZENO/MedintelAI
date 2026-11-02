@@ -1,0 +1,80 @@
+{
+ "image": "images/public/rxsynth_prescription_00081.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Riverside Clinic",
+   "role": "body"
+  },
+  {
+   "text": "789 Pine Rd.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. R. Patel",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: John Doe, Age: 38",
+   "role": "body"
+  },
+  {
+   "text": "Lisinopril 50 mg - At bedtime",
+   "role": "body"
+  },
+  {
+   "text": "Acetaminophen 100 mg - With food",
+   "role": "body"
+  },
+  {
+   "text": "Omeprazole 25 mg - At bedtime",
+   "role": "body"
+  },
+  {
+   "text": "Levothyroxine 5 mg - Before meals",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. R. Patel",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "John Doe",
+  "age": "38",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Lisinopril",
+    "strength": "50mg",
+    "timing": "At bedtime"
+   },
+   {
+    "drug": "Acetaminophen",
+    "strength": "100mg",
+    "timing": "With food"
+   },
+   {
+    "drug": "Omeprazole",
+    "strength": "25mg",
+    "timing": "At bedtime"
+   },
+   {
+    "drug": "Levothyroxine",
+    "strength": "5mg",
+    "timing": "Before meals"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

@@ -1,0 +1,49 @@
+{
+ "image": "images/public/gnhk_eng_NA_012.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "andriod run",
+   "role": "body"
+  },
+  {
+   "text": "compile",
+   "role": "body"
+  },
+  {
+   "text": "time",
+   "role": "body"
+  },
+  {
+   "text": "configuration",
+   "role": "body"
+  },
+  {
+   "text": "Source file Registered compile",
+   "role": "body"
+  },
+  {
+   "text": "precompiled resources XMLIN",
+   "role": "body"
+  },
+  {
+   "text": "by files",
+   "role": "body"
+  },
+  {
+   "text": "apk signing doc",
+   "role": "body"
+  },
+  {
+   "text": "Unity c#",
+   "role": "body"
+  },
+  {
+   "text": "Unity c# sharp",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

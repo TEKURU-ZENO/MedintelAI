@@ -17,6 +17,10 @@ from app.schemas.document import (DocumentMetadata, DocumentPage, OCRProvenance,
                                  PageMetadata, ProcessedDocument, SourceType)
 from app.services.crop_service import CropService
 
+EXIF_TRANSPOSE = {2: Image.Transpose.FLIP_LEFT_RIGHT, 3: Image.Transpose.ROTATE_180,
+                  4: Image.Transpose.FLIP_TOP_BOTTOM, 5: Image.Transpose.TRANSPOSE,
+                  6: Image.Transpose.ROTATE_270, 7: Image.Transpose.TRANSVERSE, 8: Image.Transpose.ROTATE_90}
+
 
 class DocumentProcessingService:
     """Normalize raster and PDF inputs into ordered page images plus source metadata.
@@ -75,6 +79,8 @@ class DocumentProcessingService:
                 exif_orientation = image.getexif().get(274)
                 rotation_by_orientation = {1: 0, 3: 180, 6: 90, 8: 270}
                 rotation = rotation_by_orientation.get(exif_orientation)
+                # Phone photos store pixels sideways and an EXIF tag saying how to display them: decode upright
+                transpose = EXIF_TRANSPOSE.get(exif_orientation)
                 source_metadata = {"format": image_format, "frame_count": frames,
                                    "animated": bool(getattr(image, "is_animated", False)),
                                    "exif_orientation": exif_orientation}
@@ -87,6 +93,8 @@ class DocumentProcessingService:
                         raise DocumentProcessingError("DOCUMENT_TOO_LARGE", "Decoded document exceeds the configured pixel budget.", 413)
                     mode = image.mode
                     rgb = image.convert("RGB")
+                    if transpose is not None:
+                        rgb = rgb.transpose(transpose)
                     import cv2
                     bgr = cv2.cvtColor(np.asarray(rgb), cv2.COLOR_RGB2BGR)
                     page = self._image_page(bgr, index + 1, filename, source_type,

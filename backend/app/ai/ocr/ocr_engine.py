@@ -13,6 +13,11 @@ from app.ai.preprocessing.enhance import enhance_small_or_lowres_text
 
 logger = get_logger(__name__)
 
+# TrOCR, trained mostly on prescription lines, reads an age / sex ("28/m") as a dose ("28 mg"); PP-OCR keeps the
+# shape but misreads the slash ("281m", "28|m"). A bare "<n> mg" whose other reading has that shape is the age / sex.
+_DOSE_ONLY = re.compile(r"^\s*(\d{1,3})\s*mg\s*$", re.IGNORECASE)
+_AGE_SEX_READ = re.compile(r"^\s*(\d{1,3})\s*[/1lI|\\]\s*([mfMF])\s*$")
+
 class RegionClassifier:
     """
     Modular classifier for determining if a cropped text region is 'printed' or 'handwritten'.
@@ -97,8 +102,10 @@ class ReadingOrderRebuilder:
         for block in processed:
             placed = False
             for line in lines:
-                line_ymin = min(b['_ymin'] for b in line)
-                line_ymax = max(b['_ymax'] for b in line)
+                # Compare with the row's median band, not the union of its members: one tall block would
+                # otherwise stretch the row and chain the next line into it.
+                line_ymin = float(np.median([b['_ymin'] for b in line]))
+                line_ymax = float(np.median([b['_ymax'] for b in line]))
                 line_h = max(1, line_ymax - line_ymin)
                 
                 overlap = max(0, min(block['_ymax'], line_ymax) - max(block['_ymin'], line_ymin))
@@ -174,6 +181,12 @@ class MedIntelOCREngine:
         self._trocr_processor = None
         self._trocr_model = None
         self._htr = None
+        self._model_dir = None
+        self._spell = None
+        self._structurer = None
+        self._reviewer = None
+        self._vlm = None
+        self._vlm_cfg = None
         self._paddle_ocr = None
         self._init_models()
 
@@ -214,6 +227,7 @@ class MedIntelOCREngine:
                     self._trocr_processor = TrOCRProcessor.from_pretrained(str(finetuned_path))
                     self._trocr_model = VisionEncoderDecoderModel.from_pretrained(str(finetuned_path))
                     vocab_dir = str(finetuned_path)
+                    self._model_dir = vocab_dir
                     from app.ai.ocr.htr_ensemble import configure_from
                     if configure_from(finetuned_path, device="cuda" if self.use_gpu else "cpu"):
                         logger.info("Loaded recogniser-ensemble rule fitted for this checkpoint")
@@ -329,7 +343,7 @@ class MedIntelOCREngine:
                 rgb = cv2.resize(rgb, (int(w * scale), 24), interpolation=cv2.INTER_CUBIC)
 
             pil_img = Image.fromarray(rgb)
-            pixel_values = self._trocr_processor(pil_img, return_tensors='pt').pixel_values
+            pixel_values = self._trocr_processor(pil_img, return_tensors='pt').pixel_values.to(self._trocr_model.device)
 
             # Width-proportional max token constraint prevents runaway generation
             max_tokens = min(32, max(8, int(w / 7)))
@@ -592,6 +606,192 @@ class MedIntelOCREngine:
                 })
         return raw_items
 
+    def _vocabularies(self) -> Dict[str, Any]:
+        """
+        The checkpoint's vocabularies, with its drug terms extended by the bundled Indian brand list and the
+        hospital formulary (OCR_FORMULARY: one name per line, or a CSV whose first column is the name).
+        """
+        if getattr(self, '_vocab_cache', None) is not None:
+            return self._vocab_cache
+        vocab: Dict[str, Any] = {}
+        if self._model_dir:
+            try:
+                with open(os.path.join(self._model_dir, "medical_lexicon.json"), "r", encoding="utf-8") as f:
+                    vocab = json.load(f)
+            except Exception:
+                vocab = {}
+        terms = list(vocab.get("terms", []))
+        known = {t.lower() for t in terms}
+        sources = [os.path.join(os.path.dirname(os.path.abspath(__file__)), "drug_names_india.txt"),
+                   os.getenv("OCR_FORMULARY", "")]
+        for path in sources:
+            if not path or not os.path.exists(path):
+                continue
+            try:
+                with open(path, "r", encoding="utf-8-sig") as f:
+                    for line in f:
+                        name = line.split("#", 1)[0].split(",", 1)[0].strip().strip('"')
+                        if name.lower() in ("name", "drug", "brand", "drug name", "brand name", "item", "item name"):
+                            continue  # a CSV header
+                        if len(name) >= 2 and name.lower() not in known:
+                            terms.append(name)
+                            known.add(name.lower())
+            except Exception as e:
+                logger.warning(f"Drug list {path} unreadable: {e}")
+        if terms:
+            vocab["terms"] = terms
+        self._vocab_cache = vocab
+        return vocab
+
+    def _spell_corrector(self):
+        """Context spelling correction for handwritten lines (HTR_SPELL_CORRECTION=0 disables it)."""
+        if self._spell is None:
+            self._spell = False
+            if os.getenv("HTR_SPELL_CORRECTION", "1") != "0" and self._model_dir:
+                try:
+                    from app.ai.ocr.htr_language_model import ContextSpellCorrector
+                    params = {}
+                    cfg_path = os.path.join(self._model_dir, "spell_correction.json")
+                    if os.path.exists(cfg_path):
+                        with open(cfg_path, "r", encoding="utf-8") as f:
+                            params = json.load(f).get("params", {})
+                    vocab = self._vocabularies()
+                    self._spell = ContextSpellCorrector(
+                        extra_words=vocab.get("common_words", []), protected_terms=vocab.get("terms", []),
+                        device="cuda" if self.use_gpu else "cpu", params=params,
+                    )
+                except Exception as e:
+                    logger.warning(f"Spelling correction unavailable: {e}")
+        return self._spell or None
+
+    def _vlm_reader(self):
+        """
+        Optional local vision-language reader for flagged lines: HTR_VLM=1, a GPU, and a rule fitted for this
+        checkpoint (<checkpoint>/vlm.json, scripts/fit_vlm_rule.py) are all required.
+        """
+        if self._vlm is None:
+            self._vlm = False
+            cfg_path = os.path.join(self._model_dir or "", "vlm.json")
+            if os.getenv("HTR_VLM", "0") == "1" and self.use_gpu and os.path.exists(cfg_path):
+                try:
+                    with open(cfg_path, "r", encoding="utf-8") as f:
+                        self._vlm_cfg = json.load(f)
+                    from app.ai.ocr.vlm_reader import VLMLineReader
+                    self._vlm = VLMLineReader(model=self._vlm_cfg.get("model"), device="cuda")
+                    logger.info(f"VLM line reader enabled ({self._vlm.model_id})")
+                except Exception as e:
+                    logger.warning(f"VLM line reader unavailable: {e}")
+                    self._vlm = False
+        return self._vlm or None
+
+    def page_rotation(self, image: np.ndarray) -> int:
+        """Clockwise turn (0/90/180/270) that makes a page upright, read from its text (OCR_AUTO_ORIENT=0 disables)."""
+        if self._rapid_ocr is None or os.getenv("OCR_AUTO_ORIENT", "1") == "0":
+            return 0
+        try:
+            from app.ai.ocr.page_orientation import detect_rotation
+            return detect_rotation(image, self._rapid_ocr)
+        except Exception as e:
+            logger.warning(f'Page orientation check failed: {e}')
+            return 0
+
+    def extract_structured(self, blocks: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Medications, patient fields, lab results and key-values with provenance; never edits OCR text."""
+        try:
+            if self._structurer is None:
+                from app.ai.ocr.medical_structurer import MedicalStructurer
+                vocab = self._vocabularies()
+                self._structurer = MedicalStructurer(vocab.get("terms", []), vocab.get("common_words", []))
+            return self._structurer.extract(blocks)
+        except Exception as e:
+            logger.warning(f"Structured extraction failed: {e}")
+            return None
+
+    def _image_scorer(self, crop: Optional[np.ndarray]):
+        """Scores candidate lines against a line crop with the handwriting recogniser (None without one)."""
+        if self._htr is None or crop is None or crop.size == 0:
+            return None
+        encoded = []  # the crop is encoded on first use, then shared by every suspicious word on the line
+
+        def score(texts):
+            if not encoded:
+                encoded.append(self._htr.encode_crop(crop))
+            return self._htr.score_texts(None, texts, encoded=encoded[0])
+        return score
+
+    def _spell_correct_blocks(self, blocks: List[Dict[str, Any]], image: Optional[np.ndarray] = None) -> None:
+        spell = self._spell_corrector()
+        if spell is None:
+            return
+        for b in blocks:
+            if not b.get('text') or b.get('corrections'):
+                continue
+            crop = None
+            if image is not None and b.get('bbox'):
+                x0, y0, x1, y1 = (int(round(v)) for v in b['bbox'][:4])
+                crop = image[max(0, y0):max(0, y1), max(0, x0):max(0, x1)]
+            try:
+                text, corrections = spell.correct_line(b['text'], image_score=self._image_scorer(crop))
+            except Exception as e:
+                logger.warning(f"Spelling correction failed on a line: {e}")
+                continue
+            if corrections:
+                b.update(raw_text=b['text'], text=text, corrections=corrections,
+                         text_provenance=f"{b.get('text_provenance', 'rapid')}+lm")
+
+    def _restore_wrapped_words(self, blocks: List[Dict[str, Any]]) -> None:
+        """
+        Undo an auto-correction of a line's last word when it is the first half of a word broken across lines
+        ("recommenda" / "tion" is not "recommend"); the formatter rejoins the halves. Needs every line's final text.
+        """
+        spell = self._spell_corrector()
+        if spell is None:
+            return
+        ordered = [b for b in sorted(blocks, key=lambda b: (b.get('page', 1), b.get('reading_order', 0)))
+                   if (b.get('text') or '').strip() and b.get('role') != 'margin_note']
+        for b, nxt in zip(ordered, ordered[1:]):
+            fixes = b.get('corrections') or []
+            words, head = b['text'].split(), nxt['text'].split()[0].rstrip('.,;:')
+            if not fixes or fixes[-1].get('to') != words[-1] or not head.isalpha() or not head[:1].islower():
+                continue
+            original = fixes[-1].get('from', '')
+            if original.isalpha() and len(head) >= 2 and spell._is_known(original + head):
+                b['text'] = b['text'][:b['text'].rfind(words[-1])] + original
+                b['corrections'] = fixes[:-1]
+
+    def review_blocks(self, blocks: List[Dict[str, Any]]) -> Dict[str, int]:
+        """Flags words to check (recogniser disagreement, unknown spelling, auto-corrections) with suggestions."""
+        self._restore_wrapped_words(blocks)
+        try:
+            if self._reviewer is None:
+                from app.ai.ocr.text_review import TextReviewer
+                vocab = self._vocabularies()
+                self._reviewer = TextReviewer(vocab.get("common_words", []), vocab.get("terms", []),
+                                              spell=self._spell_corrector())
+            return self._reviewer.review(blocks)
+        except Exception as e:
+            logger.warning(f"Text review failed: {e}")
+            return {"flagged_words": 0, "lines_to_check": 0}
+
+    def format_document(self, blocks: List[Dict[str, Any]], structured: Optional[Dict[str, Any]]) -> Optional[str]:
+        """Formatted reading (sections, numbered medicines, paragraphs); raw_text keeps the as-read order."""
+        try:
+            from app.ai.ocr.document_formatter import format_document
+            is_word = self._reviewer._is_known if self._reviewer else None
+            return format_document(blocks, structured, is_word=is_word)
+        except Exception as e:
+            logger.warning(f"Document formatting failed: {e}")
+            return None
+
+    def format_sections(self, blocks: List[Dict[str, Any]], structured: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """A clinical page as the template's sections (OCR_FORMAT_TEMPLATE), for an HIS form; None otherwise."""
+        try:
+            from app.ai.ocr.document_formatter import format_sections
+            return format_sections(blocks, structured)
+        except Exception as e:
+            logger.warning(f"Section formatting failed: {e}")
+            return None
+
     def _partition_handwriting(
         self,
         items: List[Dict[str, Any]],
@@ -685,7 +885,8 @@ class MedIntelOCREngine:
                 rapid_readings[li] = (match['text'].strip(), float(match['confidence']))
         validity = self._htr.word_validity if self._htr is not None else (lambda _t: 0.0)
 
-        blocks = []
+        # Ensemble choice per line, then the optional VLM for lines that stay uncertain
+        choices = []
         for li, ln in enumerate(lines):
             parts = [(recognized[k], chunks[k].shape[1]) for k in range(len(chunks)) if owner[k] == li]
             trocr_text = " ".join(t for (t, _), _ in parts if t).strip()
@@ -693,9 +894,46 @@ class MedIntelOCREngine:
             trocr_conf = sum(c * w for (_, c), w in parts) / total_w
             if trocr_text and self._is_hallucination(trocr_text, crop_w=ln['crop'].shape[1]):
                 trocr_text, trocr_conf = "", 0.0
-            text, conf, engine = choose(rapid_readings[li], (trocr_text, trocr_conf), validity)
+            choices.append(list(choose(rapid_readings[li], (trocr_text, trocr_conf), validity)) + [trocr_text])
+        vlm = self._vlm_reader()
+        if vlm is not None:
+            cfg = self._vlm_cfg
+            flagged = [li for li, c in enumerate(choices) if c[1] < cfg["gate"]]
+            if flagged:
+                try:
+                    hints = [(rapid_readings[li][0], choices[li][3]) for li in flagged] if cfg.get("mode") == "hint" else None
+                    readings = vlm.read([lines[li]['crop'] for li in flagged], hints=hints)
+                    from app.ai.ocr.htr_engine import _levenshtein
+                    for li, (vt, vc) in zip(flagged, readings):
+                        refs = [r for r in (rapid_readings[li][0], choices[li][3]) if r]
+                        anchored = any(_levenshtein(vt.lower(), r.lower()) / max(1, len(r)) <= cfg["anchor"] for r in refs)
+                        if vt and vc >= cfg["min_conf"] and anchored:
+                            choices[li] = [vt, vc, "vlm", choices[li][3]]
+                except Exception as e:
+                    logger.warning(f"VLM reading failed: {e}")
+
+        blocks = []
+        for li, ln in enumerate(lines):
+            text, conf, engine = choices[li][0], choices[li][1], choices[li][2]
+            dose, age_sex = _DOSE_ONLY.match(text or ''), _AGE_SEX_READ.match(rapid_readings[li][0] or '')
+            if dose and age_sex and dose.group(1) == age_sex.group(1):
+                text = f"{age_sex.group(1)}/{age_sex.group(2).upper()}"
+            recognised, corrections = text, []
+            spell = self._spell_corrector()
+            if spell is not None and text:
+                try:
+                    # Where the two recognisers read a word differently and both are real words, the line's
+                    # context picks one ("gun paint" / "gum paint"); then unknown words are corrected
+                    other = rapid_readings[li][0] if engine != 'rapid' else choices[li][3]
+                    text, corrections = spell.choose_reading(text, other or '')
+                    text, fixed = spell.correct_line(text, image_score=self._image_scorer(ln.get('crop')))
+                    corrections += fixed
+                except Exception as e:
+                    logger.warning(f"Spelling correction failed on a line: {e}")
             if engine == 'trocr':
                 model_used, source = 'trocr-handwritten', 'handwritten'
+            elif engine == 'vlm':
+                model_used, source = 'vlm-handwritten', 'handwritten'
             elif page_handwritten:
                 model_used, source = 'rapidocr-handwritten', 'handwritten'
             else:
@@ -705,7 +943,14 @@ class MedIntelOCREngine:
                 continue
             xmin, ymin, xmax, ymax = ln['bbox']
             center, _, _, line_h = quad_geometry(ln['quad'])
+            if corrections:
+                extra = {'raw_text': recognised, 'corrections': corrections, 'text_provenance': f"{engine}+lm"}
+            else:
+                extra = {'text_provenance': engine}
+            # Both recognisers' readings: where they disagree, the review step offers the other reading
+            extra['readings'] = {k: v for k, v in (('ppocr', rapid_readings[li][0]), ('trocr', choices[li][3])) if v}
             blocks.append({
+                **extra,
                 '_line_band': [float(center[1] - line_h / 2.0), float(center[1] + line_h / 2.0)],
                 'text': text,
                 'confidence': round(float(conf), 4),
@@ -756,6 +1001,10 @@ class MedIntelOCREngine:
             printed_items, handwritten_items, page_handwritten = self._partition_handwriting(raw_items, image, input_mode)
         h_img, w_img = image.shape[:2]
         consolidated_blocks = self.group_and_merge_lines(printed_items, image) if printed_items else []
+        if input_mode not in ('screen', 'digital'):
+            # Lines PP-OCR read confidently get the same context spelling pass as the handwriting path (on
+            # mixed pages many of them are handwriting); it only touches unknown words the LM clearly prefers fixed
+            self._spell_correct_blocks(consolidated_blocks, image)
         if handwritten_items or (input_mode not in ('screen', 'digital') and self._trocr_model is not None
                                  and any('quad' in it for it in printed_items)):
             # Also runs with no uncertain detections: missed-line recovery searches the original pixels
@@ -764,8 +1013,20 @@ class MedIntelOCREngine:
                 recovery_image=original_image
             )
 
-        # 4. Reconstruct 2D reading order and clean text
+        # 4. Layout roles (margin notes and their scope, signatures, header / footer) for scanned pages
+        if input_mode not in ('screen', 'digital') and consolidated_blocks:
+            try:
+                from app.ai.ocr.document_layout import DocumentLayoutAnalyzer
+                layout_src = original_image if original_image is not None and original_image.shape[:2] == image.shape[:2] else image
+                validity = self._htr.word_validity if self._htr is not None else None
+                DocumentLayoutAnalyzer(validity).annotate(consolidated_blocks, layout_src)
+            except Exception as e:
+                logger.warning(f"Layout analysis failed: {e}")
+
+        # 5. Reconstruct 2D reading order and clean text
         sorted_blocks, raw_text = self.rebuilder.rebuild_order(consolidated_blocks)
+        from app.ai.ocr.document_layout import resolve_applies_to
+        resolve_applies_to(sorted_blocks)
         overall_conf = float(np.mean([b['confidence'] for b in sorted_blocks])) if sorted_blocks else 0.0
 
         # 5. Debug Artifacts

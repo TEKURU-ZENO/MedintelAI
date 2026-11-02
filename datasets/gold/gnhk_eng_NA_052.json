@@ -1,0 +1,49 @@
+{
+ "image": "images/public/gnhk_eng_NA_052.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "To whom it may concern:",
+   "role": "body"
+  },
+  {
+   "text": "I am submitting a w - 8 Ben Form & a letter at",
+   "role": "body"
+  },
+  {
+   "text": "Explanation for u.s. Mailing Address Form. By Fax",
+   "role": "body"
+  },
+  {
+   "text": "I will send the orginal w - 8 Ben & the letter",
+   "role": "body"
+  },
+  {
+   "text": "at Explanation for u.s. Mailing Address Form",
+   "role": "body"
+  },
+  {
+   "text": "By Mail. there after.",
+   "role": "body"
+  },
+  {
+   "text": "If. there is any problem with those Forms",
+   "role": "body"
+  },
+  {
+   "text": "please notice me ASAP.",
+   "role": "body"
+  },
+  {
+   "text": "Total. 3 pages.",
+   "role": "body"
+  },
+  {
+   "text": "Thanks.",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

@@ -1,0 +1,142 @@
+{
+ "image": "images/public/funsd_83823750.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "001",
+   "role": "body"
+  },
+  {
+   "text": "/97 TUE 18: 39 FAX 212 5578",
+   "role": "body"
+  },
+  {
+   "text": "DPW 30 -59",
+   "role": "body"
+  },
+  {
+   "text": "DAVIS POLK & WARDWELL",
+   "role": "body"
+  },
+  {
+   "text": "Fax Transmittal",
+   "role": "body"
+  },
+  {
+   "text": "To",
+   "role": "body"
+  },
+  {
+   "text": "Date",
+   "role": "body"
+  },
+  {
+   "text": "450 Lexington Avenue New York NY 10017 212- 450 4000",
+   "role": "body"
+  },
+  {
+   "text": "Robert H. Shaw, Esq.",
+   "role": "body"
+  },
+  {
+   "text": "November 11, 1997",
+   "role": "body"
+  },
+  {
+   "text": "Company",
+   "role": "body"
+  },
+  {
+   "text": "Lorillard Tobacco Company",
+   "role": "body"
+  },
+  {
+   "text": "Fax Number",
+   "role": "body"
+  },
+  {
+   "text": "Voice Number",
+   "role": "body"
+  },
+  {
+   "text": "910 -335- 7077",
+   "role": "body"
+  },
+  {
+   "text": "910 -335- 7720",
+   "role": "body"
+  },
+  {
+   "text": "Number of Pages (this page included)",
+   "role": "body"
+  },
+  {
+   "text": "Sender",
+   "role": "body"
+  },
+  {
+   "text": "2",
+   "role": "body"
+  },
+  {
+   "text": "Charles Duggan",
+   "role": "body"
+  },
+  {
+   "text": "Main Fax Operator Voice Number",
+   "role": "body"
+  },
+  {
+   "text": "Sender Voice Number",
+   "role": "body"
+  },
+  {
+   "text": "212 -450- 4785",
+   "role": "body"
+  },
+  {
+   "text": "Sender Fax Number",
+   "role": "body"
+  },
+  {
+   "text": "Reference",
+   "role": "body"
+  },
+  {
+   "text": "17560 -188",
+   "role": "body"
+  },
+  {
+   "text": "212 -450 -5578",
+   "role": "body"
+  },
+  {
+   "text": "Message:",
+   "role": "body"
+  },
+  {
+   "text": "83823750",
+   "role": "body"
+  },
+  {
+   "text": "This facsimile intended only the person or entity to which it is addressed and may contain information that is privileged, confidential",
+   "role": "body"
+  },
+  {
+   "text": "Confidentiality",
+   "role": "body"
+  },
+  {
+   "text": "Note:",
+   "role": "body"
+  },
+  {
+   "text": "or otherwise protected from disclosure distribution or copying of this facsimile or the information herein by anyone other than the intended recipient, or an employee or agent responsible for delivering the message to the intended recipient is prohibited. If you love received the facsimile in error, please notify us immediately by telephone and return the facsimile by mail.",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

@@ -63,6 +63,14 @@ class PipelineController:
 
         for page in pages:
             page_num = page.metadata.page_number
+            # Turn sideways / upside-down pages (no EXIF tag to say so) upright before anything reads them
+            rotation = self.ocr_engine.page_rotation(page.image) if input_mode != 'screen' else 0
+            if rotation:
+                from app.ai.ocr.page_orientation import rotate
+                page.image = rotate(page.image, rotation)
+                page.metadata.height, page.metadata.width = page.image.shape[:2]
+                page.metadata.rotation = ((page.metadata.rotation or 0) + rotation) % 360
+                logger.info(f'Page {page_num} turned {rotation} degrees clockwise to read upright')
             page_img = page.image
             # 1. Appropriate Preprocessing (Screen / Digital vs Scanned Paper)
             clean_page = run_preprocessing_pipeline(
@@ -117,8 +125,17 @@ class PipelineController:
             'raw_text': combined_raw_text,
             'document_metadata': document.metadata.model_dump(mode='json'),
             'page_metadata': [page.metadata.model_dump(mode='json') for page in document.pages],
-            'provenance': [item.model_dump(mode='json') for item in document.provenance]
+            'provenance': [item.model_dump(mode='json') for item in document.provenance],
+            'structured': self.ocr_engine.extract_structured(all_blocks)
         }
+        final_result['review_summary'] = self.ocr_engine.review_blocks(all_blocks)
+        formatted = self.ocr_engine.format_document(all_blocks, final_result['structured'])
+        final_result['formatted_text'] = formatted or combined_raw_text
+        final_result['sections'] = self.ocr_engine.format_sections(all_blocks, final_result['structured'])
+
+        # Opt-in clinician-feedback dataset (OCR_FEEDBACK_DATASET=1): keep page images + boxes for corrections
+        from app.services.feedback_service import record_extraction
+        record_extraction(doc_name, [page.image for page in pages], all_blocks)
 
         # 3. Export JSON and .txt files safely
         base_name = os.path.splitext(doc_name)[0]

@@ -1,0 +1,80 @@
+{
+ "image": "images/public/rxsynth_prescription_00913.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Riverside Clinic",
+   "role": "body"
+  },
+  {
+   "text": "45 Oak Ave.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. C. Rossi",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Fatima Ali, Age: 36",
+   "role": "body"
+  },
+  {
+   "text": "Gabapentin 50 mg - As needed for pain",
+   "role": "body"
+  },
+  {
+   "text": "Prednisone 25 mg - With food",
+   "role": "body"
+  },
+  {
+   "text": "Ibuprofen 10 mg - At bedtime",
+   "role": "body"
+  },
+  {
+   "text": "Lisinopril 10 mg - At bedtime",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. C. Rossi",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Fatima Ali",
+  "age": "36",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Gabapentin",
+    "strength": "50mg",
+    "timing": "As needed for pain"
+   },
+   {
+    "drug": "Prednisone",
+    "strength": "25mg",
+    "timing": "With food"
+   },
+   {
+    "drug": "Ibuprofen",
+    "strength": "10mg",
+    "timing": "At bedtime"
+   },
+   {
+    "drug": "Lisinopril",
+    "strength": "10mg",
+    "timing": "At bedtime"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

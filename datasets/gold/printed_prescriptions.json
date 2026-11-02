@@ -1,0 +1,37 @@
+{
+ "image": "images/printed_prescriptions.png",
+ "doc_type": "prescription",
+ "handwritten": false,
+ "source": "synthetic printed sample (datasets/prescriptions/sample_1)",
+ "lines": [
+  {
+   "text": "CITY CARE HOSPITAL - PRESCRIPTION",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Rahul Kumar  Age: 42  Date: 05/09/2026",
+   "role": "body"
+  },
+  {
+   "text": "Rx:",
+   "role": "body"
+  },
+  {
+   "text": "1. Tab Amoxicillin 500mg - 1-0-1 x 5 days",
+   "role": "body"
+  },
+  {
+   "text": "2. Tab Paracetamol 650mg - 1-0-1 SOS",
+   "role": "body"
+  },
+  {
+   "text": "3. Syp Cough Relief 10ml - 0-0-1 at night",
+   "role": "body"
+  },
+  {
+   "text": "Dr. S. Mehta, MD (Physician)",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

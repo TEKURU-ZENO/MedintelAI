@@ -1,0 +1,53 @@
+{
+ "image": "images/public/gnhk_eng_EU_310.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "Quality Used office Furniture",
+   "role": "body"
+  },
+  {
+   "text": "Dublin rd Athlone 0902-78788, 73900",
+   "role": "body"
+  },
+  {
+   "text": "email: quof@iol.ie",
+   "role": "body"
+  },
+  {
+   "text": "RoBert Scott Designs",
+   "role": "body"
+  },
+  {
+   "text": "7 8740654",
+   "role": "body"
+  },
+  {
+   "text": "59 Capel st 1",
+   "role": "body"
+  },
+  {
+   "text": "7 8740666",
+   "role": "body"
+  },
+  {
+   "text": "info@robertscottdesigns.com",
+   "role": "body"
+  },
+  {
+   "text": "SCI Interiors. Ltd",
+   "role": "body"
+  },
+  {
+   "text": "88/89 Furze rd Sandyford Ind. Est. 18 2959355",
+   "role": "body"
+  },
+  {
+   "text": "info@sci.ie",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

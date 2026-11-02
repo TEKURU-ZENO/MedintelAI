@@ -72,6 +72,17 @@ def _lerp(a: np.ndarray, b: np.ndarray, t: float) -> np.ndarray:
     return a + (b - a) * t
 
 
+def split_quad_at_x(q: Quad, x: float, gap: float = 0.0) -> List[Quad]:
+    """Splits a quad by a vertical cut at image x (a separator such as a brace inside the box)."""
+    tl, tr, br, bl = q
+    def at(a, b, xv):
+        t = 0.0 if abs(b[0] - a[0]) < 1e-6 else min(1.0, max(0.0, (xv - a[0]) / (b[0] - a[0])))
+        return _lerp(a, b, t)
+    left = np.array([tl, at(tl, tr, x - gap), at(bl, br, x - gap), bl], dtype=np.float32)
+    right = np.array([at(tl, tr, x + gap), tr, br, at(bl, br, x + gap)], dtype=np.float32)
+    return [p for p in (left, right) if quad_geometry(p)[2] >= 4]
+
+
 def piecewise_line_crop(
     image: np.ndarray,
     member_quads: Sequence[Quad],
@@ -219,6 +230,7 @@ class HandwritingLineBuilder:
         self.detector = detector
         self.recovery_kwargs = recovery_kwargs or {"box_thresh": 0.30, "unclip_ratio": 1.6, "text_score": 0.20}
         self.bleed_through_margin = bleed_through_margin
+        self.separators: List = []
 
     # ------------------------------------------------------------------
     @staticmethod
@@ -312,8 +324,9 @@ class HandwritingLineBuilder:
         return found
 
     @staticmethod
-    def merge_into_lines(quads: List[Quad]) -> List[List[int]]:
-        """Union-find over quads that lie on the same slanted text line."""
+    def merge_into_lines(quads: List[Quad], separators: Sequence = ()) -> List[List[int]]:
+        """Union-find over quads that lie on the same slanted text line, never across a separator stroke."""
+        from app.ai.ocr.document_layout import separator_between
         n = len(quads)
         geo = [quad_geometry(q) for q in quads]
         parent = list(range(n))
@@ -337,6 +350,10 @@ class HandwritingLineBuilder:
                 gap = along - (wi + wj) / 2.0
                 min_h, max_h = min(hi, hj), max(hi, hj)
                 if offset <= 0.45 * min_h and -0.5 * min(wi, wj) <= gap <= 2.5 * max_h and max_h <= 3.0 * min_h:
+                    a, b = (i, j) if ci[0] <= cj[0] else (j, i)
+                    box_a, box_b = quad_bbox(quads[a], 10 ** 6, 10 ** 6), quad_bbox(quads[b], 10 ** 6, 10 ** 6)
+                    if any(separator_between(sp, box_a, box_b) for sp in separators):
+                        continue
                     parent[find(j)] = find(i)
 
         groups: Dict[int, List[int]] = {}
@@ -368,10 +385,33 @@ class HandwritingLineBuilder:
         line_h = self.median_height(quads or masks)
         recovered = self.recover_missed(image, quads, line_h, masks, recovery_image)
         all_quads = quads + recovered
-        rec_ids = set(range(len(quads), len(all_quads)))
+
+        # Braces / brackets separating margin notes from the lines they govern: split boxes that straddle one,
+        # never merge across one
+        from app.ai.ocr.document_layout import find_separators
+        sep_src = recovery_image if recovery_image is not None and recovery_image.shape[:2] == image.shape[:2] else image
+        self.separators = find_separators(sep_src, line_h)
+        if self.separators:
+            n_orig = len(all_quads)
+            rec_flags = [i >= len(quads) for i in range(n_orig)]
+            split_quads, split_rec = [], []
+            for q, is_rec in zip(all_quads, rec_flags):
+                x0, y0, x1, y1 = quad_bbox(q, 10 ** 6, 10 ** 6)
+                cuts = [((s[0] + s[2]) / 2) for s in self.separators
+                        if x0 + 0.5 * line_h < (s[0] + s[2]) / 2 < x1 - 0.5 * line_h and min(y1, s[3]) - max(y0, s[1]) > 0.5 * (y1 - y0)]
+                pieces = [q]
+                for cx in sorted(cuts):
+                    last = pieces.pop()
+                    pieces.extend(split_quad_at_x(last, cx, gap=1.0))
+                split_quads.extend(pieces)
+                split_rec.extend([is_rec] * len(pieces))
+            all_quads = split_quads
+            rec_ids = {i for i, r in enumerate(split_rec) if r}
+        else:
+            rec_ids = set(range(len(quads), len(all_quads)))
 
         lines = []
-        for members in self.merge_into_lines(all_quads):
+        for members in self.merge_into_lines(all_quads, self.separators):
             member_quads = [all_quads[i] for i in members]
             lq = self.line_quad(member_quads)
             crop = piecewise_line_crop(image, member_quads)

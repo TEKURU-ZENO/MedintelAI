@@ -1,0 +1,32 @@
+{
+  "image": "images/notes_machine_learning.jpg",
+  "doc_type": "clinical_note",
+  "handwritten": true,
+  "source": "user-provided sample (ruled notebook page, phone photo)",
+  "notes": "Printed notebook template labels (Date / Page No.) are marked as header.",
+  "lines": [
+    {"text": "Date / /", "role": "header"},
+    {"text": "Page No. 1.", "role": "header"},
+    {"text": "Introduction", "role": "body"},
+    {"text": "What is machine learning?", "role": "body"},
+    {"text": "Machine learning is a branch of artificial", "role": "body"},
+    {"text": "intelligence that develops algorithms by", "role": "body"},
+    {"text": "Learning the hidden patterns of the datasets", "role": "body"},
+    {"text": "used it to make predictions on new", "role": "body"},
+    {"text": "similar type data, without being explicitly", "role": "body"},
+    {"text": "programmed for each task.", "role": "body"},
+    {"text": "A Computer program which Learns from", "role": "body"},
+    {"text": "experience is called a machine learning", "role": "body"},
+    {"text": "program or simply a learning program.", "role": "body"},
+    {"text": "Machine learning is used in many different", "role": "body"},
+    {"text": "applications, from image and speech recognition", "role": "body"},
+    {"text": "to natural language processing recommenda-", "role": "body"},
+    {"text": "tion systems, fraud detection, portfolio", "role": "body"},
+    {"text": "optimization, automated risk and so on.", "role": "body"},
+    {"text": "Machine learning models are also used to", "role": "body"},
+    {"text": "power autonomous vehicles, drones and", "role": "body"},
+    {"text": "robots, making them more intelligent and", "role": "body"},
+    {"text": "adaptable to changing environments.", "role": "body"}
+  ],
+  "fields": {}
+}

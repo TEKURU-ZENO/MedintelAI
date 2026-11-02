@@ -1,0 +1,71 @@
+{
+ "image": "images/public/rxsynth_prescription_00429.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Oakview Hospital",
+   "role": "body"
+  },
+  {
+   "text": "45 Oak Ave.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. H. Johnson",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Michael Brown, Age: 56",
+   "role": "body"
+  },
+  {
+   "text": "Amlodipine 50 mg - As needed for pain",
+   "role": "body"
+  },
+  {
+   "text": "Acetaminophen 25 mg - As needed for pain",
+   "role": "body"
+  },
+  {
+   "text": "Levothyroxine 10 mg - As directed",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. H. Johnson",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Michael Brown",
+  "age": "56",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Amlodipine",
+    "strength": "50mg",
+    "timing": "As needed for pain"
+   },
+   {
+    "drug": "Acetaminophen",
+    "strength": "25mg",
+    "timing": "As needed for pain"
+   },
+   {
+    "drug": "Levothyroxine",
+    "strength": "10mg",
+    "timing": "As directed"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

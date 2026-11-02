@@ -1,0 +1,33 @@
+{
+ "image": "images/printed_discharge_summaries.png",
+ "doc_type": "discharge_summary",
+ "handwritten": false,
+ "source": "synthetic printed sample (datasets/discharge_summaries/sample_1)",
+ "lines": [
+  {
+   "text": "GENERAL HOSPITAL - DISCHARGE SUMMARY",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Anil Desai  IPD No: 94821",
+   "role": "body"
+  },
+  {
+   "text": "Admission Date: 01/09/2026  Discharge: 05/09/2026",
+   "role": "body"
+  },
+  {
+   "text": "Diagnosis: Acute Gastroenteritis with Mild Dehydration",
+   "role": "body"
+  },
+  {
+   "text": "Condition at Discharge: Stable, afebrile",
+   "role": "body"
+  },
+  {
+   "text": "Medication on Discharge: Tab Pantoprazole 40mg OD",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

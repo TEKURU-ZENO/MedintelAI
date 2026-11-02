@@ -209,6 +209,44 @@ class SyntheticMedicalLines:
         "Dx: URTI", "O/E: chest clear", "Hb 11.2 g/dL", "HbA1c 7.4%", "Plenty of oral fluids",
         "Avoid oily food", "Follow up SOS", "Rx", "Inv: USG abdomen", "ECG - NAD",
     ]
+    # Patient / encounter header lines. Without them the model, trained mostly on drug lines, reads "28/M" as
+    # "28 mg" and "Patient:" as a drug name.
+    FIRST_NAMES = ["Ramesh", "Sachin", "Priya", "Anita", "Suresh", "Kavita", "Rahul", "Sunita", "Arjun", "Meena",
+                   "Vikram", "Lakshmi", "Imran", "Fatima", "Joseph", "Mary", "Harpreet", "Gurpreet", "Deepak",
+                   "Pooja", "Anil", "Rekha", "Mohan", "Shalini", "Kiran", "Ravi", "Neha", "Sanjay", "Asha", "Vijay",
+                   "David", "Sarah", "James", "Linda", "Ahmed", "Ayesha", "Wei", "Yuki", "Carlos", "Elena"]
+    LAST_NAMES = ["Sharma", "Patel", "Kumar", "Singh", "Reddy", "Nair", "Iyer", "Gupta", "Sansare", "Deshmukh",
+                  "Joshi", "Rao", "Khan", "Shaikh", "Fernandes", "D'Souza", "Banerjee", "Chatterjee", "Pillai",
+                  "Menon", "Verma", "Mehta", "Kulkarni", "Pawar", "Yadav", "Das", "Bose", "Thomas",
+                  "Smith", "Johnson", "Brown", "Garcia", "Lee", "Wilson", "Ali", "Chen", "Tanaka", "Lopez"]
+    TITLES = ["Mr.", "Mrs.", "Ms.", "Mr", "Mrs", "Master", "Baby", "Smt.", "Shri"]
+
+    def header_text(self) -> str:
+        rng = self.rng
+        name = f"{rng.choice(self.FIRST_NAMES)} {rng.choice(self.LAST_NAMES)}"
+        if rng.random() < 0.4:
+            name = f"{rng.choice(self.TITLES)} {name}"
+        age = str(rng.choice([rng.randint(1, 12), rng.randint(13, 95), rng.randint(18, 70)]))
+        sex = rng.choice(["M", "F", "m", "f", "Male", "Female"])
+        sep = rng.choice(["/", " / ", "/", ","])
+        age_sex = rng.choice([f"{age}{sep}{sex[0]}", f"{age} yrs{sep}{sex[0]}", f"{age}Y{sep}{sex[0]}",
+                              f"{age}{sep}{sex}", f"{age} years"])
+        d, mth = rng.randint(1, 28), rng.randint(1, 12)
+        date = rng.choice([f"{d:02d}/{mth:02d}/{rng.randint(18, 26)}", f"{d}/{mth}/{rng.randint(2018, 2026)}",
+                           f"{d:02d}-{mth:02d}-{rng.randint(2018, 2026)}", f"{d}.{mth}.{rng.randint(18, 26)}",
+                           f"{rng.randint(2018, 2026)}-{mth:02d}-{d:02d}"])
+        doctor = f"Dr. {rng.choice(self.FIRST_NAMES)[0]}. {rng.choice(self.LAST_NAMES)}"
+        label = rng.choice(["Name", "Patient", "Patient Name", "Pt", "Pt. Name", "Name of Patient"])
+        templates = [
+            f"{label}: {name}", f"{name}", f"{name} {age_sex}", f"{age_sex}", f"Age: {age}",
+            f"Age/Sex: {age_sex}", f"Sex: {rng.choice(['Male', 'Female', 'M', 'F'])}", f"Date: {date}", date,
+            f"{label}: {name}, Age: {age}", f"{label}: {name}  Age: {age}  Sex: {sex[0]}",
+            f"{name}  {age_sex}  {date}", f"Ref by: {doctor}", doctor, f"UHID: {rng.randint(100000, 9999999)}",
+            f"Bed No: {rng.randint(1, 60)}", f"Ward: {rng.randint(1, 12)}", f"Wt: {rng.randint(3, 110)} kg",
+            f"Reg No: {rng.randint(1000, 99999)}", f"OPD No. {rng.randint(100, 9999)}",
+            f"Age: {age} Sex: {sex[0]} Wt: {rng.randint(3, 110)} kg",
+        ]
+        return rng.choice(templates)
 
     def __init__(
         self,
@@ -217,7 +255,8 @@ class SyntheticMedicalLines:
         fonts: Optional[Sequence[str]] = None,
         seed: Optional[int] = None,
         general_lines: Optional[Sequence[str]] = None,
-        general_share: float = 0.25
+        general_share: float = 0.25,
+        header_share: float = 0.15
     ):
         self.rng = random.Random(seed)
         self.drugs = [d for d in drug_names if d] or ["Paracetamol", "Amoxicillin", "Metformin"]
@@ -226,10 +265,13 @@ class SyntheticMedicalLines:
         # Everyday English sentences (training transcripts only) keep the decoder robust on free-text notes
         self.general_lines = list(general_lines or [])
         self.general_share = general_share
+        self.header_share = header_share
 
     def sample_text(self) -> str:
         if self.general_lines and self.rng.random() < self.general_share:
             return self.rng.choice(self.general_lines)
+        if self.rng.random() < self.header_share:
+            return self.header_text()
         r = self.rng.random()
         drug = self.rng.choice(self.drugs)
         if r < 0.30 and self.med_lines:

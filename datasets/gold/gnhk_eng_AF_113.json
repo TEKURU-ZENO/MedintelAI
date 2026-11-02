@@ -1,0 +1,41 @@
+{
+ "image": "images/public/gnhk_eng_AF_113.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "ANTONYMNS",
+   "role": "body"
+  },
+  {
+   "text": "Adopt - Disown",
+   "role": "body"
+  },
+  {
+   "text": "Holy - Unholy",
+   "role": "body"
+  },
+  {
+   "text": "Slowly - quickly",
+   "role": "body"
+  },
+  {
+   "text": "Welcome - Unwelcome",
+   "role": "body"
+  },
+  {
+   "text": "New - Old, ancient",
+   "role": "body"
+  },
+  {
+   "text": "External - Internal",
+   "role": "body"
+  },
+  {
+   "text": "Distance -",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

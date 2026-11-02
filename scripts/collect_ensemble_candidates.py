@@ -76,6 +76,47 @@ def printed_synth(texts, n: int, rng: random.Random):
     return out
 
 
+def sample_pairs(src, split, per_source, rng, corpora, synth_texts):
+    """The exact crops a collection run uses for one source (same rng sequence => same crops)."""
+    if src == "funsd_word":
+        return funsd_words(split, per_source, rng)
+    if src == "printed_synth":
+        return printed_synth(synth_texts, per_source, rng)
+    pool = [s for s in corpora.get(src, []) if s.split == split]
+    rng.shuffle(pool)
+    return [(s.load_bgr(), s.text) for s in pool[: per_source]]
+
+
+def add_vlm(args):
+    """Re-creates the collected crops in order and adds VLM readings, plain and with the two engines' hints."""
+    from app.ai.ocr.vlm_reader import VLMLineReader
+    rows = json.loads(Path(args.out).read_text(encoding="utf-8"))
+    corpora = load_all_image_corpora()
+    synth_texts = sorted({s.text for name in ("iam_line", "rxhandbd") for s in corpora.get(name, [])
+                          if s.split == "train" and 3 <= len(s.text) <= 60})
+    # Same rng consumption as a single collection run over --sources (the order the rows were written in)
+    order = [s for s in args.sources.split(",")]
+    rng = random.Random(7 if args.split == "val" else 11)
+    crops = []
+    for src in order:
+        crops.extend(sample_pairs(src, args.split, args.per_source, rng, corpora, synth_texts))
+    by_source = {}
+    for r in rows:
+        by_source.setdefault(r["source"], []).append(r)
+    flat_rows = [r for src in order for r in by_source.get(src, [])]
+    assert len(flat_rows) == len(crops), (len(flat_rows), len(crops))
+    for (img, gt), r in zip(crops, flat_rows):
+        assert gt == r["gt"], (gt, r["gt"])
+    reader = VLMLineReader(device=args.device)
+    t0 = time.time()
+    plain = reader.read([img for img, _ in crops])
+    hinted = reader.read([img for img, _ in crops], hints=[(r["rapid_text"], r["trocr_text"]) for r in flat_rows])
+    for r, (pt, pc), (ht, hc) in zip(flat_rows, plain, hinted):
+        r.update({"vlm_text": pt, "vlm_conf": pc, "vlm_hint_text": ht, "vlm_hint_conf": hc})
+    print(f"VLM readings for {len(flat_rows)} crops in {time.time() - t0:.0f}s")
+    Path(args.out).write_text(json.dumps(rows, indent=1, ensure_ascii=False), encoding="utf-8")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", default="val")
@@ -84,7 +125,11 @@ def main():
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--out", required=True)
     parser.add_argument("--append_to", default=None, help="reuse rows from an earlier run for sources already present")
+    parser.add_argument("--add_vlm", action="store_true",
+                        help="add vision-language-model readings (plain + hinted) to the rows already in --out")
     args = parser.parse_args()
+    if args.add_vlm:
+        return add_vlm(args)
 
     rows = []
     if args.append_to and Path(args.append_to).exists():

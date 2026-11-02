@@ -1,0 +1,41 @@
+{
+ "image": "images/public/gnhk_eng_EU_200.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "English: 'compound verbs'",
+   "role": "body"
+  },
+  {
+   "text": "not sure how to define these.",
+   "role": "body"
+  },
+  {
+   "text": "Remember their job is to",
+   "role": "body"
+  },
+  {
+   "text": "join sentences together.",
+   "role": "body"
+  },
+  {
+   "text": "Maths: linear and quadratic",
+   "role": "body"
+  },
+  {
+   "text": "functions. quadratic uses 2",
+   "role": "body"
+  },
+  {
+   "text": "so x2 for example. Linear is",
+   "role": "body"
+  },
+  {
+   "text": "the simpler one:)",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

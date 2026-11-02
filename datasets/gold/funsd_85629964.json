@@ -1,0 +1,162 @@
+{
+ "image": "images/public/funsd_85629964.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "CIGARETTE REPORT FORM",
+   "role": "body"
+  },
+  {
+   "text": "YEAR:",
+   "role": "body"
+  },
+  {
+   "text": "NO. PER PACK",
+   "role": "body"
+  },
+  {
+   "text": "BRAND NAME:",
+   "role": "body"
+  },
+  {
+   "text": "VAR. DESC:",
+   "role": "body"
+  },
+  {
+   "text": "(SEE EXPLANATION)",
+   "role": "body"
+  },
+  {
+   "text": "VARIETY UNIT SALES:",
+   "role": "body"
+  },
+  {
+   "text": "VARIETY DOLLAR SALES:",
+   "role": "body"
+  },
+  {
+   "text": "CIG. LENGTH:",
+   "role": "body"
+  },
+  {
+   "text": "FILTER LENGTH:",
+   "role": "body"
+  },
+  {
+   "text": "FILTER TYPE:",
+   "role": "body"
+  },
+  {
+   "text": "FLAVORING:",
+   "role": "body"
+  },
+  {
+   "text": "OVERWRAP:",
+   "role": "body"
+  },
+  {
+   "text": "PACK TYPE:",
+   "role": "body"
+  },
+  {
+   "text": "IST MANUFACT. DATE:",
+   "role": "body"
+  },
+  {
+   "text": "IST SALES DATE:",
+   "role": "body"
+  },
+  {
+   "text": "LAST SOLD DATE:",
+   "role": "body"
+  },
+  {
+   "text": "YEARLY SUMMARY:",
+   "role": "body"
+  },
+  {
+   "text": "TAR:",
+   "role": "body"
+  },
+  {
+   "text": "NICOTINE:",
+   "role": "body"
+  },
+  {
+   "text": "CARBON MONO:",
+   "role": "body"
+  },
+  {
+   "text": "ADVERTISING EXPENDITURES (SEE EXPLANATION)",
+   "role": "body"
+  },
+  {
+   "text": "CAT- A- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- B- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- C- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- D- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- E- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- F- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- G- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- H- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- I- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- J- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- K- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- L- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- M- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "CAT- N- EXPENSES:",
+   "role": "body"
+  },
+  {
+   "text": "TOTAL ADVERTISING EXPENDITURES:",
+   "role": "body"
+  },
+  {
+   "text": "85629964",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

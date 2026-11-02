@@ -1,0 +1,202 @@
+{
+ "image": "images/public/funsd_87332450.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "47th TCRC REGISTRATION FORM",
+   "role": "body"
+  },
+  {
+   "text": "Please type or print",
+   "role": "body"
+  },
+  {
+   "text": "Name:",
+   "role": "body"
+  },
+  {
+   "text": "Title",
+   "role": "body"
+  },
+  {
+   "text": "Last",
+   "role": "body"
+  },
+  {
+   "text": "First",
+   "role": "body"
+  },
+  {
+   "text": "Middle",
+   "role": "body"
+  },
+  {
+   "text": "Institution:",
+   "role": "body"
+  },
+  {
+   "text": "Address:",
+   "role": "body"
+  },
+  {
+   "text": "Street",
+   "role": "body"
+  },
+  {
+   "text": "P.O. Box#",
+   "role": "body"
+  },
+  {
+   "text": "Country",
+   "role": "body"
+  },
+  {
+   "text": "State",
+   "role": "body"
+  },
+  {
+   "text": "ZIP Code",
+   "role": "body"
+  },
+  {
+   "text": "City",
+   "role": "body"
+  },
+  {
+   "text": "Telephone:",
+   "role": "body"
+  },
+  {
+   "text": "FAX #:",
+   "role": "body"
+  },
+  {
+   "text": "Name of guest:",
+   "role": "body"
+  },
+  {
+   "text": "Breakfast on Wednesday",
+   "role": "body"
+  },
+  {
+   "text": "Continental Breakfast on Tuesday",
+   "role": "body"
+  },
+  {
+   "text": "Craftsman Village Tour Wednesday",
+   "role": "body"
+  },
+  {
+   "text": "Fall Foliage Tour on Tuesday",
+   "role": "body"
+  },
+  {
+   "text": "(prior to September 1)",
+   "role": "body"
+  },
+  {
+   "text": "$135 00",
+   "role": "body"
+  },
+  {
+   "text": "Advance Registration Fee:",
+   "role": "body"
+  },
+  {
+   "text": "$150 00",
+   "role": "body"
+  },
+  {
+   "text": "after September",
+   "role": "body"
+  },
+  {
+   "text": "Late Registration Fee",
+   "role": "body"
+  },
+  {
+   "text": "Extra banquet tickets tickets $40. 00",
+   "role": "body"
+  },
+  {
+   "text": "$ 30. 00",
+   "role": "body"
+  },
+  {
+   "text": "Ground Transportation (round trip)",
+   "role": "body"
+  },
+  {
+   "text": "TOTAL",
+   "role": "body"
+  },
+  {
+   "text": "Please complete this portion if you need transportation from and to the Knoxville Airport.",
+   "role": "body"
+  },
+  {
+   "text": "No. in Party:",
+   "role": "body"
+  },
+  {
+   "text": "TIME",
+   "role": "body"
+  },
+  {
+   "text": "FLIGHT #",
+   "role": "body"
+  },
+  {
+   "text": "DATE",
+   "role": "body"
+  },
+  {
+   "text": "CARRIER",
+   "role": "body"
+  },
+  {
+   "text": "Arrival:",
+   "role": "body"
+  },
+  {
+   "text": "Departure:",
+   "role": "body"
+  },
+  {
+   "text": "Send this registration form, along with payment to the address noted below. Enclose a check or international money order payable in U. S. funds to the University of Tennessee - 47th TCRC",
+   "role": "body"
+  },
+  {
+   "text": "87332450",
+   "role": "body"
+  },
+  {
+   "text": "Dr. Phil P. Hunter U. T. Tobacco Experiment Station Route 5 Box 113 Greeneville, TN 37743",
+   "role": "body"
+  },
+  {
+   "text": "Mail to:",
+   "role": "body"
+  },
+  {
+   "text": "(615) ) 638- 5532",
+   "role": "body"
+  },
+  {
+   "text": "Telephone:",
+   "role": "body"
+  },
+  {
+   "text": "FAX:",
+   "role": "body"
+  },
+  {
+   "text": "(615) ) 638- 6458",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

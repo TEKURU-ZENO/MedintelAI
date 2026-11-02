@@ -1,0 +1,109 @@
+{
+ "image": "images/public/gnhk_eng_AS_042.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "VITAMIN- A",
+   "role": "body"
+  },
+  {
+   "text": "- Found in green & leafy vegetables/ yellow",
+   "role": "body"
+  },
+  {
+   "text": "Fruits",
+   "role": "body"
+  },
+  {
+   "text": "ABSORPTION IN SMAL INTESTINE",
+   "role": "body"
+  },
+  {
+   "text": "Executive Order No. 51",
+   "role": "body"
+  },
+  {
+   "text": "DUODENUM",
+   "role": "body"
+  },
+  {
+   "text": "BREAST FEEDING",
+   "role": "body"
+  },
+  {
+   "text": "JEJUNUM",
+   "role": "body"
+  },
+  {
+   "text": "Waste PRODUCT OF POTASSIUM",
+   "role": "body"
+  },
+  {
+   "text": "urea, vomit",
+   "role": "body"
+  },
+  {
+   "text": "CARBS",
+   "role": "body"
+  },
+  {
+   "text": "NORMAL SODIUM",
+   "role": "body"
+  },
+  {
+   "text": "ROOT CROPS",
+   "role": "body"
+  },
+  {
+   "text": "135- 146 MEG",
+   "role": "body"
+  },
+  {
+   "text": "SODIUM",
+   "role": "body"
+  },
+  {
+   "text": "VEGETABLES",
+   "role": "body"
+  },
+  {
+   "text": "POTASSIUM- FRUITS & VEGGIES",
+   "role": "body"
+  },
+  {
+   "text": "FRUITS",
+   "role": "body"
+  },
+  {
+   "text": "Apple",
+   "role": "body"
+  },
+  {
+   "text": "Brocolli",
+   "role": "body"
+  },
+  {
+   "text": "Banana",
+   "role": "body"
+  },
+  {
+   "text": "IODINE SEA",
+   "role": "body"
+  },
+  {
+   "text": "Cantalope Carrots",
+   "role": "body"
+  },
+  {
+   "text": "Orange",
+   "role": "body"
+  },
+  {
+   "text": "RICH IN POTASSIUM",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

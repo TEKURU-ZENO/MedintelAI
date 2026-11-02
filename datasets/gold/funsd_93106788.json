@@ -1,0 +1,198 @@
+{
+ "image": "images/public/funsd_93106788.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "LORILLARD MEDIA SERVICES ONE PARK AVENUE, NEW YORK, NY 10016- 5896 MAGAZINE INSERTION ORDER",
+   "role": "body"
+  },
+  {
+   "text": "DATE:",
+   "role": "body"
+  },
+  {
+   "text": "MARCH 17, 1995",
+   "role": "body"
+  },
+  {
+   "text": "TO:",
+   "role": "body"
+  },
+  {
+   "text": "ESSENCE 1500 BROADWAY NEW YORK, NY 10036",
+   "role": "body"
+  },
+  {
+   "text": "ADVERTISER:",
+   "role": "body"
+  },
+  {
+   "text": "LORILLARD",
+   "role": "body"
+  },
+  {
+   "text": "ATTN:",
+   "role": "body"
+  },
+  {
+   "text": "JOYCE WINSTON",
+   "role": "body"
+  },
+  {
+   "text": "PRODUCT:",
+   "role": "body"
+  },
+  {
+   "text": "NEWPORT",
+   "role": "body"
+  },
+  {
+   "text": "THIS ADVERTISEMENT COMPLIES WITH THE FTC REQUIREMENT FOR A WARNING STATEMENT AND TAR AND NICOTINE LINE WHICH MUST APPEAR IN ALL CIGARETTE ADVERTISING CHECK MATERIAL YOU RECEIVE AGAINST THE PROOF TO BE SURE IT IS CORRECT, UNDER NO CIRCUMSTANCES ARE TO YOU RUN SUBSTITUTE MATERIALS, ALTERIOR OR OMIT ANY COPY WITHOUT PRIOR APPROVAL FROM LORILLARD MEDIA SERVICES.",
+   "role": "body"
+  },
+  {
+   "text": "SPACE:",
+   "role": "body"
+  },
+  {
+   "text": "DATE:",
+   "role": "body"
+  },
+  {
+   "text": "CAPTION:",
+   "role": "body"
+  },
+  {
+   "text": "AD#:",
+   "role": "body"
+  },
+  {
+   "text": "FOUNTAIN COUPLE",
+   "role": "body"
+  },
+  {
+   "text": "P5CE",
+   "role": "body"
+  },
+  {
+   "text": "JUNE 1995",
+   "role": "body"
+  },
+  {
+   "text": "NPT- 533- 7",
+   "role": "body"
+  },
+  {
+   "text": "PO",
+   "role": "body"
+  },
+  {
+   "text": "#77219",
+   "role": "body"
+  },
+  {
+   "text": "IF UNABLE TO INSERT ON THE DATE ORDERED KINDLY NOTIFY US AT ONCE AND WAIT FOR NEW INSERTION DATE. NO CREDIT CAN BE ALLOWED SHOULD THIS ADVERTISEMENT APPEAR INCORRECTLY OR ON A DATE OTHER THAN THAT AUTHORIZED.",
+   "role": "body"
+  },
+  {
+   "text": "POSITION URGENTLY REQUESTED:",
+   "role": "body"
+  },
+  {
+   "text": "FAR FORWARD, OPPOSITE FULL EDITORIAL",
+   "role": "body"
+  },
+  {
+   "text": "- Maintain at least six page separation from bompetitive ads.",
+   "role": "body"
+  },
+  {
+   "text": "- No coupon ad on backing page.",
+   "role": "body"
+  },
+  {
+   "text": "- No aditional/ advertising matter to cigarette within 6 pages of our ad.",
+   "role": "body"
+  },
+  {
+   "text": "COPY INSTRUCTIONS:",
+   "role": "body"
+  },
+  {
+   "text": "Cigarette",
+   "role": "body"
+  },
+  {
+   "text": "SURGEON GENERALS WARNING",
+   "role": "body"
+  },
+  {
+   "text": "Smoke contains carbon Monoxide",
+   "role": "body"
+  },
+  {
+   "text": "5 COLOR PROOF ATTACHED, FILM FROM COLLIER WITH \"D\" WARNING",
+   "role": "body"
+  },
+  {
+   "text": "SPACE BILLING INSTRUCTIONS:",
+   "role": "body"
+  },
+  {
+   "text": "IMPORTANT INSTRUCTIONS:",
+   "role": "body"
+  },
+  {
+   "text": "The space is being brdered by:",
+   "role": "body"
+  },
+  {
+   "text": "A. Check material carefully against proof to make sure it corresponds in every respect",
+   "role": "body"
+  },
+  {
+   "text": "LOAILLARD MEDIA SERVICES",
+   "role": "body"
+  },
+  {
+   "text": "B. Please inspect repro material immediately. They should produce good printing results. Advise us promptly if Hor satisfactory",
+   "role": "body"
+  },
+  {
+   "text": "Direct all invoices and full checking copies of all regional and national additions to:",
+   "role": "body"
+  },
+  {
+   "text": "LORILLARD MEDIA SERVICES ONE PARK AVENUE 17TH FLOOR NEW YORK NEW YORK 10016- 5896",
+   "role": "body"
+  },
+  {
+   "text": "C. Poor printing will not be paid for.",
+   "role": "body"
+  },
+  {
+   "text": "93106788",
+   "role": "body"
+  },
+  {
+   "text": "D. Advise us at once if instructions are not clear.",
+   "role": "body"
+  },
+  {
+   "text": "ATTN:",
+   "role": "body"
+  },
+  {
+   "text": "STEVE MOLLOY",
+   "role": "body"
+  },
+  {
+   "text": "E. Under no circumstances are you to space out our advertisement without specific instructions from us.",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

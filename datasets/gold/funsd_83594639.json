@@ -1,0 +1,94 @@
+{
+ "image": "images/public/funsd_83594639.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "☑001",
+   "role": "body"
+  },
+  {
+   "text": "ROPER STARCH WORLDWIDE",
+   "role": "body"
+  },
+  {
+   "text": "89/ 22/ 97 MON 15: 35 FAX 12124554900",
+   "role": "body"
+  },
+  {
+   "text": "ROPER STARCH",
+   "role": "body"
+  },
+  {
+   "text": "TURNING DATA INTO INTELLIGENCE WORLDWIDE",
+   "role": "body"
+  },
+  {
+   "text": "Fax Fax Fax Fax Fax Fax Fax Fax Fax",
+   "role": "body"
+  },
+  {
+   "text": "Date:",
+   "role": "body"
+  },
+  {
+   "text": "September 22, 1997",
+   "role": "body"
+  },
+  {
+   "text": "Ron Milstein",
+   "role": "body"
+  },
+  {
+   "text": "To:",
+   "role": "body"
+  },
+  {
+   "text": "From:",
+   "role": "body"
+  },
+  {
+   "text": "\"JJ\" Klein",
+   "role": "body"
+  },
+  {
+   "text": "Company:",
+   "role": "body"
+  },
+  {
+   "text": "Lorillard",
+   "role": "body"
+  },
+  {
+   "text": "Fax Number:",
+   "role": "body"
+  },
+  {
+   "text": "(910) 335 7707",
+   "role": "body"
+  },
+  {
+   "text": "Pages (Including cover page):",
+   "role": "body"
+  },
+  {
+   "text": "3",
+   "role": "body"
+  },
+  {
+   "text": "83594639",
+   "role": "body"
+  },
+  {
+   "text": "Roper Starch Worldwide nc 205 East 42nd Street New York NY 0017 212 599 0700 212 887 7008 Fax",
+   "role": "body"
+  },
+  {
+   "text": "Roper Marketing and Public Option Research Search Advertising and Media Research Frederen Marketing Services INRA World Headquarters",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

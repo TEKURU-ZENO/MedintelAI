@@ -1,0 +1,33 @@
+{
+ "image": "images/printed_admission_forms.png",
+ "doc_type": "admission_form",
+ "handwritten": false,
+ "source": "synthetic printed sample (datasets/admission_forms/sample_1)",
+ "lines": [
+  {
+   "text": "PATIENT ADMISSION RECORD",
+   "role": "body"
+  },
+  {
+   "text": "Hospital ID: 2026-MED-1049  Ward: 3 Bed: 12",
+   "role": "body"
+  },
+  {
+   "text": "Full Name: Sunita Joshi  Gender: Female  DOB: 14/08/1984",
+   "role": "body"
+  },
+  {
+   "text": "Emergency Contact: Deepak Joshi (Husband) 9876543210",
+   "role": "body"
+  },
+  {
+   "text": "Admitting Department: Orthopaedics",
+   "role": "body"
+  },
+  {
+   "text": "Primary Complaint: Right knee osteoarthritis",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

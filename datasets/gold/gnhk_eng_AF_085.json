@@ -1,0 +1,37 @@
+{
+ "image": "images/public/gnhk_eng_AF_085.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "COMPUTER CASE",
+   "role": "body"
+  },
+  {
+   "text": "Also known as chassis, tower, casing, Box,",
+   "role": "body"
+  },
+  {
+   "text": "housing & carbinet.",
+   "role": "body"
+  },
+  {
+   "text": "FACTORS IN CHOSING A CASC",
+   "role": "body"
+  },
+  {
+   "text": "Size of MOB",
+   "role": "body"
+  },
+  {
+   "text": "Num of Internal and External Connections",
+   "role": "body"
+  },
+  {
+   "text": "Available Space 4 vertilation.",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

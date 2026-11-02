@@ -1,0 +1,57 @@
+{
+ "image": "images/public/gnhk_eng_EU_109.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "Session Summary",
+   "role": "body"
+  },
+  {
+   "text": "Reading aloud:",
+   "role": "body"
+  },
+  {
+   "text": "Aiden worked on the target of",
+   "role": "body"
+  },
+  {
+   "text": "reading aloud today, he Showed",
+   "role": "body"
+  },
+  {
+   "text": "great pronouncation and",
+   "role": "body"
+  },
+  {
+   "text": "blending of words during",
+   "role": "body"
+  },
+  {
+   "text": "his sessions keep it up",
+   "role": "body"
+  },
+  {
+   "text": "Aiden!",
+   "role": "body"
+  },
+  {
+   "text": "Asking for help Concentration Effort",
+   "role": "body"
+  },
+  {
+   "text": "Today, I was tutored by marc",
+   "role": "body"
+  },
+  {
+   "text": "I earned Lizard Cards for",
+   "role": "body"
+  },
+  {
+   "text": "m m E E",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

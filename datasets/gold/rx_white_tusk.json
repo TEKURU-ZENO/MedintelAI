@@ -1,0 +1,42 @@
+{
+  "image": "images/rx_white_tusk.jpg",
+  "doc_type": "prescription",
+  "handwritten": true,
+  "source": "user-provided sample (dental prescription, phone photo)",
+  "notes": "Transcribed by eye from the image. Footer phone number is small print and may contain transcription error.",
+  "lines": [
+    {"text": "Smile Designing | Teeth Whitening", "role": "header"},
+    {"text": "Dental Implants | General Dentistry", "role": "header"},
+    {"text": "THE WHITE TUSK", "role": "header"},
+    {"text": "@/whitetuskdental", "role": "header"},
+    {"text": "12/10/22", "role": "body"},
+    {"text": "Mr. Sachin Sansare", "role": "body"},
+    {"text": "28/m", "role": "body"},
+    {"text": "Rx,", "role": "body"},
+    {"text": "after meals", "role": "margin_note", "applies_to": [9, 10, 11, 12]},
+    {"text": "Tab. Augmentin 625mg", "role": "body"},
+    {"text": "1 - 0 - 1 x 5days", "role": "body"},
+    {"text": "Tab. Enzoflam", "role": "body"},
+    {"text": "1 - 0 - 1 x 5days", "role": "body"},
+    {"text": "before meals", "role": "margin_note", "applies_to": [14, 15]},
+    {"text": "Tab. PanD 40mg", "role": "body"},
+    {"text": "1 - 0 - 0 x 5days", "role": "body"},
+    {"text": "Adv: Hexigel gum paint", "role": "body"},
+    {"text": "massage", "role": "body"},
+    {"text": "1 - 0 - 1 x 1week", "role": "body"},
+    {"text": "", "role": "signature"},
+    {"text": "Ph: +91 8108112511 | Web: www.thewhitetusk.com | Email: info@thewhitetusk.com", "role": "footer"}
+  ],
+  "fields": {
+    "date": "12/10/22",
+    "patient_name": "Sachin Sansare",
+    "age": "28",
+    "sex": "M",
+    "medications": [
+      {"form": "Tab", "drug": "Augmentin", "strength": "625mg", "frequency": "1-0-1", "duration": "5 days", "timing": "after meals"},
+      {"form": "Tab", "drug": "Enzoflam", "strength": "", "frequency": "1-0-1", "duration": "5 days", "timing": "after meals"},
+      {"form": "Tab", "drug": "PanD", "strength": "40mg", "frequency": "1-0-0", "duration": "5 days", "timing": "before meals"},
+      {"form": "", "drug": "Hexigel", "strength": "", "frequency": "1-0-1", "duration": "1 week", "timing": ""}
+    ]
+  }
+}

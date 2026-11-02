@@ -1,0 +1,71 @@
+{
+ "image": "images/public/rxsynth_prescription_00650.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Meadowview Health",
+   "role": "body"
+  },
+  {
+   "text": "678 Orchard Ln.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. F. Gomez",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Wei Li, Age: 50",
+   "role": "body"
+  },
+  {
+   "text": "Losartan 20 mg - As needed for pain",
+   "role": "body"
+  },
+  {
+   "text": "Simvastatin 10 mg - Every 8 hours",
+   "role": "body"
+  },
+  {
+   "text": "Omeprazole 5 mg - Before meals",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. F. Gomez",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Wei Li",
+  "age": "50",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Losartan",
+    "strength": "20mg",
+    "timing": "As needed for pain"
+   },
+   {
+    "drug": "Simvastatin",
+    "strength": "10mg",
+    "timing": "Every 8 hours"
+   },
+   {
+    "drug": "Omeprazole",
+    "strength": "5mg",
+    "timing": "Before meals"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

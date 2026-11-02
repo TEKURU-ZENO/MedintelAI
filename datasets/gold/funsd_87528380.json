@@ -1,0 +1,426 @@
+{
+ "image": "images/public/funsd_87528380.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "S",
+   "role": "body"
+  },
+  {
+   "text": "10675",
+   "role": "body"
+  },
+  {
+   "text": "STOUT INDUSTRIES, INC.",
+   "role": "body"
+  },
+  {
+   "text": "6425 W. FLORISSANT AVE. ST. LOUIS MO 63136 . (314) 385- 2280",
+   "role": "body"
+  },
+  {
+   "text": "PROPOSAL",
+   "role": "body"
+  },
+  {
+   "text": "Metal \"Pack\" Plaque",
+   "role": "body"
+  },
+  {
+   "text": "Lorillard Corporation",
+   "role": "body"
+  },
+  {
+   "text": "TO",
+   "role": "body"
+  },
+  {
+   "text": "FOR",
+   "role": "body"
+  },
+  {
+   "text": "October 16, 1987",
+   "role": "body"
+  },
+  {
+   "text": "666 Fifth Avenue",
+   "role": "body"
+  },
+  {
+   "text": "DATE",
+   "role": "body"
+  },
+  {
+   "text": "ADDRESS",
+   "role": "body"
+  },
+  {
+   "text": "New York",
+   "role": "body"
+  },
+  {
+   "text": "CITY",
+   "role": "body"
+  },
+  {
+   "text": "Mr. A. D. Steinberg",
+   "role": "body"
+  },
+  {
+   "text": "New York 10103",
+   "role": "body"
+  },
+  {
+   "text": "STATE",
+   "role": "body"
+  },
+  {
+   "text": "YOUR REPRESENTATIVE",
+   "role": "body"
+  },
+  {
+   "text": "Attn:",
+   "role": "body"
+  },
+  {
+   "text": "Mr. Robert Kennedy",
+   "role": "body"
+  },
+  {
+   "text": "It is our pleasure to propose the following:",
+   "role": "body"
+  },
+  {
+   "text": "171/4 x 231/2 \"",
+   "role": "body"
+  },
+  {
+   "text": "ITEM:",
+   "role": "body"
+  },
+  {
+   "text": "Harley Davidson Metal Plaque",
+   "role": "body"
+  },
+  {
+   "text": "SIZE:",
+   "role": "body"
+  },
+  {
+   "text": ".025\"",
+   "role": "body"
+  },
+  {
+   "text": "OTHER ☐",
+   "role": "body"
+  },
+  {
+   "text": "STEEL ☐",
+   "role": "body"
+  },
+  {
+   "text": "☑",
+   "role": "body"
+  },
+  {
+   "text": "GAUGE",
+   "role": "body"
+  },
+  {
+   "text": "MATERIAL:",
+   "role": "body"
+  },
+  {
+   "text": "ALUMINUM",
+   "role": "body"
+  },
+  {
+   "text": "Transparent gold, opaque black, white and orange",
+   "role": "body"
+  },
+  {
+   "text": "COLORS:",
+   "role": "body"
+  },
+  {
+   "text": "Aluminum",
+   "role": "body"
+  },
+  {
+   "text": "DOUBLE FACE ☐",
+   "role": "body"
+  },
+  {
+   "text": "BASE COLOR",
+   "role": "body"
+  },
+  {
+   "text": "SINGLE FACE",
+   "role": "body"
+  },
+  {
+   "text": "☑",
+   "role": "body"
+  },
+  {
+   "text": "HOLES:",
+   "role": "body"
+  },
+  {
+   "text": "YES",
+   "role": "body"
+  },
+  {
+   "text": "☑",
+   "role": "body"
+  },
+  {
+   "text": "NO ☐",
+   "role": "body"
+  },
+  {
+   "text": "NUMBER OF",
+   "role": "body"
+  },
+  {
+   "text": "4",
+   "role": "body"
+  },
+  {
+   "text": "CORNERS:",
+   "role": "body"
+  },
+  {
+   "text": "ROUND ☐",
+   "role": "body"
+  },
+  {
+   "text": "☑",
+   "role": "body"
+  },
+  {
+   "text": "CUT TO SHAPE ☐",
+   "role": "body"
+  },
+  {
+   "text": "SQUARE",
+   "role": "body"
+  },
+  {
+   "text": "ANGLE ☐",
+   "role": "body"
+  },
+  {
+   "text": "BEADED BORDER ☐",
+   "role": "body"
+  },
+  {
+   "text": "EDGES:",
+   "role": "body"
+  },
+  {
+   "text": "HEMMED ☐",
+   "role": "body"
+  },
+  {
+   "text": "CURLED ☐",
+   "role": "body"
+  },
+  {
+   "text": "EMBOSSED",
+   "role": "body"
+  },
+  {
+   "text": "☑",
+   "role": "body"
+  },
+  {
+   "text": "RIGHT ANGLE BEND ☐",
+   "role": "body"
+  },
+  {
+   "text": "STAMP FRAME",
+   "role": "body"
+  },
+  {
+   "text": "☑",
+   "role": "body"
+  },
+  {
+   "text": "BACK FRAME ☐",
+   "role": "body"
+  },
+  {
+   "text": "10",
+   "role": "body"
+  },
+  {
+   "text": "PER CRATE",
+   "role": "body"
+  },
+  {
+   "text": "PACKING:",
+   "role": "body"
+  },
+  {
+   "text": "PER BUNDLE",
+   "role": "body"
+  },
+  {
+   "text": "PER CARTON",
+   "role": "body"
+  },
+  {
+   "text": "Price is based on reproduction of customer supplied \"Pack\" box.",
+   "role": "body"
+  },
+  {
+   "text": "OTHER:",
+   "role": "body"
+  },
+  {
+   "text": "Form die, brass emboss die to achieve detail on eagle.",
+   "role": "body"
+  },
+  {
+   "text": "Tooling:",
+   "role": "body"
+  },
+  {
+   "text": "One time tooling",
+   "role": "body"
+  },
+  {
+   "text": "@ $ 3,015.00",
+   "role": "body"
+  },
+  {
+   "text": "QUANTITIES:",
+   "role": "body"
+  },
+  {
+   "text": "500 Plaques",
+   "role": "body"
+  },
+  {
+   "text": "Steel tips",
+   "role": "body"
+  },
+  {
+   "text": "$ 1,045.00",
+   "role": "body"
+  },
+  {
+   "text": "PRICE:",
+   "role": "body"
+  },
+  {
+   "text": "$ 9.18 each",
+   "role": "body"
+  },
+  {
+   "text": "4050",
+   "role": "body"
+  },
+  {
+   "text": "☐ BILL AS SHIP FOR.",
+   "role": "body"
+  },
+  {
+   "text": "☐ 6 MOS.",
+   "role": "body"
+  },
+  {
+   "text": "☐ 12 MOS",
+   "role": "body"
+  },
+  {
+   "text": "☑",
+   "role": "body"
+  },
+  {
+   "text": "BILL AS MANUFACTURE",
+   "role": "body"
+  },
+  {
+   "text": "BILLING:",
+   "role": "body"
+  },
+  {
+   "text": "☐ 6 MOS. WHSE.",
+   "role": "body"
+  },
+  {
+   "text": "☐ 12 MOS. WHSE",
+   "role": "body"
+  },
+  {
+   "text": "WAREHOUSING:",
+   "role": "body"
+  },
+  {
+   "text": "☑",
+   "role": "body"
+  },
+  {
+   "text": "8650",
+   "role": "body"
+  },
+  {
+   "text": "SHIP IMMEDIATELY",
+   "role": "body"
+  },
+  {
+   "text": "TOTAL",
+   "role": "body"
+  },
+  {
+   "text": "DROP SHIPPING:",
+   "role": "body"
+  },
+  {
+   "text": "PER SHIPMENT",
+   "role": "body"
+  },
+  {
+   "text": "CONDITIONS:",
+   "role": "body"
+  },
+  {
+   "text": "PRICES QUOTED HEREIN ARE BASED ON CURRENT COSTS AND ARE FOR IMMEDIATE ACCEPTANCE *These prices will be updated periodically from date of order, to reflect changes in material and labor costs. Prices and terms quoted herein are not subject to verbal changes unless confirmed in writing by the home office of this company in S. T. LOUIS M. O. All contracts for delivers are contingent upon fires, strikes or other causes beyond our control. Purchaser agrees to accept overun or underrun to the extent of 10% of the quantity ordered.",
+   "role": "body"
+  },
+  {
+   "text": "Any taxes or governmental changes which the seller may be required to pay or collect upon the production sale storage, or delivery under any existing or",
+   "role": "body"
+  },
+  {
+   "text": "future law shall be for the account of the buyer who shall promptly pay the amount hereof to the seller upon",
+   "role": "body"
+  },
+  {
+   "text": "87528380",
+   "role": "body"
+  },
+  {
+   "text": "F. O. B. S. T. LOUIS MISSOURI Shipments via truck shipped freight collect.",
+   "role": "body"
+  },
+  {
+   "text": "A 15 service charge will be added to reight costs for all prepaid shipments involving 5 or more pieces.",
+   "role": "body"
+  },
+  {
+   "text": "TERMS - NET 10 DAYS A service charge of 11/2 per month will be applied to all unpaid balances over 30 days.",
+   "role": "body"
+  },
+  {
+   "text": "STOUT INDUSTRIES INC,",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

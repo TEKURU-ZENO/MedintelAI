@@ -1,0 +1,80 @@
+{
+ "image": "images/public/rxsynth_prescription_00095.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "City Health Clinic",
+   "role": "body"
+  },
+  {
+   "text": "789 Pine Rd.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. F. Gomez",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Hiro Tanaka, Age: 47",
+   "role": "body"
+  },
+  {
+   "text": "Levothyroxine 250 mg - After meals",
+   "role": "body"
+  },
+  {
+   "text": "Ciprofloxacin 250 mg - As needed for pain",
+   "role": "body"
+  },
+  {
+   "text": "Losartan 10 mg - As directed",
+   "role": "body"
+  },
+  {
+   "text": "Ibuprofen 500 mg - At bedtime",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. F. Gomez",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Hiro Tanaka",
+  "age": "47",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Levothyroxine",
+    "strength": "250mg",
+    "timing": "After meals"
+   },
+   {
+    "drug": "Ciprofloxacin",
+    "strength": "250mg",
+    "timing": "As needed for pain"
+   },
+   {
+    "drug": "Losartan",
+    "strength": "10mg",
+    "timing": "As directed"
+   },
+   {
+    "drug": "Ibuprofen",
+    "strength": "500mg",
+    "timing": "At bedtime"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

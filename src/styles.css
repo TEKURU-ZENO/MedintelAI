@@ -121,3 +121,26 @@ button, input, textarea, select { font-family: var(--font-ui); }
   .result-tabs button { font-size: 9px; }
   .heading-actions .btn { font-size: 10px; }
 }
+
+/* Formatted / as-read toggle and the word review list */
+.view-toggle{display:inline-flex;margin-left:8px;border:1px solid #e6ebf3;border-radius:6px;overflow:hidden}
+.view-toggle button{border:0;background:#fff;padding:4px 8px;font-size:9px;color:#6c7890}
+.view-toggle button.selected{background:#eef2ff;color:#4266ef;font-weight:600}
+.review-view{padding:12px 15px;min-height:260px;flex:1;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.review-note{display:flex;align-items:center;gap:6px;font-size:10px;color:#a26f1f;background:#fff5e7;border-radius:6px;padding:7px 9px}
+.review-item{border:1px solid #edf0f5;border-radius:7px;padding:9px 10px;display:flex;flex-direction:column;gap:5px}
+.review-head{display:flex;align-items:center;gap:7px}
+.review-head strong{font-size:11px;color:var(--ink)}
+.review-kind{font-size:8px;font-weight:600;border-radius:4px;padding:3px 5px;background:#f0f3f8;color:#6c7890}
+.review-kind.ambiguous{background:#fff5e7;color:#b77a22}
+.review-kind.spelling{background:#fdeeee;color:#c24646}
+.review-kind.corrected{background:#eaf8f1;color:#169c70}
+.review-ignore{margin-left:auto;border:0;background:transparent;color:#9aa4b3;display:flex;padding:2px}
+.review-ignore:hover{color:var(--ink)}
+.review-item small{font-size:9px;color:var(--muted)}
+.review-line{font-size:10px;color:#4a5568;background:#f9fafc;border-radius:5px;padding:5px 7px;overflow-wrap:anywhere}
+.review-line mark{background:#fff0c2;color:inherit;border-radius:2px;padding:0 1px}
+.review-chips{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.review-chips span{font-size:9px;color:var(--muted)}
+.review-chips button{border:1px solid #cad5ef;background:#f7f9ff;color:#4266ef;border-radius:12px;padding:3px 9px;font-size:10px}
+.review-chips button:hover{background:#4266ef;color:#fff}

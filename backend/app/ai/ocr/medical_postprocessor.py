@@ -95,6 +95,9 @@ class MedicalVocabularyPostProcessor:
         cleaned = re.sub(r'\b[oO]\.(\d+)\b', r'0.\1', cleaned)
         cleaned = re.sub(r'\b(\d+)\.[Ss]\b', r'\1.5', cleaned)
 
+        # Lab unit 'g/dL' read as '9/dL' (there is no 9/dL unit)
+        cleaned = re.sub(r'(?<![\w/])9/dL\b', 'g/dL', cleaned)
+
         # Standardize 500 / 250 / 650 mg dosages
         cleaned = re.sub(r'\b[Ss]00\s*(mg|ml|g)\b', r'500 \1', cleaned, flags=re.IGNORECASE)
         cleaned = re.sub(r'\b[Zz]50\s*(mg|ml|g)\b', r'250 \1', cleaned, flags=re.IGNORECASE)

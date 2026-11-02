@@ -1,0 +1,182 @@
+{
+ "image": "images/public/funsd_86075409_5410.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "Lynnette Stevens",
+   "role": "body"
+  },
+  {
+   "text": "From:",
+   "role": "body"
+  },
+  {
+   "text": "Kelli Scruggs",
+   "role": "body"
+  },
+  {
+   "text": "To:",
+   "role": "body"
+  },
+  {
+   "text": "CC:",
+   "role": "body"
+  },
+  {
+   "text": "Vincent Losito George Baroody",
+   "role": "body"
+  },
+  {
+   "text": "Don Kisling",
+   "role": "body"
+  },
+  {
+   "text": "S. Tesh C. Hill",
+   "role": "body"
+  },
+  {
+   "text": "Brand(s) Applicable",
+   "role": "body"
+  },
+  {
+   "text": "Newport Parent, Lights. & 120's",
+   "role": "body"
+  },
+  {
+   "text": "Media Type",
+   "role": "body"
+  },
+  {
+   "text": "Direct Mail",
+   "role": "body"
+  },
+  {
+   "text": "Media Name",
+   "role": "body"
+  },
+  {
+   "text": "Competitive 21- 34 years",
+   "role": "body"
+  },
+  {
+   "text": "Issue Frequency/ Year",
+   "role": "body"
+  },
+  {
+   "text": "*Space/ Color",
+   "role": "body"
+  },
+  {
+   "text": "Coupon Issue Date",
+   "role": "body"
+  },
+  {
+   "text": "4/ 14/ 00",
+   "role": "body"
+  },
+  {
+   "text": "Coupon Expiration Date",
+   "role": "body"
+  },
+  {
+   "text": "9 /30 00",
+   "role": "body"
+  },
+  {
+   "text": "APPROX 600. 000 AR. AZ.A K CA CO FL ID IA. CT, ME, MASS, MN, MT, NE,",
+   "role": "body"
+  },
+  {
+   "text": "Circulation(#)",
+   "role": "body"
+  },
+  {
+   "text": "Geographical Area(s)",
+   "role": "body"
+  },
+  {
+   "text": "IV",
+   "role": "body"
+  },
+  {
+   "text": "Tiers",
+   "role": "body"
+  },
+  {
+   "text": "NV, NM, NY ND, DK, OR, RL, SD, WA, DC, WY $1. 50 OFF PACK",
+   "role": "body"
+  },
+  {
+   "text": "II,",
+   "role": "body"
+  },
+  {
+   "text": "&",
+   "role": "body"
+  },
+  {
+   "text": "Coupon Value",
+   "role": "body"
+  },
+  {
+   "text": "Pack and/ or Carton?",
+   "role": "body"
+  },
+  {
+   "text": "Advertising Creative Title.",
+   "role": "body"
+  },
+  {
+   "text": "21- Jan 00",
+   "role": "body"
+  },
+  {
+   "text": "Signature of Initiator",
+   "role": "body"
+  },
+  {
+   "text": "Date Initiated",
+   "role": "body"
+  },
+  {
+   "text": "Analytical Requirements",
+   "role": "body"
+  },
+  {
+   "text": "FOR CONTROL USE ONLY",
+   "role": "body"
+  },
+  {
+   "text": "05787",
+   "role": "body"
+  },
+  {
+   "text": "Code Assigned",
+   "role": "body"
+  },
+  {
+   "text": "Job Number",
+   "role": "body"
+  },
+  {
+   "text": "Est. Redemption",
+   "role": "body"
+  },
+  {
+   "text": "13%",
+   "role": "body"
+  },
+  {
+   "text": "86075409",
+   "role": "body"
+  },
+  {
+   "text": "* Where Applicable",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

@@ -1,0 +1,62 @@
+{
+ "image": "images/public/rxsynth_prescription_00990.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "City Health Clinic",
+   "role": "body"
+  },
+  {
+   "text": "234 Maple Blvd.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. A. Smith",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: John Doe, Age: 76",
+   "role": "body"
+  },
+  {
+   "text": "Omeprazole 50 mg - Take twice daily",
+   "role": "body"
+  },
+  {
+   "text": "Losartan 50 mg - Take twice daily",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. A. Smith",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "John Doe",
+  "age": "76",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Omeprazole",
+    "strength": "50mg",
+    "timing": "Take twice daily"
+   },
+   {
+    "drug": "Losartan",
+    "strength": "50mg",
+    "timing": "Take twice daily"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

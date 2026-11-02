@@ -464,7 +464,7 @@ class OCRDocumentReadingEngine:
                 rgb = cv2.resize(rgb, (int(w * scale), 24), interpolation=cv2.INTER_CUBIC)
 
             pil_img = Image.fromarray(rgb)
-            pixel_values = self._trocr_processor(pil_img, return_tensors='pt').pixel_values
+            pixel_values = self._trocr_processor(pil_img, return_tensors='pt').pixel_values.to(self._trocr_model.device)
 
             # Width-proportional max token constraint prevents runaway generation
             max_tokens = min(32, max(8, int(w / 7)))

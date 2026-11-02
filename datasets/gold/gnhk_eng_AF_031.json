@@ -1,0 +1,37 @@
+{
+ "image": "images/public/gnhk_eng_AF_031.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "Order 4 rule 6 -",
+   "role": "body"
+  },
+  {
+   "text": "The court has the power to make orders",
+   "role": "body"
+  },
+  {
+   "text": "by way of injunctions and such necessary",
+   "role": "body"
+  },
+  {
+   "text": "orders for the protection of property or",
+   "role": "body"
+  },
+  {
+   "text": "person pending the determination of an appeal",
+   "role": "body"
+  },
+  {
+   "text": "to it even though no such application was",
+   "role": "body"
+  },
+  {
+   "text": "made in the court below",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

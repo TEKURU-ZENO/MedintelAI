@@ -1,0 +1,53 @@
+{
+ "image": "images/public/rxsynth_prescription_00781.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Oakview Hospital",
+   "role": "body"
+  },
+  {
+   "text": "234 Maple Blvd.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. A. Smith",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Maria Garcia, Age: 24",
+   "role": "body"
+  },
+  {
+   "text": "Levothyroxine 10 mg - Take twice daily",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. A. Smith",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Maria Garcia",
+  "age": "24",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Levothyroxine",
+    "strength": "10mg",
+    "timing": "Take twice daily"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

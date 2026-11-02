@@ -103,6 +103,9 @@ async def correct_text(request: CorrectionRequest):
         entries.append(entry)
         with open(CORRECTIONS_FILE, "w", encoding="utf-8") as handle:
             json.dump(entries, handle, indent=2, ensure_ascii=False)
+        # Opt-in: corrected lines become handwriting training pairs (no-op unless OCR_FEEDBACK_DATASET=1)
+        from app.services.feedback_service import record_correction
+        entry["training_pairs"] = record_correction(entry["document"], original, corrected, request.block_id)
     except Exception as exc:
         logger.exception("Could not persist clinician correction")
         raise HTTPException(503, "Clinician correction could not be recorded.") from exc

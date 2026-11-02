@@ -1,0 +1,29 @@
+{
+ "image": "images/public/gnhk_eng_NA_137.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "3 How to do it",
+   "role": "body"
+  },
+  {
+   "text": "(Friday, )",
+   "role": "body"
+  },
+  {
+   "text": "Consultancy approved? (Wuhan. select consultancy?)",
+   "role": "body"
+  },
+  {
+   "text": "Control of Huaxih=",
+   "role": "body"
+  },
+  {
+   "text": "Keep HQ office.",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

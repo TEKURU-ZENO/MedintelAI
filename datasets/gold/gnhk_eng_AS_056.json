@@ -1,0 +1,25 @@
+{
+ "image": "images/public/gnhk_eng_AS_056.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "Non- finished product, includes materials",
+   "role": "body"
+  },
+  {
+   "text": "and instruction. The box contains a detail",
+   "role": "body"
+  },
+  {
+   "text": "instruction booklet and all necessary parts",
+   "role": "body"
+  },
+  {
+   "text": "for the products",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

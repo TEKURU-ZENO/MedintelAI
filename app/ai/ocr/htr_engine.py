@@ -20,6 +20,8 @@ import numpy as np
 LEXICON_FILENAME = "medical_lexicon.json"
 MODEL_DIRNAME = "trocr_medical_finetuned"
 CPU_DEFAULT_BEAMS = 2
+MICRO_BATCH_GPU = 8
+MICRO_BATCH_CPU = 4
 
 
 def resolve_trocr_model_dir() -> Optional[str]:
@@ -399,7 +401,9 @@ class MedicalHTREngine:
             out = self.model.generate(
                 pixel_values,
                 max_new_tokens=max_new_tokens,
-                no_repeat_ngram_size=4,
+                # no_repeat_ngram_size is not used: it runs as a per-beam Python loop (~75% of decode time on a
+                # page) and changed no output on 800 validation crops; repetition is curbed by the penalty below
+                # and by the engines' hallucination filter
                 repetition_penalty=1.15,
                 return_dict_in_generate=True,
                 output_scores=True,
@@ -455,7 +459,64 @@ class MedicalHTREngine:
         }
 
     def recognize_batch(self, crops: Sequence[np.ndarray], max_new_tokens: Optional[int] = None) -> List[Dict[str, Any]]:
-        return [self.select(c) for c in self.decode_nbest(crops, max_new_tokens=max_new_tokens)]
+        """
+        Decodes in micro-batches (a whole page of line crops with beam search can exhaust GPU memory with
+        large models); on CUDA out-of-memory the batch is halved and retried, down to single crops.
+        """
+        import torch
+
+        batch = MICRO_BATCH_GPU if self.device.type == "cuda" else MICRO_BATCH_CPU
+        results: List[Dict[str, Any]] = []
+        i = 0
+        while i < len(crops):
+            chunk = list(crops[i: i + batch])
+            try:
+                candidates = self.decode_nbest(chunk, max_new_tokens=max_new_tokens)
+            except RuntimeError as exc:  # torch.OutOfMemoryError or a generic "CUDA error: out of memory"
+                if "out of memory" not in str(exc).lower():
+                    raise
+                torch.cuda.empty_cache()
+                if batch == 1:
+                    raise
+                batch = max(1, batch // 2)
+                continue
+            results.extend(self.select(c) for c in candidates)
+            i += len(chunk)
+        return results
+
+    def encode_crop(self, crop: np.ndarray):
+        """Encoder states of a crop, for scoring several texts against it with score_texts(encoded=...)."""
+        import torch
+
+        pixel_values = self.processor(images=[prepare_htr_image(crop)], return_tensors="pt").pixel_values.to(self.device)
+        with torch.inference_mode():
+            return self.model.encoder(pixel_values=pixel_values).last_hidden_state
+
+    def score_texts(self, crop: Optional[np.ndarray], texts: Sequence[str], encoded=None) -> List[float]:
+        """
+        Log-probability of each text being what the crop shows (teacher-forced decoder likelihood, summed over
+        tokens). Texts that differ in one word compare that word against the ink, which a language model
+        cannot do. The crop is encoded once (or `encoded` from encode_crop is reused) and shared by all texts.
+        """
+        import torch
+
+        if not texts or (encoded is None and (crop is None or crop.size == 0)):
+            return [0.0] * len(texts)
+        if encoded is None:
+            encoded = self.encode_crop(crop)
+        tok = self.processor.tokenizer
+        enc = tok(list(texts), return_tensors="pt", padding=True)
+        labels = enc.input_ids.to(self.device)
+        mask = enc.attention_mask.to(self.device)
+        start = self.model.config.decoder_start_token_id
+        if start != tok.bos_token_id and bool((labels[:, 0] == tok.bos_token_id).all()):
+            labels, mask = labels[:, 1:], mask[:, 1:]  # targets as in training: tokens + </s>, start token prepended
+        decoder_input = torch.cat([torch.full_like(labels[:, :1], start), labels[:, :-1]], dim=1)
+        with torch.inference_mode():
+            logits = self.model(encoder_outputs=(encoded.expand(len(texts), -1, -1),),
+                                decoder_input_ids=decoder_input, decoder_attention_mask=mask).logits.float()
+        logp = torch.log_softmax(logits, dim=-1).gather(-1, labels.unsqueeze(-1)).squeeze(-1) * mask
+        return logp.sum(dim=1).tolist()
 
     def recognize_detailed(self, crop: np.ndarray, max_new_tokens: Optional[int] = None) -> Dict[str, Any]:
         return self.recognize_batch([crop], max_new_tokens=max_new_tokens)[0]

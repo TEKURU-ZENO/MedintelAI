@@ -1,0 +1,80 @@
+{
+ "image": "images/public/rxsynth_prescription_00828.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Meadowview Health",
+   "role": "body"
+  },
+  {
+   "text": "234 Maple Blvd.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. H. Johnson",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Aisha Khan, Age: 61",
+   "role": "body"
+  },
+  {
+   "text": "Losartan 25 mg - At bedtime",
+   "role": "body"
+  },
+  {
+   "text": "Levothyroxine 100 mg - After meals",
+   "role": "body"
+  },
+  {
+   "text": "Omeprazole 10 mg - Take once daily",
+   "role": "body"
+  },
+  {
+   "text": "Simvastatin 25 mg - After meals",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. H. Johnson",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Aisha Khan",
+  "age": "61",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Losartan",
+    "strength": "25mg",
+    "timing": "At bedtime"
+   },
+   {
+    "drug": "Levothyroxine",
+    "strength": "100mg",
+    "timing": "After meals"
+   },
+   {
+    "drug": "Omeprazole",
+    "strength": "10mg",
+    "timing": "Take once daily"
+   },
+   {
+    "drug": "Simvastatin",
+    "strength": "25mg",
+    "timing": "After meals"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

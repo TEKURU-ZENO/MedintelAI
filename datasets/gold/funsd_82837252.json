@@ -1,0 +1,106 @@
+{
+ "image": "images/public/funsd_82837252.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "MRA",
+   "role": "body"
+  },
+  {
+   "text": "NEW COMPETITIVE PRODUCTS",
+   "role": "body"
+  },
+  {
+   "text": "BOBBY MILLS, REGIONAL SALES MGR., INDIANAPOLIS, IN",
+   "role": "body"
+  },
+  {
+   "text": "REPORTED BY:",
+   "role": "body"
+  },
+  {
+   "text": "8/ 10/ 90",
+   "role": "body"
+  },
+  {
+   "text": "DATE:",
+   "role": "body"
+  },
+  {
+   "text": "TIME:",
+   "role": "body"
+  },
+  {
+   "text": "SOURCE OF INFORMATION:",
+   "role": "body"
+  },
+  {
+   "text": "HALL RODECAP, NOBLESVILLE, IN",
+   "role": "body"
+  },
+  {
+   "text": "B & W",
+   "role": "body"
+  },
+  {
+   "text": "MANUFACTURER:",
+   "role": "body"
+  },
+  {
+   "text": "VICEROY KING BOX AND VICEROY LIGHTS KING BOX",
+   "role": "body"
+  },
+  {
+   "text": "BRAND NAME:",
+   "role": "body"
+  },
+  {
+   "text": "TYPE OF PRODUCT:",
+   "role": "body"
+  },
+  {
+   "text": "SIZE OR SIZES:",
+   "role": "body"
+  },
+  {
+   "text": "LIST PRICE:",
+   "role": "body"
+  },
+  {
+   "text": "EXTENT OF DISTRIBUTION:",
+   "role": "body"
+  },
+  {
+   "text": "OTHER INFORMATION:",
+   "role": "body"
+  },
+  {
+   "text": "SEE ATTACHED INFORMATION SHEET",
+   "role": "body"
+  },
+  {
+   "text": "cc:",
+   "role": "body"
+  },
+  {
+   "text": "G. Telford F. J. Schultz A. W. Spears N. P. Ruffalo T. Achey P. J. McCann A. J. Giacolo",
+   "role": "body"
+  },
+  {
+   "text": "A. H. Tisch R. H. Orcutt M. A. Peterson T. H. Mau L. Gordon J. P. Mastandrea",
+   "role": "body"
+  },
+  {
+   "text": "J. J. Tatulli L. H. Kersh J. R. Slater S. T. Jones R S. Goldbrenner E. R. Harrow",
+   "role": "body"
+  },
+  {
+   "text": "82837252",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

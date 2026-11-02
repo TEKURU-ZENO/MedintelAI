@@ -1,0 +1,10 @@
+{
+  "params": {
+    "channel_weight": 4.0,
+    "freq_weight": 0.6,
+    "margin": 3.0,
+    "min_line_words": 3,
+    "reading_margin": 1.0,
+    "clinical_prior": 4.0
+  }
+}

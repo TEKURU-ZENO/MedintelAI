@@ -1,0 +1,71 @@
+{
+ "image": "images/public/rxsynth_prescription_00270.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Greenwood Medical Center",
+   "role": "body"
+  },
+  {
+   "text": "123 Main St.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. H. Johnson",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Elena Petrova, Age: 63",
+   "role": "body"
+  },
+  {
+   "text": "Losartan 250 mg - Every 8 hours",
+   "role": "body"
+  },
+  {
+   "text": "Lisinopril 20 mg - Before meals",
+   "role": "body"
+  },
+  {
+   "text": "Metformin 5 mg - Before meals",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. H. Johnson",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Elena Petrova",
+  "age": "63",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Losartan",
+    "strength": "250mg",
+    "timing": "Every 8 hours"
+   },
+   {
+    "drug": "Lisinopril",
+    "strength": "20mg",
+    "timing": "Before meals"
+   },
+   {
+    "drug": "Metformin",
+    "strength": "5mg",
+    "timing": "Before meals"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

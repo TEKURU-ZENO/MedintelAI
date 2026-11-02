@@ -1,0 +1,29 @@
+{
+ "image": "images/public/gnhk_eng_EU_059.jpg",
+ "doc_type": "handwritten_note",
+ "handwritten": true,
+ "source": "GNHK test split (GoodNotes, CC-BY-4.0)",
+ "lines": [
+  {
+   "text": "L told the class that",
+   "role": "body"
+  },
+  {
+   "text": "plants need oxygen so",
+   "role": "body"
+  },
+  {
+   "text": "they grow and can",
+   "role": "body"
+  },
+  {
+   "text": "breath.",
+   "role": "body"
+  },
+  {
+   "text": "A.Hills VW-W",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

@@ -1,0 +1,106 @@
+{
+ "image": "images/public/funsd_85240939.png",
+ "doc_type": "scanned_form",
+ "handwritten": false,
+ "source": "FUNSD test split (research use)",
+ "lines": [
+  {
+   "text": "THE TOBACCO INSTITUTE FIFTH ANNUAL COLLEGE TOBACCO KNOWLEDGE REGISTRATION FORM",
+   "role": "body"
+  },
+  {
+   "text": "SHERATON- CARLTON HOTEL WASHINGTON, D. C.",
+   "role": "body"
+  },
+  {
+   "text": "FEBRUARY 19-21 1980",
+   "role": "body"
+  },
+  {
+   "text": "NAME:",
+   "role": "body"
+  },
+  {
+   "text": "GEORGE R. TELFORD",
+   "role": "body"
+  },
+  {
+   "text": "TITLE:",
+   "role": "body"
+  },
+  {
+   "text": "Brand Manager",
+   "role": "body"
+  },
+  {
+   "text": "COMPANY:",
+   "role": "body"
+  },
+  {
+   "text": "Lorillard",
+   "role": "body"
+  },
+  {
+   "text": "ADDRESS:",
+   "role": "body"
+  },
+  {
+   "text": "666 Fifth Avenue, New York, NY 10019",
+   "role": "body"
+  },
+  {
+   "text": "(212) 841- 8787",
+   "role": "body"
+  },
+  {
+   "text": "PHONE:",
+   "role": "body"
+  },
+  {
+   "text": "CHECK ONE:",
+   "role": "body"
+  },
+  {
+   "text": "Please reserve a room for me at the Sheraton- Carlton",
+   "role": "body"
+  },
+  {
+   "text": "X I will my own housing arrangements.",
+   "role": "body"
+  },
+  {
+   "text": "ARRIVAL DATE AND TIME:",
+   "role": "body"
+  },
+  {
+   "text": "2/18/80 7:00 P. M.",
+   "role": "body"
+  },
+  {
+   "text": "DEPARTURE DATE AND TIME:",
+   "role": "body"
+  },
+  {
+   "text": "2/21/80 4:00 P. M.",
+   "role": "body"
+  },
+  {
+   "text": "Please attach a brief (50 words or so) autobiographical sketch. Note your first name or nickname, your current professional re- sponsibilities, employment background and whatever personal in- formation you feel would be helpful in giving your fellow students an idea of your activities and interests. The sketches will be assembled and provided at the opening class session.",
+   "role": "body"
+  },
+  {
+   "text": "Any questions?",
+   "role": "body"
+  },
+  {
+   "text": "Call Connie Drath or Carol Musgrave at 800/424- 9876.",
+   "role": "body"
+  },
+  {
+   "text": "**PLEASE RETURN IN SELF- ADDRESSED ENVELOPE BY FRIDAY, JANUARY 18, 1980**",
+   "role": "body"
+  }
+ ],
+ "fields": {},
+ "notes": "One gold line per FUNSD entity; question/answer pairs on one row are separate lines."
+}

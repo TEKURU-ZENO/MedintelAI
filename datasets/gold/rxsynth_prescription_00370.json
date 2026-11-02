@@ -1,0 +1,62 @@
+{
+ "image": "images/public/rxsynth_prescription_00370.png",
+ "doc_type": "prescription",
+ "handwritten": true,
+ "source": "chinmays18/medical-prescription-dataset test split (synthetic cursive)",
+ "lines": [
+  {
+   "text": "Oakview Hospital",
+   "role": "body"
+  },
+  {
+   "text": "45 Oak Ave.",
+   "role": "body"
+  },
+  {
+   "text": "Prescribed by: Dr. M. Lee",
+   "role": "body"
+  },
+  {
+   "text": "Date: 2024-12-16",
+   "role": "body"
+  },
+  {
+   "text": "Patient: Carlos Chavez, Age: 66",
+   "role": "body"
+  },
+  {
+   "text": "Omeprazole 100 mg - As needed for pain",
+   "role": "body"
+  },
+  {
+   "text": "Amoxicillin 10 mg - At bedtime",
+   "role": "body"
+  },
+  {
+   "text": "Signature:",
+   "role": "body"
+  },
+  {
+   "text": "Dr. M. Lee",
+   "role": "signature"
+  }
+ ],
+ "fields": {
+  "patient_name": "Carlos Chavez",
+  "age": "66",
+  "date": "2024-12-16",
+  "medications": [
+   {
+    "drug": "Omeprazole",
+    "strength": "100mg",
+    "timing": "As needed for pain"
+   },
+   {
+    "drug": "Amoxicillin",
+    "strength": "10mg",
+    "timing": "At bedtime"
+   }
+  ]
+ },
+ "notes": "Line text rebuilt from the dataset's structured annotation and its fixed page template."
+}

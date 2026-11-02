@@ -12,3 +12,4 @@ pillow>=10.0.0
 numpy>=1.24.0
 fonttools>=4.40
 bitsandbytes>=0.45  # optional: --optimizer adamw8bit for trocr-large on 8 GB GPUs
+symspellpy>=6.7  # scripts/fit_spell_correction.py

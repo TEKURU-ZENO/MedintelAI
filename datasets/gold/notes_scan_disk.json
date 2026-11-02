@@ -1,0 +1,18 @@
+{
+  "image": "images/notes_scan_disk.webp",
+  "doc_type": "clinical_note",
+  "handwritten": true,
+  "source": "user-provided sample (lined page with bleed-through, phone photo)",
+  "notes": "The partially visible line cut off at the top edge is excluded (ignore region).",
+  "lines": [
+    {"text": "In SCAN disk scheduling algorithm, head starts", "role": "body"},
+    {"text": "from one end of the disk & moves towards the", "role": "body"},
+    {"text": "other end, servicing requests in btw one by one", "role": "body"},
+    {"text": "& reach the other end. As a result, the", "role": "body"},
+    {"text": "requests at the midrange are serviced more &", "role": "body"},
+    {"text": "those arriving behind the disk arm will have to", "role": "body"},
+    {"text": "wait.", "role": "body"}
+  ],
+  "ignore_top_px": 40,
+  "fields": {}
+}

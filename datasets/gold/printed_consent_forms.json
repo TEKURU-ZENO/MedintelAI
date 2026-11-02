@@ -1,0 +1,33 @@
+{
+ "image": "images/printed_consent_forms.png",
+ "doc_type": "consent_form",
+ "handwritten": false,
+ "source": "synthetic printed sample (datasets/consent_forms/sample_1)",
+ "lines": [
+  {
+   "text": "INFORMED CONSENT FOR MEDICAL PROCEDURE",
+   "role": "body"
+  },
+  {
+   "text": "Procedure: Diagnostic Endoscopy",
+   "role": "body"
+  },
+  {
+   "text": "Patient / Guardian: Manoj Verma",
+   "role": "body"
+  },
+  {
+   "text": "I hereby certify that the benefits, risks, and alternatives have been explained.",
+   "role": "body"
+  },
+  {
+   "text": "Signature: M. Verma  Date: 05/09/2026",
+   "role": "body"
+  },
+  {
+   "text": "Witness Doctor: Dr. K. Nair",
+   "role": "body"
+  }
+ ],
+ "fields": {}
+}

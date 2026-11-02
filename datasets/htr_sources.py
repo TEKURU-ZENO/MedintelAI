@@ -33,6 +33,7 @@ class HTRSample:
     split: str
     image_path: Optional[str] = None
     image_bytes: Optional[bytes] = field(default=None, repr=False)
+    crop_box: Optional[tuple] = None  # (x0, y0, x1, y1) region of a full page image (clinician feedback)
 
     def load_bgr(self) -> np.ndarray:
         import cv2
@@ -44,6 +45,10 @@ class HTRSample:
         img = cv2.imdecode(buf, cv2.IMREAD_COLOR) if buf.size else None
         if img is None:
             raise ValueError(f"Unreadable image for sample ({self.source}): {self.image_path or '<bytes>'}")
+        if self.crop_box:
+            x0, y0, x1, y1 = [int(v) for v in self.crop_box]
+            pad = max(2, (y1 - y0) // 8)
+            img = img[max(0, y0 - pad): y1 + pad, max(0, x0 - pad): x1 + pad]
         return img
 
 
@@ -375,11 +380,39 @@ def load_medication_text_corpus(corpora_dir: Union[str, Path] = DEFAULT_CORPORA_
 # ---------------------------------------------------------------------------
 # Aggregation helpers
 # ---------------------------------------------------------------------------
+def load_feedback(corpora_dir: Union[str, Path] = DEFAULT_CORPORA_DIR, val_fraction: float = 0.1) -> List[HTRSample]:
+    """
+    Clinician corrections captured by the OCR studio (backend/app/services/feedback_service.py, opt-in):
+    (page image region, corrected text) pairs. Split by document so a page never straddles train and val.
+    """
+    import hashlib
+    base = Path(corpora_dir) / "feedback"
+    manifest = base / "manifest.jsonl"
+    if not manifest.exists():
+        return []
+    samples: List[HTRSample] = []
+    with open(manifest, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            page = base / r["page_image"]
+            if not page.exists() or not r.get("text") or not r.get("bbox"):
+                continue
+            bucket = int(hashlib.md5(r.get("document", "").encode()).hexdigest(), 16) % 100
+            samples.append(HTRSample(text=normalize_label(r["text"]), source="feedback",
+                                     split="val" if bucket < val_fraction * 100 else "train",
+                                     image_path=str(page), crop_box=tuple(r["bbox"])))
+    return samples
+
+
 IMAGE_LOADERS = {
     "iam_line": load_iam_line,
     "rxhandbd": load_rxhandbd,
     "kaggle_rx_bd": load_kaggle_rx_bd,
     "gnhk": load_gnhk,
+    "feedback": load_feedback,
 }
 
 # Sources that are general English handwriting (excluded from the medical lexicon / medical score)

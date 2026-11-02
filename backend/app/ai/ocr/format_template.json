@@ -1,0 +1,19 @@
+{
+  "name": "default",
+  "_comment": "Section order of the formatted reading for clinical pages (document_formatter.py). Replace with the hospital's own format via OCR_FORMAT_TEMPLATE=<path>. Each section: key (fixed ids: patient, rx and labs are filled from the structured extraction; any other key is free text), title as printed (null prints no title), headings doctors write for it (matched at the start of a line, case-insensitive), keep_unpunctuated: keep a heading word in the text unless a ':' or '-' follows it ('Review after one week'). unlabelled: where text with no heading goes before the medicines; after_rx: where it goes after them.",
+  "sections": [
+    {"key": "patient", "title": null},
+    {"key": "vitals", "title": "Vitals", "headings": ["vitals", "vital signs", "v/s"]},
+    {"key": "complaints", "title": "Complaints", "headings": ["c/o", "chief complaints", "complaints", "presenting complaints", "clinical description", "h/o", "history", "hopi", "symptoms"]},
+    {"key": "examination", "title": "Examination", "headings": ["o/e", "on examination", "examination", "general examination", "findings", "p/a", "cvs", "rs", "cns", "local examination"]},
+    {"key": "diagnosis", "title": "Diagnosis", "headings": ["dx", "diagnosis", "provisional diagnosis", "final diagnosis", "imp", "impression"]},
+    {"key": "rx", "title": "Rx", "headings": ["rx", "medicines", "medications", "medication", "tx"]},
+    {"key": "labs", "title": null},
+    {"key": "investigations", "title": "Investigations", "headings": ["inv", "invx", "investigations", "investigation", "tests advised", "lab tests"]},
+    {"key": "advice", "title": "Advice", "headings": ["adv", "advice", "advised", "instructions", "diet"]},
+    {"key": "follow_up", "title": "Follow-up", "headings": ["f/u", "follow up", "follow-up", "review", "revisit", "next visit"], "keep_unpunctuated": true},
+    {"key": "notes", "title": "Notes"}
+  ],
+  "unlabelled": "notes",
+  "after_rx": "advice"
+}
