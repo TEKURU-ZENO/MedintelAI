@@ -1,0 +1,109 @@
+{
+ "image": "images/cursive_unit1_lda.webp",
+ "doc_type": "note",
+ "handwritten": true,
+ "source": "user-provided sample (handwritten study notes)",
+ "notes": "Transcribed by reading the image, keeping the writer's spelling; crossed-out words and printed notebook labels are left out.",
+ "lines": [
+  {
+   "text": "Pg = 1",
+   "role": "body"
+  },
+  {
+   "text": "UNIT - 1 ML:",
+   "role": "body"
+  },
+  {
+   "text": "Dimensionality Reduction:",
+   "role": "body"
+  },
+  {
+   "text": "Dimensionality Reduction is the process of reducing the",
+   "role": "body"
+  },
+  {
+   "text": "number of variables (features) in a dataset while retaining",
+   "role": "body"
+  },
+  {
+   "text": "the most important information. It is crucial for simplifying",
+   "role": "body"
+  },
+  {
+   "text": "models, improving performance and visualizing Data.",
+   "role": "body"
+  },
+  {
+   "text": "Two Categories exist:",
+   "role": "body"
+  },
+  {
+   "text": "1 Linear Methods like PCA and LDA",
+   "role": "body"
+  },
+  {
+   "text": "2 Non-linear methods like LLE and Isomap",
+   "role": "body"
+  },
+  {
+   "text": "1 Linear Discriminant Analysis (LDA): LDA is a supervised",
+   "role": "body"
+  },
+  {
+   "text": "Learning technique that finds a projection of Data onto",
+   "role": "body"
+  },
+  {
+   "text": "a lower-dimensional space to maximum class",
+   "role": "body"
+  },
+  {
+   "text": "separability. Unlike PCA, which focuses on variance. LDA",
+   "role": "body"
+  },
+  {
+   "text": "uses labels to improve predictive performance.",
+   "role": "body"
+  },
+  {
+   "text": "-> It is particularly useful when the Dataset has",
+   "role": "body"
+  },
+  {
+   "text": "class labels and the goal is to maximize class",
+   "role": "body"
+  },
+  {
+   "text": "seperability by projecting the Data onto a lower-",
+   "role": "body"
+  },
+  {
+   "text": "dimensional space.",
+   "role": "body"
+  },
+  {
+   "text": "Key objectives of LDA:",
+   "role": "body"
+  },
+  {
+   "text": "1 Maximize seperation Between classes: LDA projects data",
+   "role": "body"
+  },
+  {
+   "text": "in a way that maximizes the distance Between the",
+   "role": "body"
+  },
+  {
+   "text": "means of different classes.",
+   "role": "body"
+  },
+  {
+   "text": "2 Maximize variance within classes: It also maximizes",
+   "role": "body"
+  },
+  {
+   "text": "scatter or variance within Each class.",
+   "role": "body"
+  }
+ ]
+}

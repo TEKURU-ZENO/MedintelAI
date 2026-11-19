@@ -21,6 +21,9 @@ PLAIN_PROMPT = ("Transcribe the handwritten text in this image exactly as writte
                 "numbers, punctuation, units and medical abbreviations. Output only the transcription.")
 HINT_PROMPT = ("Transcribe the handwritten text in this image exactly as written. Two OCR engines read it as:\n"
                "1) {a}\n2) {b}\nThey may both be wrong. Trust the image. Output only the correct transcription.")
+CONTEXT_PROMPT = ("Transcribe the handwritten text in this image exactly as written. OCR engines read it as:\n{readings}\n"
+                  "{context}They may be wrong. Trust the image and do not add words that are not visible. "
+                  "Output only the transcription.")
 
 
 class VLMLineReader:
@@ -36,9 +39,16 @@ class VLMLineReader:
         self.model = AutoModelForImageTextToText.from_pretrained(self.model_id, dtype=dtype).to(self.device).eval()
         self.max_new_tokens = max_new_tokens
 
+    @staticmethod
+    def context_prompt(readings: Sequence[str], context: Sequence[str] = ()) -> str:
+        """Prompt with the OCR readings of the line and the lines around it (to resolve words, not to copy)."""
+        listed = "\n".join(f"{i}) {r}" for i, r in enumerate(readings, 1))
+        nearby = "Neighbouring lines, for context only: " + " / ".join(context) + "\n" if context else ""
+        return CONTEXT_PROMPT.format(readings=listed, context=nearby)
+
     def read(self, crops: Sequence[np.ndarray], hints: Optional[Sequence[Tuple[str, str]]] = None,
-             batch_size: int = 8) -> List[Tuple[str, float]]:
-        """Returns (text, mean token probability) per BGR crop."""
+             batch_size: int = 8, prompts: Optional[Sequence[str]] = None) -> List[Tuple[str, float]]:
+        """Returns (text, mean token probability) per BGR crop; `prompts` gives each crop its own prompt."""
         import cv2
         import torch
         from PIL import Image
@@ -55,6 +65,8 @@ class VLMLineReader:
                 if hints is not None:
                     a, b = hints[start + k]
                     prompt = HINT_PROMPT.format(a=a or "(empty)", b=b or "(empty)")
+                if prompts is not None:
+                    prompt = prompts[start + k]
                 convs.append([{"role": "user", "content": [{"type": "image", "image": pil}, {"type": "text", "text": prompt}]}])
             inputs = self.processor.apply_chat_template(
                 convs, tokenize=True, add_generation_prompt=True, return_dict=True, return_tensors="pt", padding=True

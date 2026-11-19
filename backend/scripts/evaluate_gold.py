@@ -214,7 +214,7 @@ def main():
 
     def group(r):
         p = r["page"]
-        for pre in ("gnhk_", "funsd_", "rxsynth_", "printed_"):
+        for pre in ("gnhk_", "funsd_", "rxsynth_", "printed_", "cursive_"):
             if p.startswith(pre):
                 return pre.rstrip("_")
         return "user_pages"

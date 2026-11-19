@@ -1,0 +1,109 @@
+{
+ "image": "images/cursive_linear_regression.webp",
+ "doc_type": "note",
+ "handwritten": true,
+ "source": "user-provided sample (handwritten study notes)",
+ "notes": "Transcribed by reading the image, keeping the writer's spelling; crossed-out words and printed notebook labels are left out.",
+ "lines": [
+  {
+   "text": "linear Regression:-",
+   "role": "body"
+  },
+  {
+   "text": "linear regression is a fundamental",
+   "role": "body"
+  },
+  {
+   "text": "supervised learning algorithm used for",
+   "role": "body"
+  },
+  {
+   "text": "solving regression problems, where the",
+   "role": "body"
+  },
+  {
+   "text": "goal is to predict a continuous target",
+   "role": "body"
+  },
+  {
+   "text": "variable. The core idea behind linear",
+   "role": "body"
+  },
+  {
+   "text": "regression is to model the relationship",
+   "role": "body"
+  },
+  {
+   "text": "between the depedent variable (for",
+   "role": "body"
+  },
+  {
+   "text": "target) and one or more independent",
+   "role": "body"
+  },
+  {
+   "text": "variables (or features) as a linear equation.",
+   "role": "body"
+  },
+  {
+   "text": "The linear equation for simple linear",
+   "role": "body"
+  },
+  {
+   "text": "regression is typically represented as:",
+   "role": "body"
+  },
+  {
+   "text": "y = mx + b",
+   "role": "body"
+  },
+  {
+   "text": "where,",
+   "role": "body"
+  },
+  {
+   "text": "y is the dependent variable (the one you",
+   "role": "body"
+  },
+  {
+   "text": "want to predict)",
+   "role": "body"
+  },
+  {
+   "text": "x is the independent variable",
+   "role": "body"
+  },
+  {
+   "text": "m is the slope of the line",
+   "role": "body"
+  },
+  {
+   "text": "b is the y-intercept, indicating the value",
+   "role": "body"
+  },
+  {
+   "text": "of y when x=0",
+   "role": "body"
+  },
+  {
+   "text": "Example:-",
+   "role": "body"
+  },
+  {
+   "text": "Suppose you want to predict a person's",
+   "role": "body"
+  },
+  {
+   "text": "weight (y) based on their height (x). using",
+   "role": "body"
+  },
+  {
+   "text": "linear regression, you collect data on the",
+   "role": "body"
+  },
+  {
+   "text": "27.",
+   "role": "body"
+  }
+ ]
+}

@@ -1,0 +1,97 @@
+{
+ "image": "images/cursive_ml_lifecycle.webp",
+ "doc_type": "note",
+ "handwritten": true,
+ "source": "user-provided sample (handwritten study notes)",
+ "notes": "Transcribed by reading the image, keeping the writer's spelling; crossed-out words and printed notebook labels are left out.",
+ "lines": [
+  {
+   "text": "Machine learning LifeCycle:",
+   "role": "body"
+  },
+  {
+   "text": "The lifecycle of a machine learning project involves a series",
+   "role": "body"
+  },
+  {
+   "text": "of steps that include:",
+   "role": "body"
+  },
+  {
+   "text": "1. Study the problems:",
+   "role": "body"
+  },
+  {
+   "text": "The first step is to study the problem. This step",
+   "role": "body"
+  },
+  {
+   "text": "involves understanding the business problem and defining the",
+   "role": "body"
+  },
+  {
+   "text": "objectives of the model.",
+   "role": "body"
+  },
+  {
+   "text": "2. Data Collection:",
+   "role": "body"
+  },
+  {
+   "text": "When the problem is well-defined, we can collect",
+   "role": "body"
+  },
+  {
+   "text": "the relevant data required for the model. The data could",
+   "role": "body"
+  },
+  {
+   "text": "come from various sources such as databases, APIs, or",
+   "role": "body"
+  },
+  {
+   "text": "web scraping.",
+   "role": "body"
+  },
+  {
+   "text": "3. Data Preparation:",
+   "role": "body"
+  },
+  {
+   "text": "When our problem-related data is collected. then it",
+   "role": "body"
+  },
+  {
+   "text": "is a good idea to check the data properly and make it in",
+   "role": "body"
+  },
+  {
+   "text": "the desired format so that it can be used by the model to",
+   "role": "body"
+  },
+  {
+   "text": "find the hidden patterns. This can be done in the following",
+   "role": "body"
+  },
+  {
+   "text": "steps:",
+   "role": "body"
+  },
+  {
+   "text": "1> Data cleaning",
+   "role": "body"
+  },
+  {
+   "text": "2> Data Transformation",
+   "role": "body"
+  },
+  {
+   "text": "3> Explanatory Data Analysis",
+   "role": "body"
+  },
+  {
+   "text": "4> Split the dataset for traing and testing.",
+   "role": "body"
+  }
+ ]
+}

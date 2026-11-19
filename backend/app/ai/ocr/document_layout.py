@@ -36,17 +36,30 @@ def find_separators(image: np.ndarray, line_height: float,
     H, W = gray.shape[:2]
     binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
                                    max(15, int(line_height) | 1), 15)
-    n, _, stats, _ = cv2.connectedComponentsWithStats(binary, connectivity=8)
-    seps = []
-    for i in range(1, n):
-        x, y, w, h, area = stats[i]
-        if h < 1.6 * line_height or h > 0.6 * H or w < 2:
-            continue
-        if w > 0.45 * h:
-            continue  # wide: a word or drawing, not a brace
-        if area / float(w * h) > 0.35:
-            continue  # solid: a blot or thick bar, not a thin stroke
-        seps.append((float(x), float(y), float(x + w), float(y + h)))
+    # A brace that touches a neighbouring word is one wide component; its upright strokes alone still stand tall
+    upright = cv2.morphologyEx(binary, cv2.MORPH_OPEN,
+                               cv2.getStructuringElement(cv2.MORPH_RECT, (1, max(5, int(line_height * 0.3)))))
+    upright = cv2.morphologyEx(upright, cv2.MORPH_CLOSE,
+                               cv2.getStructuringElement(cv2.MORPH_RECT, (max(3, int(line_height * 0.2)),
+                                                                          max(5, int(line_height * 0.4)))))
+    seps: List[Separator] = []
+    for mask in (binary, upright):
+        n, _, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
+        for i in range(1, n):
+            x, y, w, h, area = stats[i]
+            if h < 1.6 * line_height or h > 0.6 * H or w < 2:
+                continue
+            if w > 0.45 * h:
+                continue  # wide: a word or drawing, not a brace
+            if w > 1.2 * line_height or not 0.05 * W <= x + w / 2.0 <= 0.95 * W:
+                continue  # page edge or its shadow, joined to whatever text touches it
+            if area / float(w * h) > 0.35:
+                continue  # solid: a blot or thick bar, not a thin stroke
+            if mask is upright and (binary[y:y + h, x:x + w] > 0).any(axis=1).mean() < 0.95:
+                continue  # broken between rows: tall letters of successive lines, not one stroke
+            box = (float(x), float(y), float(x + w), float(y + h))
+            if not any(min(box[2], s[2]) > max(box[0], s[0]) and min(box[3], s[3]) > max(box[1], s[1]) for s in seps):
+                seps.append(box)
     return seps
 
 

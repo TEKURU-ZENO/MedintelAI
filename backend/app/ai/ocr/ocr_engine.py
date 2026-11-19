@@ -1,5 +1,7 @@
+import difflib
 import os
 import re
+import threading
 from pathlib import Path
 import cv2
 import time
@@ -72,6 +74,27 @@ class RegionClassifier:
         return 'handwritten' if is_handwritten else 'printed'
 
 
+# Fitted on the gold pages (no group got worse): see docs/HTR_TRAINING.md
+SEPARATE_GAP_HEIGHTS = 2.0
+SAME_ROW_OVERLAP = 0.9
+# A short TrOCR reading this unsure that PP-OCR does not support was almost never right on held-out crops; longer
+# unsure lines are usually mostly right, so they stay in the text for word-level review
+UNREAD_TROCR_CONF = 0.35
+UNREAD_READER_AGREEMENT = 0.5
+UNREAD_MAX_WORDS = 2
+UNREAD_RAPID_CONF = 0.8
+# A straightened line replaces the original crop's reading only when the recogniser is this much more confident
+STRAIGHTENED_MARGIN = 0.02
+
+
+def unsupported_reading(trocr_text: str, trocr_conf: float, rapid_text: str, rapid_conf: float = 0.0) -> bool:
+    """True for a short, low-confidence TrOCR reading neither confirmed nor contested with confidence by PP-OCR."""
+    if not trocr_text or trocr_conf >= UNREAD_TROCR_CONF or rapid_conf >= UNREAD_RAPID_CONF \
+            or len(trocr_text.split()) > UNREAD_MAX_WORDS:
+        return False
+    return difflib.SequenceMatcher(a=trocr_text.lower(), b=(rapid_text or '').lower()).ratio() < UNREAD_READER_AGREEMENT
+
+
 class ReadingOrderRebuilder:
     """
     2D geometric reading-order reconstruction engine.
@@ -80,6 +103,50 @@ class ReadingOrderRebuilder:
     """
     def __init__(self, vertical_overlap_ratio: float = 0.45):
         self.vertical_overlap_ratio = vertical_overlap_ratio
+
+    @staticmethod
+    def _split_separate_blocks(line: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+        """
+        Handwriting far apart that only roughly shares a height is separate text (side notes, scattered columns),
+        not one line. Printed rows stay whole, as do cells that line up exactly (tables).
+        """
+        rows = [[line[0]]]
+        for b in line[1:]:
+            prev = rows[-1][-1]
+            top, bottom = max(prev['_ymin'], b['_ymin']), min(prev['_ymax'], b['_ymax'])
+            union = max(prev['_ymax'], b['_ymax']) - min(prev['_ymin'], b['_ymin'])
+            aligned = union > 0 and max(0.0, bottom - top) / union >= SAME_ROW_OVERLAP
+            far = b['_xmin'] - prev['_xmax'] > SEPARATE_GAP_HEIGHTS * max(prev['_h'], b['_h'])
+            if b.get('_after_separator') or (far and not aligned and 'handwritten' in (prev.get('source'), b.get('source'))):
+                rows.append([b])
+            else:
+                rows[-1].append(b)
+        return rows
+
+    @staticmethod
+    def _unstack(row: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+        """Handwritten blocks of one row that sit over each other horizontally are lines of a list, not one line."""
+        def stacked(a, b):
+            if 'handwritten' not in (a.get('source'), b.get('source')):
+                return False
+            shared = min(a['_xmax'], b['_xmax']) - max(a['_xmin'], b['_xmin'])
+            (_, a_top, _, a_bottom), (_, b_top, _, b_bottom) = a['bbox'], b['bbox']
+            level = min(a_bottom, b_bottom) - max(a_top, b_top)
+            return shared > 0.5 * min(a['_xmax'] - a['_xmin'], b['_xmax'] - b['_xmin']) \
+                and level < 0.7 * min(a_bottom - a_top, b_bottom - b_top)
+
+        rows: List[List[Dict[str, Any]]] = []
+        for b in sorted(row, key=lambda item: item['_ymin']):
+            home = next((r for r in rows if not any(stacked(b, other) for other in r)), None)
+            if home is None:
+                rows.append([b])
+            else:
+                home.append(b)
+        if len(rows) < 3:
+            return [row]  # two stacked pieces are often one wrapped note ("after / meals"), not a list
+        for r in rows:
+            r.sort(key=lambda item: item['_xmin'])
+        return rows
 
     def rebuild_order(self, blocks: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], str]:
         if not blocks:
@@ -121,6 +188,7 @@ class ReadingOrderRebuilder:
         lines.sort(key=lambda line: min(b['_ymin'] for b in line))
         for line in lines:
             line.sort(key=lambda b: b['_xmin'])
+        lines = [row for line in lines for part in self._split_separate_blocks(line) for row in self._unstack(part)]
 
         sorted_blocks = []
         text_lines = []
@@ -186,6 +254,8 @@ class MedIntelOCREngine:
         self._structurer = None
         self._reviewer = None
         self._vlm = None
+        self._ai_reviewer = None
+        self._gpu_pass = threading.Lock()  # one AI review at a time on the GPU
         self._vlm_cfg = None
         self._paddle_ocr = None
         self._init_models()
@@ -773,6 +843,46 @@ class MedIntelOCREngine:
             logger.warning(f"Text review failed: {e}")
             return {"flagged_words": 0, "lines_to_check": 0}
 
+    def _ai_word_reviewer(self):
+        """Local AI word suggestions (HTR_AI_SUGGESTIONS=1, GPU only); they are flags, the text is never changed."""
+        if self._ai_reviewer is None:
+            self._ai_reviewer = False
+            if os.getenv("HTR_AI_SUGGESTIONS", "0") == "1" and self.use_gpu:
+                try:
+                    from app.ai.ocr.ai_word_review import AIWordReviewer
+                    from app.ai.ocr.vlm_reader import VLMLineReader
+                    vocab = self._vocabularies()
+                    known = self._reviewer._is_known if self._reviewer else (lambda _w: False)
+                    def ink(crop, texts):
+                        return self._htr.score_texts(crop, texts)
+                    self._ai_reviewer = AIWordReviewer(VLMLineReader(device="cuda"), known, vocab.get("terms", []),
+                                                       ink_score=ink if self._htr is not None else None)
+                    logger.info(f"AI word suggestions enabled ({self._ai_reviewer.reader.model_id})")
+                except Exception as e:
+                    logger.warning(f"AI word suggestions unavailable: {e}")
+                    self._ai_reviewer = False
+        return self._ai_reviewer or None
+
+    def suggest_words(self, blocks: List[Dict[str, Any]], page_images: Dict[int, np.ndarray]) -> int:
+        """Adds local AI word proposals to `block.review`; returns how many (0 when disabled)."""
+        reviewer = self._ai_word_reviewer()
+        if reviewer is None:
+            return 0
+        def crop_for(b):
+            image = page_images.get(b.get('page', 1))
+            if image is None:
+                return None
+            x0, y0, x1, y1 = (int(round(v)) for v in b['bbox'][:4])
+            pad = int(0.12 * max(1, y1 - y0))
+            h, w = image.shape[:2]
+            return image[max(0, y0 - pad):min(h, y1 + pad), max(0, x0 - pad):min(w, x1 + pad)]
+        try:
+            with self._gpu_pass:
+                return reviewer.review(blocks, crop_for)
+        except Exception as e:
+            logger.warning(f"AI word suggestions failed: {e}")
+            return 0
+
     def format_document(self, blocks: List[Dict[str, Any]], structured: Optional[Dict[str, Any]]) -> Optional[str]:
         """Formatted reading (sections, numbered medicines, paragraphs); raw_text keeps the as-read order."""
         try:
@@ -839,7 +949,7 @@ class MedIntelOCREngine:
         reading that is more confident and made of real words.
         """
         from app.ai.ocr.htr_ensemble import choose
-        from app.ai.ocr.htr_layout import HandwritingLineBuilder, quad_geometry, split_long_line
+        from app.ai.ocr.htr_layout import HandwritingLineBuilder, quad_geometry, split_long_line, straighten_line
 
         h_img, w_img = image.shape[:2]
         builder = HandwritingLineBuilder(detector=self._rapid_ocr)
@@ -849,32 +959,62 @@ class MedIntelOCREngine:
         if not lines:
             return []
 
-        # 1. TrOCR readings (chunked for out-of-distribution wide strips)
-        chunks, owner = [], []
-        for li, ln in enumerate(lines):
-            for part in split_long_line(ln['crop']):
-                chunks.append(part)
-                owner.append(li)
-        if self._htr is not None:
-            try:
-                results = self._htr.recognize_batch(chunks)
-                recognized = [(r['text'], r['confidence']) for r in results]
-            except Exception as e:
-                logger.warning(f"Batched HTR failed, recognising chunks one by one: {e}")
+        def read_trocr(crops: List[np.ndarray]) -> List[Tuple[str, float]]:
+            """TrOCR reading per crop (chunked for out-of-distribution wide strips)."""
+            chunks, owner = [], []
+            for li, crop in enumerate(crops):
+                for part in split_long_line(crop):
+                    chunks.append(part)
+                    owner.append(li)
+            if self._htr is not None:
+                try:
+                    results = self._htr.recognize_batch(chunks)
+                    recognized = [(r['text'], r['confidence']) for r in results]
+                except Exception as e:
+                    logger.warning(f"Batched HTR failed, recognising chunks one by one: {e}")
+                    recognized = [self._trocr_recognize(c) for c in chunks]
+            else:
                 recognized = [self._trocr_recognize(c) for c in chunks]
-        else:
-            recognized = [self._trocr_recognize(c) for c in chunks]
+            readings = []
+            for li, crop in enumerate(crops):
+                parts = [(recognized[k], chunks[k].shape[1]) for k in range(len(chunks)) if owner[k] == li]
+                text = " ".join(t for (t, _), _ in parts if t).strip()
+                conf = sum(c * w for (_, c), w in parts) / (sum(w for _, w in parts) or 1)
+                if text and self._is_hallucination(text, crop_w=crop.shape[1]):
+                    text, conf = "", 0.0
+                readings.append((text, conf))
+            return readings
 
-        # 2. PP-OCR readings of the same rectified lines
-        rapid_readings = [("", 0.0)] * len(lines)
-        if self._rapid_ocr is not None and hasattr(self._rapid_ocr, 'text_recognizer'):
+        def read_rapid(crops: List[np.ndarray]) -> List[Tuple[str, float]]:
+            """PP-OCR reading per crop; small crops are upscaled exactly as on the printed path."""
+            if not crops or self._rapid_ocr is None or not hasattr(self._rapid_ocr, 'text_recognizer'):
+                return [("", 0.0)] * len(crops)
             try:
-                # Small rectified crops are upscaled exactly as on the printed path before re-reading
-                enhanced = [enhance_small_or_lowres_text(ln['crop'], target_min_height=36)[0] for ln in lines]
+                enhanced = [enhance_small_or_lowres_text(c, target_min_height=36)[0] for c in crops]
                 rec_res, _ = self._rapid_ocr.text_recognizer(enhanced)
-                rapid_readings = [(str(t).strip(), float(c)) for t, c in rec_res]
+                return [(str(t).strip(), float(c)) for t, c in rec_res]
             except Exception as e:
                 logger.warning(f"RapidOCR line recognition failed: {e}")
+                return [("", 0.0)] * len(crops)
+
+        # 1. Both recognisers read each rectified line
+        trocr_readings = read_trocr([ln['crop'] for ln in lines])
+        rapid_readings = read_rapid([ln['crop'] for ln in lines])
+
+        # Where neighbouring lines intrude into a crop, each recogniser also reads the line followed and straightened,
+        # and keeps whichever version it is more confident in
+        straightened = [(li, s) for li, s in ((li, straighten_line(ln['crop'])) for li, ln in enumerate(lines))
+                        if s is not lines[li]['crop']]
+        if straightened:
+            crops = [s for _, s in straightened]
+            for (li, crop), trocr_alt, rapid_alt in zip(straightened, read_trocr(crops), read_rapid(crops)):
+                # Short strips are often signatures, where a confident reading would hide the scribble
+                if len(trocr_alt[0].split()) >= 3 and trocr_alt[1] > trocr_readings[li][1] + STRAIGHTENED_MARGIN:
+                    trocr_readings[li] = trocr_alt
+                    lines[li]['crop'] = crop
+                if len(rapid_alt[0].split()) >= 3 and rapid_alt[1] > rapid_readings[li][1] + STRAIGHTENED_MARGIN:
+                    rapid_readings[li] = rapid_alt
+
         # A line that is exactly one first-pass detection also keeps the detector's own reading
         for li, ln in enumerate(lines):
             if ln['members'] != 1 or ln.get('recovered'):
@@ -886,15 +1026,11 @@ class MedIntelOCREngine:
         validity = self._htr.word_validity if self._htr is not None else (lambda _t: 0.0)
 
         # Ensemble choice per line, then the optional VLM for lines that stay uncertain
-        choices = []
+        choices, trocr_confs = [], []
         for li, ln in enumerate(lines):
-            parts = [(recognized[k], chunks[k].shape[1]) for k in range(len(chunks)) if owner[k] == li]
-            trocr_text = " ".join(t for (t, _), _ in parts if t).strip()
-            total_w = sum(w for _, w in parts) or 1
-            trocr_conf = sum(c * w for (_, c), w in parts) / total_w
-            if trocr_text and self._is_hallucination(trocr_text, crop_w=ln['crop'].shape[1]):
-                trocr_text, trocr_conf = "", 0.0
+            trocr_text, trocr_conf = trocr_readings[li]
             choices.append(list(choose(rapid_readings[li], (trocr_text, trocr_conf), validity)) + [trocr_text])
+            trocr_confs.append(trocr_conf)
         vlm = self._vlm_reader()
         if vlm is not None:
             cfg = self._vlm_cfg
@@ -915,6 +1051,8 @@ class MedIntelOCREngine:
         blocks = []
         for li, ln in enumerate(lines):
             text, conf, engine = choices[li][0], choices[li][1], choices[li][2]
+            # A reading no recogniser stands behind is not printed as fact
+            unread = engine == 'trocr' and unsupported_reading(text, trocr_confs[li], *rapid_readings[li])
             dose, age_sex = _DOSE_ONLY.match(text or ''), _AGE_SEX_READ.match(rapid_readings[li][0] or '')
             if dose and age_sex and dose.group(1) == age_sex.group(1):
                 text = f"{age_sex.group(1)}/{age_sex.group(2).upper()}"
@@ -928,6 +1066,9 @@ class MedIntelOCREngine:
                     text, corrections = spell.choose_reading(text, other or '')
                     text, fixed = spell.correct_line(text, image_score=self._image_scorer(ln.get('crop')))
                     corrections += fixed
+                    if engine == 'trocr':
+                        text, fused = spell.fuse_readings(text, rapid_readings[li][0])
+                        corrections += fused
                 except Exception as e:
                     logger.warning(f"Spelling correction failed on a line: {e}")
             if engine == 'trocr':
@@ -952,6 +1093,12 @@ class MedIntelOCREngine:
             blocks.append({
                 **extra,
                 '_line_band': [float(center[1] - line_h / 2.0), float(center[1] + line_h / 2.0)],
+                '_unread': unread,
+                # Text right after a brace or bracket is a note on what the brace gathers, not the same line
+                '_after_separator': any(
+                    xmin - line_h <= (sp[0] + sp[2]) / 2.0 <= xmin + 0.5 * line_h
+                    and min(ymax, sp[3]) - max(ymin, sp[1]) > 0.5 * (ymax - ymin)
+                    for sp in builder.separators),
                 'text': text,
                 'confidence': round(float(conf), 4),
                 'source': source,
@@ -1023,6 +1170,12 @@ class MedIntelOCREngine:
             except Exception as e:
                 logger.warning(f"Layout analysis failed: {e}")
 
+        # Lines no recogniser could stand behind go to the reviewer instead of the text
+        unread_lines = [{'reading': b['text'], 'confidence': b['confidence'], 'bbox': b['bbox'],
+                         'normalized_bbox': b['normalized_bbox'], 'page': page_num}
+                        for b in consolidated_blocks if b.get('_unread') and b.get('role') != 'signature']
+        consolidated_blocks = [b for b in consolidated_blocks if not b.get('_unread') or b.get('role') == 'signature']
+
         # 5. Reconstruct 2D reading order and clean text
         sorted_blocks, raw_text = self.rebuilder.rebuild_order(consolidated_blocks)
         from app.ai.ocr.document_layout import resolve_applies_to
@@ -1042,7 +1195,9 @@ class MedIntelOCREngine:
             'total_blocks': len(sorted_blocks),
             'overall_confidence': round(overall_conf, 4),
             'blocks': sorted_blocks,
-            'raw_text': raw_text
+            'raw_text': raw_text,
+            'unread_lines': unread_lines,
+            'reading_image': image  # the pixels the block boxes refer to (not part of the API response)
         }
 
     def process_region(

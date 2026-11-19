@@ -60,6 +60,8 @@ class PipelineController:
         all_blocks = []
         page_texts = []
         confidences = []
+        reading_images = {}
+        unread_lines = []
 
         for page in pages:
             page_num = page.metadata.page_number
@@ -83,6 +85,8 @@ class PipelineController:
                 clean_page, doc_name=doc_name, page_num=page_num, input_mode=input_mode, original_image=page_img
             )
             
+            reading_images[page_num] = page_result.pop('reading_image', page_img)
+            unread_lines += page_result.get('unread_lines', [])
             # Tag blocks with page number
             for b in page_result.get('blocks', []):
                 b['page'] = page_num
@@ -129,6 +133,12 @@ class PipelineController:
             'structured': self.ocr_engine.extract_structured(all_blocks)
         }
         final_result['review_summary'] = self.ocr_engine.review_blocks(all_blocks)
+        final_result['unread_lines'] = unread_lines
+        if unread_lines:
+            final_result['review_summary']['unread_lines'] = len(unread_lines)
+        ai_suggestions = self.ocr_engine.suggest_words(all_blocks, reading_images)
+        if ai_suggestions:
+            final_result['review_summary']['ai_suggestions'] = ai_suggestions
         formatted = self.ocr_engine.format_document(all_blocks, final_result['structured'])
         final_result['formatted_text'] = formatted or combined_raw_text
         final_result['sections'] = self.ocr_engine.format_sections(all_blocks, final_result['structured'])

@@ -33,6 +33,11 @@ DEFAULT_PARAMS: Dict[str, float] = {
     "reading_margin": 1e9,
     # ...lowered by this many nats when the other word is a clinical term (clinical_terms.txt) and this one is not
     "clinical_prior": 0.0,
+    # fuse_readings: gain = LM gain + fusion_weight * (how much closer the new word is to the other reader's word)
+    # must exceed fusion_margin; the new word is at most fusion_max_cost from that word. Off until fitted.
+    "fusion_weight": 0.0,
+    "fusion_margin": 1e9,
+    "fusion_max_cost": 1.6,
 }
 
 # Unknown word vs a formulary drug in the other reading: at most two look-alike edits ("ParID" / "PanD")
@@ -87,6 +92,32 @@ def _match_case(template: str, word: str) -> str:
     if template[:1].isupper():
         return word[:1].upper() + word[1:]
     return word
+
+
+def align_words(a: Sequence[str], b: Sequence[str], gap: float = 0.6) -> List[Tuple[int, int]]:
+    """Word pairs (i, j) of two readings of one line, aligned by spelling so garbled words still pair up."""
+    import difflib
+    cost = [[1.0 - difflib.SequenceMatcher(a=x.lower(), b=y.lower()).ratio() for y in b] for x in a]
+    n, m = len(a), len(b)
+    d = [[0.0] * (m + 1) for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        d[i][0] = i * gap
+    for j in range(1, m + 1):
+        d[0][j] = j * gap
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            d[i][j] = min(d[i - 1][j] + gap, d[i][j - 1] + gap, d[i - 1][j - 1] + cost[i - 1][j - 1])
+    pairs = []
+    i, j = n, m
+    while i and j:
+        if abs(d[i][j] - (d[i - 1][j - 1] + cost[i - 1][j - 1])) < 1e-9:
+            pairs.append((i - 1, j - 1))
+            i, j = i - 1, j - 1
+        elif abs(d[i][j] - (d[i - 1][j] + gap)) < 1e-9:
+            i -= 1
+        else:
+            j -= 1
+    return pairs[::-1]
 
 
 class ContextSpellCorrector:
@@ -276,6 +307,58 @@ class ContextSpellCorrector:
             if new - base > self.params["reading_margin"] - self._clinical_bonus(core, alt):
                 changes.append({"from": core, "to": new_core, "gain": round(new - base, 2), "reason": "other reading"})
                 tokens = variant
+        return " ".join(tokens), changes
+
+    def fuse_readings(self, text: str, other: str) -> Tuple[str, List[Dict]]:
+        """
+        On blurred handwriting TrOCR can write a fluent wrong word ("minimum exact") where PP-OCR's rough spelling
+        is nearer the ink ("maximom ciass"). For each aligned word that differs, the other reader's word, or the
+        dictionary word nearest it, replaces this one when the line's language model and the closeness to what the
+        other reader saw together favour it. Prose only: drug and clinical terms, capitalised names and labels
+        ("Name:") stay, and a line holding a dose, form or number changes only into a listed drug, because a
+        wrong instruction ("with food" -> "with good") costs far more than a misspelt word.
+        """
+        weight, margin = self.params["fusion_weight"], self.params["fusion_margin"]
+        tokens, theirs = text.split(), (other or "").split()
+        if margin >= 1e9 or len(tokens) < self.params["min_line_words"] or not theirs:
+            return text, []
+        pattern = re.compile(r"^([^A-Za-z]*)([A-Za-z][A-Za-z'-]*[A-Za-z])([^A-Za-z]*)$")
+        has_dose = any(_DOSE_OR_FORM.match(t.strip(",;:()")) for t in tokens)
+        proposals = []
+        for i, j in align_words(tokens, theirs):
+            mine, seen = pattern.match(tokens[i]), pattern.match(theirs[j])
+            if not mine or not seen:
+                continue
+            pre, core, post = mine.groups()
+            word, read = core.lower(), seen.group(2).lower()
+            if word == read or len(read) < 3 or word in self.protected or word in self.clinical:
+                continue
+            if ":" in post or core.isupper() or (i > 0 and core[:1].isupper()):
+                continue
+            options = ([read] if self._is_known(read) else []) + self._candidates(read, 4)
+            for option in dict.fromkeys(options):
+                cost = channel_cost(read, option)
+                if option == word or len(option) < 3 or cost > self.params["fusion_max_cost"]:
+                    continue
+                if has_dose and option not in self.protected:
+                    continue
+                new_core = _match_case(core, option)
+                proposals.append((i, core, new_core, f"{pre}{new_core}{post}", channel_cost(read, word) - cost))
+        if not proposals:
+            return text, []
+        lines = [" ".join(tokens)] + [" ".join(tokens[:p[0]] + [p[3]] + tokens[p[0] + 1:]) for p in proposals]
+        scores = []
+        for k in range(0, len(lines), 16):
+            scores += self.sentence_logprobs(lines[k:k + 16])
+        best: Dict[int, Tuple[float, Tuple]] = {}
+        for p, score in zip(proposals, scores[1:]):
+            gain = score - scores[0] + weight * p[4]
+            if gain > margin and gain > best.get(p[0], (-math.inf, None))[0]:
+                best[p[0]] = (gain, p)
+        changes = []
+        for i, (gain, p) in sorted(best.items()):
+            tokens[i] = p[3]
+            changes.append({"from": p[1], "to": p[2], "gain": round(gain, 2), "reason": "other reading"})
         return " ".join(tokens), changes
 
     def _clinical_bonus(self, word: str, alt: str) -> float:

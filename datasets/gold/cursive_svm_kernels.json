@@ -1,0 +1,149 @@
+{
+ "image": "images/cursive_svm_kernels.webp",
+ "doc_type": "note",
+ "handwritten": true,
+ "source": "user-provided sample (handwritten study notes)",
+ "notes": "Transcribed by reading the image, keeping the writer's spelling; crossed-out words and printed notebook labels are left out.",
+ "lines": [
+  {
+   "text": "ML",
+   "role": "body"
+  },
+  {
+   "text": "Unit - 3",
+   "role": "body"
+  },
+  {
+   "text": "Q. what are kernel functions in SVM? Describe",
+   "role": "body"
+  },
+  {
+   "text": "the Radial Basis kernel & sigmoid kernel.",
+   "role": "body"
+  },
+  {
+   "text": "-> A kernel function is a similarity funn which",
+   "role": "body"
+  },
+  {
+   "text": "computes the inner product of two data points in",
+   "role": "body"
+  },
+  {
+   "text": "a high dimensional features space without explicity",
+   "role": "body"
+  },
+  {
+   "text": "performing the transformation.",
+   "role": "body"
+  },
+  {
+   "text": "1 Radial Basis funn kernel.",
+   "role": "body"
+  },
+  {
+   "text": "- The Radial Basis function kernel is also known as the",
+   "role": "body"
+  },
+  {
+   "text": "Gaussian kernel.",
+   "role": "body"
+  },
+  {
+   "text": "- It measures similarity based on the distance betn",
+   "role": "body"
+  },
+  {
+   "text": "data points.",
+   "role": "body"
+  },
+  {
+   "text": "Formula: K(x,z) = exp(-y||x-z||2)",
+   "role": "body"
+  },
+  {
+   "text": "Advantages:",
+   "role": "body"
+  },
+  {
+   "text": "1 Produces very good accuracy.",
+   "role": "body"
+  },
+  {
+   "text": "2 computationally efficient.",
+   "role": "body"
+  },
+  {
+   "text": "2 Sigmoid kernel:",
+   "role": "body"
+  },
+  {
+   "text": "- The sigmoid kernel is inspired from Neural Network",
+   "role": "body"
+  },
+  {
+   "text": "activation funn.",
+   "role": "body"
+  },
+  {
+   "text": "Formula: K(x,z) = tanh(kxTz + c)",
+   "role": "body"
+  },
+  {
+   "text": "- converts inputs into S-shaped curve.",
+   "role": "body"
+  },
+  {
+   "text": "- produces an output similar to sigmoid activation.",
+   "role": "body"
+  },
+  {
+   "text": "Q. Write formula for accuracy, precision, recall & f1-score",
+   "role": "body"
+  },
+  {
+   "text": "calculate accuracy, precision, recall & f1-score for",
+   "role": "body"
+  },
+  {
+   "text": "given example.",
+   "role": "body"
+  },
+  {
+   "text": "Actual / predicted",
+   "role": "body"
+  },
+  {
+   "text": "Cancer",
+   "role": "body"
+  },
+  {
+   "text": "No cancer",
+   "role": "body"
+  },
+  {
+   "text": "Cancer",
+   "role": "body"
+  },
+  {
+   "text": "45",
+   "role": "body"
+  },
+  {
+   "text": "12",
+   "role": "body"
+  },
+  {
+   "text": "No cancer",
+   "role": "body"
+  },
+  {
+   "text": "18",
+   "role": "body"
+  },
+  {
+   "text": "25",
+   "role": "body"
+  }
+ ]
+}

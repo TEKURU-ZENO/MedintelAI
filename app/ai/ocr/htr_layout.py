@@ -218,6 +218,83 @@ def split_long_line(crop: np.ndarray, max_aspect: float = 16.0, min_aspect: floa
     return split_long_line(crop[:, :best], max_aspect, min_aspect) + split_long_line(crop[:, best:], max_aspect, min_aspect)
 
 
+def straighten_line(crop: np.ndarray, min_intrusion: float = 0.05, max_height_ratio: float = 0.8) -> np.ndarray:
+    """
+    On slanted or curved pages a line's box also holds parts of the lines above and below. Follows the line's ink
+    from left to right (best path through local ink profiles, preferring the middle of the crop), and returns a
+    strip straightened along that path with the neighbours cut away. Returns `crop` itself when nothing else
+    intrudes, so callers can tell whether there is a second version worth reading.
+    """
+    h, w = crop.shape[:2]
+    if h < 24 or w < 2 * h:
+        return crop
+    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY) if crop.ndim == 3 else crop
+    k = max(15, int(h * 0.8) | 1)
+    background = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (k, k)))
+    flat = cv2.GaussianBlur(cv2.subtract(background, gray), (3, 3), 0)
+    _, ink = cv2.threshold(flat, 0, 1, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    win, step = max(16, int(h * 0.9)), max(8, int(h * 0.3))
+    xs = list(range(0, max(1, w - win + 1), step))
+    smooth = max(3, int(h * 0.14) | 1)
+    profiles = np.array([np.convolve(ink[:, x:x + win].sum(axis=1).astype(float), np.ones(smooth) / smooth, mode="same")
+                         for x in xs])
+    profiles = profiles / max(1e-6, float(np.percentile(profiles.max(axis=1), 90)))
+
+    ys = np.arange(0, h, max(1, h // 48))
+    unary = np.minimum(profiles[:, ys], 1.0) + 0.35 * np.exp(-((ys - h / 2.0) / (0.33 * h)) ** 2)
+    jump = 1.5 * np.abs(ys[:, None] - ys[None, :]) / (0.12 * h)
+    score, back = unary[0].copy(), np.zeros((len(xs), len(ys)), dtype=int)
+    for i in range(1, len(xs)):
+        moves = score[None, :] - jump
+        back[i] = moves.argmax(axis=1)
+        score = moves.max(axis=1) + unary[i]
+    path = np.zeros(len(xs), dtype=int)
+    path[-1] = int(score.argmax())
+    for i in range(len(xs) - 1, 0, -1):
+        path[i - 1] = back[i, path[i]]
+    centres = ys[path].astype(float)
+
+    # The line's half height: how far ink stays dense on either side of the path
+    extents = []
+    for profile, y in zip(profiles, centres.astype(int)):
+        peak = profile[y]
+        if peak < 0.2:
+            continue
+        top = bottom = int(y)
+        while top > 0 and profile[top] > 0.2 * peak:
+            top -= 1
+        while bottom < h - 1 and profile[bottom] > 0.2 * peak:
+            bottom += 1
+        extents.append(max(y - top, bottom - y))
+    if not extents:
+        return crop
+    half = float(np.median(extents)) * 1.25
+    out_h = int(round(2 * half))
+    if out_h < 16 or out_h >= max_height_ratio * h:
+        return crop
+
+    kernel = max(3, int(h * 0.8) | 1)
+    line_y = np.interp(np.arange(w), np.array(xs) + win / 2.0, centres)
+    line_y = np.convolve(np.pad(line_y, kernel // 2, mode="edge"), np.ones(kernel) / kernel, mode="valid")
+    distance = np.abs(np.arange(h)[:, None] - line_y[None, :])
+    if float(ink[distance > 1.35 * half].sum()) / max(1.0, float(ink[distance <= half].sum())) < min_intrusion:
+        return crop
+    map_x = np.tile(np.arange(w, dtype=np.float32), (out_h, 1))
+    map_y = (np.arange(out_h, dtype=np.float32)[:, None] - out_h / 2.0 + line_y[None, :]).astype(np.float32)
+    return cv2.remap(crop, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+
+
+def _ends_meet(left: Quad, right: Quad, min_h: float) -> bool:
+    """True when `right` starts where `left` ends: the last words of a curving line drift away from its centre line."""
+    end, start = (left[1] + left[2]) / 2.0, (right[0] + right[3]) / 2.0
+    _, angle, _, _ = quad_geometry(left)
+    delta = start - end
+    along = float(delta @ np.array([np.cos(angle), np.sin(angle)]))
+    across = abs(float(delta @ np.array([-np.sin(angle), np.cos(angle)])))
+    return -0.5 * min_h <= along <= 1.5 * min_h and across <= 0.6 * min_h
+
+
 class HandwritingLineBuilder:
     """Builds rectified handwritten line crops from detector quads."""
 
@@ -349,8 +426,9 @@ class HandwritingLineBuilder:
                 along = abs(float(delta @ d))
                 gap = along - (wi + wj) / 2.0
                 min_h, max_h = min(hi, hj), max(hi, hj)
-                if offset <= 0.45 * min_h and -0.5 * min(wi, wj) <= gap <= 2.5 * max_h and max_h <= 3.0 * min_h:
-                    a, b = (i, j) if ci[0] <= cj[0] else (j, i)
+                a, b = (i, j) if ci[0] <= cj[0] else (j, i)
+                collinear = offset <= 0.45 * min_h and -0.5 * min(wi, wj) <= gap <= 2.5 * max_h
+                if (collinear or _ends_meet(quads[a], quads[b], min_h)) and max_h <= 3.0 * min_h:
                     box_a, box_b = quad_bbox(quads[a], 10 ** 6, 10 ** 6), quad_bbox(quads[b], 10 ** 6, 10 ** 6)
                     if any(separator_between(sp, box_a, box_b) for sp in separators):
                         continue

@@ -1,0 +1,137 @@
+{
+ "image": "images/cursive_ml_intro.webp",
+ "doc_type": "note",
+ "handwritten": true,
+ "source": "user-provided sample (handwritten study notes)",
+ "notes": "Transcribed by reading the image, keeping the writer's spelling; crossed-out words and printed notebook labels are left out.",
+ "lines": [
+  {
+   "text": "MACHINE LEARNING",
+   "role": "body"
+  },
+  {
+   "text": "- machine learning is subfeild of computer",
+   "role": "body"
+  },
+  {
+   "text": "science that gives \"computers the ability",
+   "role": "body"
+  },
+  {
+   "text": "to learn without being \"explicitly",
+   "role": "body"
+  },
+  {
+   "text": "programmed\"",
+   "role": "body"
+  },
+  {
+   "text": "by set of rules",
+   "role": "body"
+  },
+  {
+   "text": "defined by",
+   "role": "body"
+  },
+  {
+   "text": "programming lang.",
+   "role": "body"
+  },
+  {
+   "text": "how machine learning impact socity?",
+   "role": "body"
+  },
+  {
+   "text": "- netflix and amazon recomand TV shows",
+   "role": "body"
+  },
+  {
+   "text": "based on their intrests",
+   "role": "body"
+  },
+  {
+   "text": "like for some type of predictions.",
+   "role": "body"
+  },
+  {
+   "text": "1. AI components",
+   "role": "body"
+  },
+  {
+   "text": "- computer vision",
+   "role": "body"
+  },
+  {
+   "text": "- language processing",
+   "role": "body"
+  },
+  {
+   "text": "- creativity",
+   "role": "body"
+  },
+  {
+   "text": "- summarization",
+   "role": "body"
+  },
+  {
+   "text": "mimic human",
+   "role": "body"
+  },
+  {
+   "text": "cognitive functions.",
+   "role": "body"
+  },
+  {
+   "text": "2 - machine learning",
+   "role": "body"
+  },
+  {
+   "text": "- classification",
+   "role": "body"
+  },
+  {
+   "text": "- clustering",
+   "role": "body"
+  },
+  {
+   "text": "- neural network",
+   "role": "body"
+  },
+  {
+   "text": "cover statistical part of ai",
+   "role": "body"
+  },
+  {
+   "text": "- solve problem after",
+   "role": "body"
+  },
+  {
+   "text": "looking 100 or 1000 example",
+   "role": "body"
+  },
+  {
+   "text": "and use that to solve",
+   "role": "body"
+  },
+  {
+   "text": "problem.",
+   "role": "body"
+  },
+  {
+   "text": "3. Revolution of ML",
+   "role": "body"
+  },
+  {
+   "text": "- deep learning",
+   "role": "body"
+  },
+  {
+   "text": "- involve deeper level of",
+   "role": "body"
+  },
+  {
+   "text": "automation.",
+   "role": "body"
+  }
+ ]
+}

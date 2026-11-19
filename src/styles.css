@@ -135,6 +135,9 @@ button, input, textarea, select { font-family: var(--font-ui); }
 .review-kind.ambiguous{background:#fff5e7;color:#b77a22}
 .review-kind.spelling{background:#fdeeee;color:#c24646}
 .review-kind.corrected{background:#eaf8f1;color:#169c70}
+.review-kind.ai{background:#eef1ff;color:#4266ef}
+.review-kind.confirm{background:#fdeeee;color:#c24646}
+.review-crop{max-width:100%;background-repeat:no-repeat;border:1px solid #edf0f5;border-radius:5px}
 .review-ignore{margin-left:auto;border:0;background:transparent;color:#9aa4b3;display:flex;padding:2px}
 .review-ignore:hover{color:var(--ink)}
 .review-item small{font-size:9px;color:var(--muted)}
@@ -144,3 +147,4 @@ button, input, textarea, select { font-family: var(--font-ui); }
 .review-chips span{font-size:9px;color:var(--muted)}
 .review-chips button{border:1px solid #cad5ef;background:#f7f9ff;color:#4266ef;border-radius:12px;padding:3px 9px;font-size:10px}
 .review-chips button:hover{background:#4266ef;color:#fff}
+.review-chips button.ai{border-style:dashed}

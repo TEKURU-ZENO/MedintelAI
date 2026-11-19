@@ -5,6 +5,9 @@
     "margin": 3.0,
     "min_line_words": 3,
     "reading_margin": 1.0,
-    "clinical_prior": 4.0
+    "clinical_prior": 4.0,
+    "fusion_weight": 3.0,
+    "fusion_margin": 2.0,
+    "fusion_max_cost": 1.6
   }
 }

@@ -31,6 +31,8 @@ class OCRResponse(BaseModel):
     formatted_text: Optional[str] = None
     # Counts of the per-block `review` flags (words to check, with suggestions) and low-confidence lines
     review_summary: Optional[Dict[str, int]] = None
+    # Lines left out of the text because no recogniser could stand behind them: {reading, confidence, bbox, page}
+    unread_lines: Optional[List[Dict[str, Any]]] = None
     # Clinical pages in the hospital template's section order: {template, letterhead, sections: [{key, title, lines}]}
     sections: Optional[Dict[str, Any]] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
